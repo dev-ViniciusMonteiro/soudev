@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 const parseJsonConfig = (value, fallback) => {
   if (!value) return fallback
@@ -79,16 +79,63 @@ const defaultProducts = [
 
 const services = parseJsonConfig(import.meta.env.VITE_SERVICES, defaultServices)
 const products = parseJsonConfig(import.meta.env.VITE_PRODUCTS, defaultProducts)
+const quoteServices = [
+  'Desenvolvimento de site e/ou aplicação',
+  'Soluções com IA',
+  'Impressão 3D',
+  'Modelagem 3D',
+  'Outros',
+]
+
+const MESSAGE_SUBMITTED_KEY = 'soudev-message-submitted'
+const QUOTE_HISTORY_KEY = 'soudev-quote-history'
+
+const hasSubmittedMessage = () => {
+  try {
+    return window.sessionStorage.getItem(MESSAGE_SUBMITTED_KEY) === 'true'
+  } catch {
+    return false
+  }
+}
+
+const readQuoteHistory = () => {
+  try {
+    const history = JSON.parse(window.sessionStorage.getItem(QUOTE_HISTORY_KEY) || '[]')
+    return Array.isArray(history) ? history : []
+  } catch {
+    return []
+  }
+}
 
 export default function App() {
   const [lead, setLead] = useState({ name: '', message: '' })
-  const [submitted, setSubmitted] = useState(false)
+  const [submitted, setSubmitted] = useState(hasSubmittedMessage)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [quoteOpen, setQuoteOpen] = useState(false)
+  const [quoteHistory, setQuoteHistory] = useState(readQuoteHistory)
+  const [quoteNotice, setQuoteNotice] = useState('')
+  const [quoteServicesSelected, setQuoteServicesSelected] = useState([])
+  const [quoteName, setQuoteName] = useState('')
+  const [quoteContact, setQuoteContact] = useState('')
+  const [quoteDetails, setQuoteDetails] = useState('')
+  const [quoteError, setQuoteError] = useState('')
+  const [isSubmittingQuote, setIsSubmittingQuote] = useState(false)
+
+  useEffect(() => {
+    if (!quoteOpen) return undefined
+
+    const closeOnEscape = (event) => {
+      if (event.key === 'Escape') setQuoteOpen(false)
+    }
+
+    window.addEventListener('keydown', closeOnEscape)
+    return () => window.removeEventListener('keydown', closeOnEscape)
+  }, [quoteOpen])
 
   const handleSubmit = async (event) => {
     event.preventDefault()
 
-    if (!lead.name.trim() || !lead.message.trim() || isSubmitting) return
+    if (!lead.name.trim() || !lead.message.trim() || isSubmitting || submitted) return
 
     setIsSubmitting(true)
 
@@ -111,6 +158,12 @@ export default function App() {
         return
       }
 
+      try {
+        window.sessionStorage.setItem(MESSAGE_SUBMITTED_KEY, 'true')
+      } catch {
+        // The in-memory state still prevents another message on this page.
+      }
+
       setSubmitted(true)
     } catch (error) {
       console.error('Erro ao enviar mensagem:', error)
@@ -119,19 +172,157 @@ export default function App() {
     }
   }
 
+  const toggleQuoteService = (service) => {
+    setQuoteServicesSelected((current) =>
+      current.includes(service) ? current.filter((item) => item !== service) : [...current, service],
+    )
+  }
+
+  const handleQuoteSubmit = async (event) => {
+    event.preventDefault()
+    if (isSubmittingQuote) return
+
+    const quote = {
+      id: `${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      name: quoteName.trim(),
+      contact: quoteContact.trim(),
+      services: [...quoteServicesSelected],
+      details: quoteDetails.trim(),
+    }
+    const quoteMessage = [
+      `Solicitante: ${quote.name}`,
+      `Contato: ${quote.contact}`,
+      `Serviços selecionados: ${quote.services.join(', ')}`,
+      `Detalhes da cotação: ${quote.details}`,
+    ].join('\n\n')
+
+    setIsSubmittingQuote(true)
+    setQuoteError('')
+
+    try {
+      const response = await fetch('/api/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome: 'Cotação', mensagem: quoteMessage }),
+      })
+
+      if (!response.ok) {
+        setQuoteError('Não foi possível enviar agora. Revise os dados e tente novamente.')
+        return
+      }
+
+      const nextHistory = [...quoteHistory, quote]
+      let historySaved = true
+      try {
+        window.sessionStorage.setItem(QUOTE_HISTORY_KEY, JSON.stringify(nextHistory))
+      } catch {
+        historySaved = false
+      }
+
+      setQuoteHistory(nextHistory)
+      setQuoteNotice(
+        historySaved
+          ? 'Cotação enviada. Você pode solicitar outra quando quiser.'
+          : 'Cotação enviada, mas o histórico não pôde ser salvo neste navegador.',
+      )
+      setQuoteServicesSelected([])
+      setQuoteName('')
+      setQuoteContact('')
+      setQuoteDetails('')
+      setQuoteOpen(false)
+    } catch (error) {
+      console.error('Erro ao enviar cotação:', error)
+      setQuoteError('Não foi possível enviar agora. Verifique sua conexão e tente novamente.')
+    } finally {
+      setIsSubmittingQuote(false)
+    }
+  }
+
   return (
     <div className="site-shell single-form-page">
+      <div className="robot-city" aria-hidden="true">
+        <div className="city-horizon" />
+        <div className="walking-robot robot-one">
+          <span className="robot-antenna" />
+          <span className="robot-head"><i /><i /></span>
+          <span className="robot-body" />
+          <span className="robot-arm robot-arm-left" />
+          <span className="robot-arm robot-arm-right" />
+          <span className="robot-leg robot-leg-left" />
+          <span className="robot-leg robot-leg-right" />
+        </div>
+        <div className="walking-robot robot-two">
+          <span className="robot-antenna" />
+          <span className="robot-head"><i /><i /></span>
+          <span className="robot-body" />
+          <span className="robot-arm robot-arm-left" />
+          <span className="robot-arm robot-arm-right" />
+          <span className="robot-leg robot-leg-left" />
+          <span className="robot-leg robot-leg-right" />
+        </div>
+        <div className="walking-robot robot-three">
+          <span className="robot-antenna" />
+          <span className="robot-head"><i /><i /></span>
+          <span className="robot-body" />
+          <span className="robot-arm robot-arm-left" />
+          <span className="robot-arm robot-arm-right" />
+          <span className="robot-leg robot-leg-left" />
+          <span className="robot-leg robot-leg-right" />
+        </div>
+      </div>
       <main className="page-content form-only-layout">
         <section className="contact-only-card">
           {submitted ? (
             <div className="success-message">
               <span className="eyebrow">Mensagem enviada</span>
-              <h3>Muito obrigado pela sua mensagem.</h3>
-              <p>Mostre essa tela para <strong>Vinicius019</strong> ou <strong>Lulis.X0X0</strong>.</p>
+              <h3>Obrigado pela confiança.</h3>
+              <p>Sua mensagem chegou. Em breve, entrarei em contato para entender seu objetivo e indicar o melhor caminho.</p>
+              <div className="success-proof">
+                <strong>Mais de 8 anos de experiência</strong>
+                <p>Experiência em projetos para grandes players como:</p>
+                <div className="brand-list" aria-label="Marcas atendidas">
+                  <span>Natura</span>
+                  <span>Cidade Center Norte</span>
+                  <span>Fugini</span>
+                  <span>Yamaha</span>
+                  <span>Entre outras</span>
+                </div>
+                <p>Atuação com tecnologia, visão de negócio e comunicação clara em cada etapa.</p>
+              </div>
+              <a
+                className="instagram-link"
+                href="https://www.instagram.com/vinicius.d3v"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="3" y="3" width="18" height="18" rx="5" />
+                  <circle cx="12" cy="12" r="4" />
+                  <circle className="instagram-flash" cx="18" cy="6" r="1" />
+                </svg>
+                <span>Acompanhe também</span>
+                <strong>@vinicius.d3v</strong>
+              </a>
             </div>
           ) : (
             <form className="lead-form" onSubmit={handleSubmit}>
               <div className="form-heading">
+                <a
+                  className="instagram-link"
+                  href="https://www.instagram.com/vinicius.d3v"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Seguir Vinicius no Instagram"
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <rect x="3" y="3" width="18" height="18" rx="5" />
+                    <circle cx="12" cy="12" r="4" />
+                    <circle className="instagram-flash" cx="18" cy="6" r="1" />
+                  </svg>
+                  <span>Seguir no Instagram</span>
+                  <strong>@vinicius.d3v</strong>
+                </a>
                 <h1 className="glow-title">
                   <span className="title-line">Deixe sua mensagem</span>
                   <span className="title-name title-name-one">Vinicius019</span>
@@ -173,6 +364,91 @@ export default function App() {
           )}
         </section>
       </main>
+      <button
+        className="quote-float-button"
+        type="button"
+        onClick={() => {
+          setQuoteNotice('')
+          setQuoteOpen(true)
+        }}
+        title="Solicitar uma cotação de serviço"
+      >
+        <span className="quote-button-mark" aria-hidden="true">+</span>
+        <span>Cotação de serviço</span>
+      </button>
+      {quoteNotice && <p className="quote-toast" role="status">{quoteNotice}</p>}
+
+      {quoteOpen && (
+        <div className="quote-overlay" onMouseDown={(event) => event.target === event.currentTarget && setQuoteOpen(false)}>
+          <section className="quote-dialog" role="dialog" aria-modal="true" aria-labelledby="quote-title">
+            <button className="quote-close" type="button" onClick={() => setQuoteOpen(false)} aria-label="Voltar para a página anterior">
+              <span aria-hidden="true">×</span>
+            </button>
+            <div className="quote-intro">
+              <span className="eyebrow">Projeto sob medida</span>
+              <h2 id="quote-title">Vamos tirar sua ideia do papel.</h2>
+              <p>Conte o que precisa. Vou analisar o contexto e retornar com próximos passos claros, escopo e investimento.</p>
+            </div>
+            <div className="quote-trust-row">
+              <strong>+ de 8 anos de experiência</strong>
+              <span>Projetos para Natura, Cidade Center Norte, Fugini, Yamaha e outras marcas.</span>
+            </div>
+            <details className="quote-history">
+              <summary>Histórico desta sessão ({quoteHistory.length})</summary>
+              {quoteHistory.length === 0 ? (
+                <p>Nenhuma cotação enviada nesta sessão.</p>
+              ) : (
+                <ol>
+                  {[...quoteHistory].reverse().map((item) => (
+                    <li key={item.id}>
+                      <time dateTime={item.createdAt}>{new Date(item.createdAt).toLocaleString('pt-BR')}</time>
+                      <strong>{item.services.join(', ')}</strong>
+                      <p>{item.details}</p>
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </details>
+            <form className="quote-form" onSubmit={handleQuoteSubmit}>
+              <fieldset className="quote-service-fieldset">
+                <legend>O que você deseja cotar?</legend>
+                <div className="quote-service-options">
+                  {quoteServices.map((service) => (
+                    <label className="quote-service-option" key={service}>
+                      <input
+                        type="checkbox"
+                        checked={quoteServicesSelected.includes(service)}
+                        onChange={() => toggleQuoteService(service)}
+                      />
+                      <span>{service}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+              <div className="quote-contact-fields">
+                <label>
+                  <span>Seu nome</span>
+                  <input value={quoteName} onChange={(event) => setQuoteName(event.target.value)} required autoComplete="name" placeholder="Nome e sobrenome" />
+                </label>
+                <label>
+                  <span>E-mail ou telefone</span>
+                  <input value={quoteContact} onChange={(event) => setQuoteContact(event.target.value)} required autoComplete="email" placeholder="Como posso falar com você?" />
+                </label>
+              </div>
+              <label className="quote-details-field">
+                <span>Conte mais sobre o que você precisa</span>
+                <textarea value={quoteDetails} onChange={(event) => setQuoteDetails(event.target.value)} required rows="4" placeholder="Objetivo, escopo, prazo desejado e qualquer detalhe importante..." />
+              </label>
+              <p className="quote-disclaimer">Os valores podem variar conforme o escopo e os requisitos do projeto. Trabalho com desenvolvimento acelerado e planejamento para entregar projetos em prazos enxutos, sem abrir mão da qualidade.</p>
+              {quoteError && <p className="quote-error" role="alert">{quoteError}</p>}
+              <button className="primary-button quote-submit" type="submit" disabled={isSubmittingQuote || quoteServicesSelected.length === 0}>
+                {isSubmittingQuote ? 'Enviando cotação...' : 'Solicitar minha cotação'}
+              </button>
+              {quoteServicesSelected.length === 0 && <span className="quote-hint">Selecione ao menos uma opção para continuar.</span>}
+            </form>
+          </section>
+        </div>
+      )}
     </div>
   )
 }
