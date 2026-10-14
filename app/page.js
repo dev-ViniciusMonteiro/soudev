@@ -107,12 +107,6 @@ export default function Home() {
             Criei este espaço para deixar gratuitas as ferramentas que mais facilitam o dia a dia. Elas são rápidas, simples e respeitam
             sua privacidade. Se precisar de algo sob medida para o seu negócio, fale comigo.
           </p>
-          <div className="brand-list" aria-label="Marcas atendidas">
-            {site.brands.map((brand) => (
-              <span key={brand}>{brand}</span>
-            ))}
-            <span>e outras</span>
-          </div>
         </div>
         <div className="services">
           {servicos.map(([title, text]) => (
