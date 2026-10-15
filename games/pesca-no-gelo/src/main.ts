@@ -37,6 +37,7 @@ interface Entity {
   color: string;
   dead?: boolean;
   fleeing?: boolean;
+  hit?: boolean; // lixo que já bateu na linha
 }
 
 /* ---------- Canvas com escala (resolução lógica 800x600) ---------- */
@@ -105,6 +106,7 @@ let entities: Entity[] = [];
 let spawnTimers: Record<string, number> = {};
 let giantSpawned = false;
 let flash = 0;
+let lineShake = 0; // tremida da linha após uma pancada
 let message = '';
 let messageTimer = 0;
 let time = 0;
@@ -165,10 +167,12 @@ function spawn(kind: Kind, x?: number, y?: number): Entity {
     case 'barrel':
     case 'boot':
       // Atravessam a tela de um lado para o outro, como os peixes.
+      // Na maioria das vezes vêm na altura do anzol, senão quase nunca acertariam.
+      if (y === undefined && Math.random() < 0.65) base.y = Math.max(SURFACE + 40, Math.min(H - 70, hookY + 20 + rand(-35, 35)));
       Object.assign(base, { vx: side.dir * rand(70, 120) * Math.sqrt(d), w: kind === 'barrel' ? 38 : 40, h: kind === 'barrel' ? 48 : 34, color: kind === 'barrel' ? '#8b5a2b' : '#5b4636' });
       break;
     case 'can':
-      Object.assign(base, { x: x ?? HOLE_X + rand(-70, 70), y: y ?? SURFACE + 4, vx: 0, vy: 38, w: 30, h: 34, color: '#c9d4dd' });
+      Object.assign(base, { vx: side.dir * rand(60, 90), w: 30, h: 34, color: '#c9d4dd' });
       break;
     case 'giant':
       Object.assign(base, { x: x ?? -220, y: y ?? 380, vx: 55 * side.dir, w: 190, h: 82, color: '#d9534f' });
@@ -206,11 +210,22 @@ function loseWorm(reason: string): void {
   else setTimeout(() => endGame(false), 900);
 }
 
-function knockFishOff(): void {
-  if (!hooked) return;
-  releaseHooked(170);
+/** Posição do anzol: balança de leve e treme depois de uma pancada. */
+const hookSwayX = (): number => HOLE_X + Math.sin(time * 1.6) * 4 + Math.sin(time * 70) * lineShake * 14;
+
+/** Lixo bateu na linha ou no peixe: derruba o peixe (a minhoca fica) e o lixo ricocheteia. */
+function trashImpact(e: Entity): void {
+  e.hit = true;
+  e.vx = -e.vx * 0.35;
+  e.vy = 110;
+  lineShake = 0.45;
   sfx.clunk();
-  say('Pancada! O peixe escapou (a minhoca ficou)');
+  if (hooked && hooked.kind !== 'giant') {
+    releaseHooked(170);
+    say(`💥 Pancada ${e.kind === 'boot' ? 'da bota' : 'do barril'}! O peixe escapou (a minhoca ficou)`);
+  } else {
+    say(`💥 ${e.kind === 'boot' ? 'A bota' : 'O barril'} bateu na linha! Cuidado quando tiver peixe no anzol`);
+  }
 }
 
 function endGame(won: boolean): void {
@@ -248,7 +263,8 @@ function update(dt: number): void {
   const diff = targetY - hookY;
   hookY += Math.sign(diff) * Math.min(Math.abs(diff), maxSpeed * dt);
   hookY = Math.max(HOOK_MIN, Math.min(HOOK_MAX, hookY));
-  const hookX = HOLE_X + Math.sin(time * 1.6) * 4;
+  if (lineShake > 0) lineShake = Math.max(0, lineShake - dt);
+  const hookX = hookSwayX();
 
   if (!hasBait && rebaitTimer > 0) {
     rebaitTimer -= dt;
@@ -364,10 +380,16 @@ function update(dt: number): void {
         break;
       case 'barrel':
       case 'boot':
-        if (hooked && hooked.kind !== 'giant' && near(e, hookX, hookY + 18, 6)) knockFishOff();
+        if (e.hit) break;
+        // Acerta o peixe pendurado ou a linha em qualquer altura debaixo d'água.
+        if (
+          (hooked && hooked.kind !== 'giant' && near(e, hookX, hookY + 22, 8)) ||
+          (Math.abs(e.x - hookX) < e.w / 2 + 3 && e.y > SURFACE && e.y - e.h / 2 < hookY + 12)
+        )
+          trashImpact(e);
         break;
       case 'can':
-        if (near(e, hookX, hookY, 10)) {
+        if (near(e, hookX, hookY + 10, 14)) {
           e.dead = true;
           worms = Math.min(MAX_WORMS, worms + 1);
           if (!hasBait) {
@@ -674,7 +696,7 @@ function drawEntity(e: Entity): void {
 }
 
 function drawLine(): void {
-  const hookX = HOLE_X + Math.sin(time * 1.6) * 4;
+  const hookX = hookSwayX();
   ctx.strokeStyle = 'rgba(255,255,255,.85)';
   ctx.lineWidth = 1.5;
   ctx.beginPath();
@@ -888,6 +910,9 @@ window.__pesca = {
   },
   setFishCount: (n: number) => {
     fishCount = n;
+  },
+  setWorms: (n: number) => {
+    worms = n;
   },
   get raw() {
     return entities;
