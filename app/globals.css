@@ -1613,6 +1613,198 @@ textarea {
   width: 100%;
 }
 
+/* ---------- Jogos ---------- */
+
+.neon-title,
+.game-banner-art,
+.game-card-art,
+.game-start-title {
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  line-height: 0.95;
+  color: #fff;
+  text-shadow: 0 0 6px #fff, 0 0 18px #ff2bd6, 0 0 38px #ff2bd6;
+}
+
+.game-banner-art span,
+.game-card-art span {
+  display: block;
+  color: #7ff3ff;
+  text-shadow: 0 0 6px #fff, 0 0 18px #22d3ee, 0 0 36px #2563eb;
+}
+
+.game-player {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.game-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: radial-gradient(ellipse at 50% 120%, #3b0a5c 0%, #0b0620 45%, #000 80%);
+  box-shadow: var(--shadow);
+}
+
+.game-frame.is-fullscreen {
+  border-radius: 0;
+  border: 0;
+}
+
+.game-frame iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.game-start {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.game-start-title {
+  font-size: clamp(2.2rem, 7vw, 4.5rem);
+}
+
+.game-start-play {
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  font-size: 2rem;
+  color: #06101f;
+  background: linear-gradient(135deg, var(--cyan), var(--purple));
+  box-shadow: 0 0 40px rgba(103, 232, 249, 0.45);
+  transition: transform 0.15s ease;
+}
+
+.game-start:hover .game-start-play {
+  transform: scale(1.08);
+}
+
+.game-actions {
+  justify-content: flex-start;
+}
+
+.game-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.game-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--text);
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.game-card:hover {
+  text-decoration: none;
+  transform: translateY(-3px);
+  border-color: rgba(255, 43, 214, 0.5);
+}
+
+.game-card-art {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 9;
+  font-size: 2.2rem;
+  text-align: center;
+  background: radial-gradient(ellipse at 50% 120%, #3b0a5c 0%, #0b0620 50%, #000 85%);
+}
+
+.game-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px;
+}
+
+.game-card-body > span {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.game-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.game-tags span {
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  border: 1px solid var(--line-strong);
+}
+
+.game-banner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
+  align-items: center;
+  gap: 28px;
+  padding: 24px;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 43, 214, 0.35);
+  background: linear-gradient(135deg, rgba(59, 10, 92, 0.55), rgba(14, 26, 47, 0.9));
+  color: var(--text);
+}
+
+.game-banner:hover {
+  text-decoration: none;
+  border-color: rgba(255, 43, 214, 0.7);
+}
+
+.game-banner-art {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius);
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  text-align: center;
+  background: radial-gradient(ellipse at 50% 120%, #3b0a5c 0%, #0b0620 50%, #000 85%);
+}
+
+.game-banner-body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.game-banner-body .eyebrow {
+  margin: 0;
+  color: #ff7be6;
+}
+
+.game-banner-body strong {
+  font-size: clamp(1.3rem, 3vw, 1.8rem);
+  line-height: 1.2;
+}
+
 /* ---------- Paper (recibo / orçamento) ---------- */
 
 .paper {
@@ -1715,6 +1907,7 @@ textarea {
 @media (max-width: 900px) {
   .tool-split,
   .tool-content,
+  .game-banner,
   .about,
   .contact {
     grid-template-columns: 1fr;
@@ -1722,7 +1915,7 @@ textarea {
 }
 
 @media (max-width: 640px) {
-  .nav a:not(.nav-cta) {
+  .nav a:not(.nav-cta):not(.nav-games) {
     display: none;
   }
 

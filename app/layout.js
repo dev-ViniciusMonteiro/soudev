@@ -51,6 +51,7 @@ export default function RootLayout({ children }) {
             </Link>
             <nav className="nav">
               <Link href="/ferramentas">Ferramentas</Link>
+              <Link href="/jogos" className="nav-games">Jogos</Link>
               <Link href="/#sobre">Sobre</Link>
               <Link href="/#contato" className="nav-cta">Contato</Link>
             </nav>
@@ -69,6 +70,7 @@ export default function RootLayout({ children }) {
             </div>
             <div className="footer-links">
               <Link href="/ferramentas">Todas as ferramentas</Link>
+              <Link href="/jogos">Jogos grátis</Link>
               <a href={site.instagram} target="_blank" rel="noopener noreferrer">Instagram {site.instagramHandle}</a>
               <Link href="/#contato">Fale comigo</Link>
             </div>

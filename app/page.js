@@ -95,6 +95,20 @@ export default function Home() {
         <ToolsGrid />
       </section>
 
+      <section className="container section">
+        <Link href="/jogos/cidade-neon" className="game-banner">
+          <span className="game-banner-art" aria-hidden="true">
+            CIDADE<span>NEON</span>
+          </span>
+          <span className="game-banner-body">
+            <span className="eyebrow">Novo · Jogo grátis</span>
+            <strong>Cidade Neon: mundo aberto 3D no navegador</strong>
+            <span className="muted">Dirija pela cidade, faça entregas por dinheiro e fuja da polícia. Sem baixar nada, no PC ou no celular.</span>
+            <span className="btn btn-primary">Jogar agora</span>
+          </span>
+        </Link>
+      </section>
+
       <section id="sobre" className="container section about">
         <div className="about-text">
           <p className="eyebrow">Quem faz</p>

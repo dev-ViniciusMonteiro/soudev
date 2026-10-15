@@ -1,4 +1,5 @@
 import { SITE_URL, site } from '@/lib/site'
+import { games } from '@/lib/games'
 import { tools } from '@/lib/tools'
 
 export default function sitemap() {
@@ -12,6 +13,14 @@ export default function sitemap() {
       changeFrequency: 'monthly',
       priority: 0.8,
       images: [`${SITE_URL}/ferramentas/${tool.slug}/opengraph-image`],
+    })),
+    { url: `${SITE_URL}/jogos`, lastModified, changeFrequency: 'weekly', priority: 0.8 },
+    ...games.map((game) => ({
+      url: `${SITE_URL}/jogos/${game.slug}`,
+      lastModified,
+      changeFrequency: 'monthly',
+      priority: 0.8,
+      images: [`${SITE_URL}/jogos/${game.slug}/opengraph-image`],
     })),
   ]
 }
