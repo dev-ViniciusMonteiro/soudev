@@ -22,7 +22,8 @@
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "simplex-noise": "^4.0.3",
-    "three": "^0.160.1"
+    "three": "^0.160.1",
+    "trystero": "0.25.4"
   },
   "type": "module",
   "engines": {

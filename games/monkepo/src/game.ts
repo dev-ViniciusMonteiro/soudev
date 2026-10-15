@@ -17,7 +17,7 @@ import {
 const TEAM_MAX = 6;
 const ROOM_KEY = (user: string): string => `monkepo.sala.${user}`;
 
-interface Room {
+export interface Room {
   x: number;
   y: number;
   dir: Dir;
@@ -46,18 +46,33 @@ export const game = {
 
 export const collection = (): Monster[] => [...game.party.map((p) => p.m), ...game.box];
 
+/** Ganchos usados pelas salas multijogador (multiplayer.ts), para este arquivo não depender da rede. */
+export const hooks = {
+  roomSink: null as null | ((r: Room) => void), // sala de outro anfitrião: manda para ele em vez de gravar aqui
+  moved: null as null | (() => void),
+  pending: null as null | (() => boolean),
+  handlePending: null as null | (() => Promise<void>),
+  peerAt: null as null | ((x: number, y: number) => boolean),
+  interactPeer: null as null | ((x: number, y: number) => Promise<void>),
+  actors: null as null | ((camX: number, camY: number, now: number) => { y: number; draw: () => void }[]),
+  hud: null as null | (() => string | null),
+  roomMenu: null as null | (() => Promise<void>),
+};
+
 /* ---------- Sala (dados locais) ---------- */
 
-function newRoom(): Room {
+export function newRoom(): Room {
   return { x: START_POS.x, y: START_POS.y, dir: START_POS.dir, dinheiro: STARTER_KIT.dinheiro, mochila: { ...STARTER_KIT.mochila }, vencidos: [], insignias: [], estado: {} };
 }
 
 export function saveRoom(): void {
   const r = game.room;
+  if (!r) return;
   r.x = game.player.x;
   r.y = game.player.y;
   r.dir = game.player.dir;
   r.estado = Object.fromEntries(game.party.map((p) => [p.m.uid, { hp: p.hp, pp: p.pp, status: p.status }]));
+  if (hooks.roomSink) return hooks.roomSink(r);
   try {
     localStorage.setItem(ROOM_KEY(game.user), JSON.stringify(r));
   } catch {
@@ -65,7 +80,7 @@ export function saveRoom(): void {
   }
 }
 
-function loadRoom(user: string): Room {
+export function loadRoom(user: string): Room {
   try {
     const raw = localStorage.getItem(ROOM_KEY(user));
     if (raw) return { ...newRoom(), ...JSON.parse(raw) };
@@ -76,7 +91,7 @@ function loadRoom(user: string): Room {
 }
 
 /** Monta o time (até 6) e a caixa a partir dos monstros da conta. */
-function buildTeam(list: Monster[]): void {
+export function buildTeam(list: Monster[]): void {
   game.party = list.slice(0, TEAM_MAX).map((m) => {
     const p = toParty(m);
     const st = game.room.estado[m.uid];
@@ -125,7 +140,7 @@ const RUN_MS = 120;
 const npcAt = (x: number, y: number): Npc | undefined => NPCS.find((n) => n.x === x && n.y === y);
 
 function blocked(x: number, y: number): boolean {
-  return solidTile(x, y) || !!npcAt(x, y);
+  return solidTile(x, y) || !!npcAt(x, y) || !!hooks.peerAt?.(x, y);
 }
 
 export function updateWorld(now: number): void {
@@ -139,6 +154,10 @@ export function updateWorld(now: number): void {
     }
     return;
   }
+  if (hooks.pending?.()) {
+    void hooks.handlePending?.();
+    return;
+  }
   // Botões apertados (A, START)
   let b;
   while ((b = takePress())) {
@@ -149,7 +168,7 @@ export function updateWorld(now: number): void {
   if (!dir) return;
   if (pl.dir !== dir) {
     pl.dir = dir;
-    // Só vira se for um toque rápido; segurando, já anda.
+    hooks.moved?.();
   }
   const [dx, dy] = DIRS[dir];
   const nx = pl.x + dx;
@@ -164,6 +183,7 @@ export function updateWorld(now: number): void {
   pl.x = nx;
   pl.y = ny;
   pl.frame++;
+  hooks.moved?.();
 }
 
 async function afterStep(): Promise<void> {
@@ -194,6 +214,7 @@ async function interact(): Promise<void> {
   const [dx, dy] = DIRS[pl.dir];
   const tx = pl.x + dx;
   const ty = pl.y + dy;
+  if (hooks.peerAt?.(tx, ty)) return hooks.interactPeer?.(tx, ty);
   const npc = npcAt(tx, ty);
   if (npc) {
     npc.dir = (Object.keys(DIRS) as Dir[]).find((d) => DIRS[d][0] === -dx && DIRS[d][1] === -dy)!;
@@ -436,15 +457,23 @@ async function loja(): Promise<void> {
 async function startMenu(): Promise<void> {
   game.busy = true;
   for (;;) {
-    const pick = await choose(['MONKEPOS', 'MOCHILA', 'RANKING', 'SALVAR', 'CARTÃO', 'NOVA SALA', 'SAIR'], { x: W - 170, y: 6, w: 164 });
+    const pick = await choose(['MONKEPOS', 'MOCHILA', 'SALA ONLINE', 'RANKING', 'SALVAR', 'CARTÃO', 'NOVA SALA', 'SAIR'], { x: W - 186, y: 4, w: 182, lineH: 26 });
+    if (pick === 2) {
+      await hooks.roomMenu?.();
+      break;
+    }
     if (pick === 0) await partyMenu();
     else if (pick === 1) await bagMenu();
-    else if (pick === 2) await showRanking();
-    else if (pick === 3) {
+    else if (pick === 3) await showRanking();
+    else if (pick === 4) {
       const r = await saveNow();
       await say(r === null ? 'Nada novo para salvar. Seus MonKePos já estão na conta.' : r?.ok ? 'Seus MonKePos foram salvos na sua conta!' : `Não foi possível salvar: ${r?.erro ?? 'sem conexão'}`);
-    } else if (pick === 4) await say(`Treinador ${game.user.toUpperCase()}  •  $${game.room.dinheiro}  •  Insígnias: ${game.room.insignias.length ? game.room.insignias.join(', ') : 'nenhuma'}`);
-    else if (pick === 5) {
+    } else if (pick === 5) await say(`Treinador ${game.user.toUpperCase()}  •  $${game.room.dinheiro}  •  Insígnias: ${game.room.insignias.length ? game.room.insignias.join(', ') : 'nenhuma'}`);
+    else if (pick === 6) {
+      if (hooks.roomSink) {
+        await say('Você está na sala de outro jogador: quem guarda seu dinheiro e itens é o anfitrião.');
+        continue;
+      }
       if (await confirm('Começar uma sala nova? Dinheiro, itens e posição voltam ao kit inicial. Seus MonKePos continuam.')) {
         game.room = newRoom();
         game.party.forEach(heal);
@@ -453,7 +482,7 @@ async function startMenu(): Promise<void> {
         await say('Sala nova! Você recebeu o kit: $3000, 5 MonBolas e 3 Poções.');
         break;
       }
-    } else if (pick === 6) {
+    } else if (pick === 7) {
       if (await confirm('Salvar e sair da conta?')) {
         await saveNow();
         saveRoom();
@@ -564,6 +593,7 @@ export function drawWorld(now: number): void {
     draw: () => drawCharacter(n.x * T - camX, n.y * T - camY - 6, n.dir, 0, n.colors, game.exclaim?.id === n.id && now < game.exclaim.until ? '!' : undefined),
   }));
   actors.push({ y: py, draw: () => drawCharacter(px - camX, py - camY - 6, pl.dir, pl.moving ? walking : 0, ['#382418', '#d83838', '#384878']) });
+  if (hooks.actors) actors.push(...hooks.actors(camX, camY, now));
   actors.sort((a, b) => a.y - b.y).forEach((a) => a.draw());
   // Grama alta cobre os pés.
   const ch = grid[pl.y]?.[pl.x];
@@ -572,6 +602,11 @@ export function drawWorld(now: number): void {
     ctx.fillRect(px - camX + 4, py - camY + 20, 24, 6);
   }
 
+  const hud = hooks.hud?.();
+  if (hud) {
+    box(4, 4, Math.min(300, hud.length * 8 + 40), 34, '#f8f8f8', '#3a8a5a');
+    text(hud, 20, 27, { size: 13 });
+  }
   // Dinheiro e salvamento
   if (game.toast && now < game.toast.until) {
     box(W - 230, 6, 224, 40);

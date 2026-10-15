@@ -1,9 +1,10 @@
 // Tela de batalha: desenho, menus e sequência de eventos do motor.
 
 import { getMove, getSpecies, PHYSICAL_TYPES, ITEMS } from '../shared/data';
-import { Battle, makeSide, type Action, type BattleEvent } from './battle';
+import { Battle, makeSide, type Action, type BattleEvent, type Snapshot } from './battle';
 import { H, W, box, choose, ctx, image, say, text, wait } from './engine';
-import { addExp, displayName, expProgress, expYield, gainEvs, learnMove, maxHp, species, type PartyMon } from './monsters';
+import { addExp, displayName, expProgress, expYield, gainEvs, learnMove, maxHp, species, toParty, type PartyMon } from './monsters';
+import type { Monster } from '../shared/monster';
 import { chooseParty } from './party';
 
 export interface BattleContext {
@@ -25,7 +26,7 @@ interface View {
   ball: { shakes: number; t: number } | null;
 }
 
-let current: { b: Battle; view: View; ctx: BattleContext } | null = null;
+let current: { b: Battle; view: View; ctx: BattleContext; flip?: boolean; me?: string; foe?: string; waiting?: string } | null = null;
 export const inBattle = (): boolean => current !== null;
 export const currentBattle = (): Battle | null => current?.b ?? null;
 
@@ -158,6 +159,7 @@ export function drawBattle(t: number): void {
 
   // Faixa de baixo (o texto/menus aparecem por cima)
   box(0, H - 88, W, 88, '#f8f8f8', '#7a5a9a');
+  if (current.waiting) text(`${current.waiting}${'.'.repeat(Math.floor(t / 400) % 4)}`, 22, H - 40, { size: 16, color: '#606060' });
 }
 
 /* ---------- Animações ---------- */
@@ -188,11 +190,31 @@ async function animateAttack(side: 0 | 1): Promise<void> {
   v.flash[other] = 0;
 }
 
+/** Traduz os marcadores da batalha entre jogadores para o ponto de vista de quem está vendo. */
+function resolveText(str: string): string {
+  if (!current) return str;
+  const c = current;
+  return str.replace(/§(\w+):(\d)(?::(\d+))?§/g, (_m, kind: string, sideStr: string, idxStr?: string) => {
+    const side = (c.flip ? 1 - Number(sideStr) : Number(sideStr)) as 0 | 1;
+    const mine = side === 0;
+    const p = idxStr !== undefined ? c.b.sides[side].party[Number(idxStr)] : undefined;
+    const name = p ? displayName(p.m) : '';
+    if (kind === 'm') return mine ? name : `${name} de ${c.foe}`;
+    if (kind === 'send') return mine ? `Vai, ${name}!` : `${c.foe} mandou ${name}!`;
+    if (kind === 'back') return mine ? `Volte, ${name}!` : `${c.foe} chamou ${name} de volta!`;
+    if (kind === 'fim') return mine ? `Você perdeu para ${c.foe}...` : `Você venceu ${c.foe}!`;
+    return '';
+  });
+}
+
+const flipSide = (side: 0 | 1): 0 | 1 => (current?.flip ? ((1 - side) as 0 | 1) : side);
+
 async function play(events: BattleEvent[]): Promise<void> {
   if (!current) return;
   const v = current.view;
-  for (const e of events) {
-    if (e.t === 'msg') await say(e.text, { auto: 650 });
+  for (const raw of events) {
+    const e = 'side' in raw ? ({ ...raw, side: flipSide(raw.side) } as BattleEvent) : raw;
+    if (e.t === 'msg') await say(resolveText(e.text), { auto: 650 });
     else if (e.t === 'attack') await animateAttack(e.side);
     else if (e.t === 'hp') await animateHp(e.side, e.hp);
     else if (e.t === 'faint') {
@@ -202,6 +224,7 @@ async function play(events: BattleEvent[]): Promise<void> {
       }
       v.visible[e.side] = false;
     } else if (e.t === 'switch') {
+      current.b.sides[e.side].active = e.to;
       v.visible[e.side] = true;
       v.drop[e.side] = 0;
       v.hp[e.side] = current.b.mon(e.side).hp;
@@ -234,7 +257,7 @@ async function chooseAction(b: Battle, bc: BattleContext): Promise<Action | null
   const me = b.mon(0);
   for (;;) {
     const top = await choose(['LUTAR', 'MOCHILA', 'MONKEPO', 'FUGIR'], {
-      x: W - 250, y: H - 88, w: 250, columns: 2, cancel: false,
+      x: W - 250, y: H - 88, w: 250, columns: 2, cancel: false, disabled: b.pvp ? [false, true, false, true] : undefined,
       hint: () => `O que ${displayName(me.m)} vai fazer?`,
     });
     if (top === 0) {
@@ -374,6 +397,121 @@ export async function runBattle(bc: BattleContext): Promise<BattleResult> {
       if (b.mon(1).hp <= 0) await play(b.enemyNext());
       if (b.mon(0).hp <= 0) await forcedSwitch(b, bc);
     }
+  } finally {
+    current = null;
+  }
+}
+
+/* ---------- Batalha entre jogadores ---------- */
+
+export interface PvpLink {
+  send(type: string, data: unknown): void;
+  recv<T = unknown>(type: string, timeoutMs?: number): Promise<T>;
+}
+
+interface EvtsMsg {
+  ev: BattleEvent[];
+  snap: Snapshot;
+  next: 'act' | 'rep' | 'wait' | 'end';
+}
+
+const healedCopy = (list: Monster[]): PartyMon[] => list.slice(0, 6).map((m) => toParty(structuredClone(m)));
+
+/** Ação recebida do outro jogador, conferida antes de usar. */
+function sanitize(b: Battle, a: unknown): Action {
+  const act = a as Action;
+  const p = b.mon(1);
+  if (act?.kind === 'switch') {
+    const target = b.sides[1].party[act.to];
+    if (target && target.hp > 0 && act.to !== b.sides[1].active) return { kind: 'switch', to: act.to };
+  }
+  if (act?.kind === 'move' && Number.isInteger(act.index) && p.pp[act.index] > 0) return { kind: 'move', index: act.index };
+  return { kind: 'move', index: p.pp.findIndex((pp) => pp > 0) };
+}
+
+/**
+ * Batalha entre jogadores. Quem desafiou ("autoridade") calcula os turnos e manda os eventos;
+ * o outro só escolhe ações e mostra o resultado. Os times entram curados e nada muda nos monstros salvos.
+ */
+export async function runPvpBattle(opts: { mine: Monster[]; theirs: Monster[]; me: string; foe: string; authority: boolean; link: PvpLink }): Promise<'win' | 'lose' | 'abort'> {
+  const party = healedCopy(opts.mine);
+  const enemy = healedCopy(opts.theirs);
+  const b = new Battle(makeSide(party), makeSide(enemy, opts.foe));
+  b.pvp = true;
+  const bc: BattleContext = { party, bag: {}, enemy, trainer: opts.foe, snow: false };
+  const view: View = { hp: [b.mon(0).hp, b.mon(1).hp], visible: [true, true], offset: [0, 0], drop: [0, 0], flash: [0, 0], ball: null };
+  current = { b, view, ctx: bc, flip: !opts.authority, me: opts.me, foe: opts.foe };
+  const { link } = opts;
+  const sendEvts = (ev: BattleEvent[], next: EvtsMsg['next']): void => link.send('evts', { ev, snap: b.snapshot(), next } satisfies EvtsMsg);
+  const waitFor = async <T,>(type: string, label: string): Promise<T> => {
+    if (current) current.waiting = label;
+    try {
+      return await link.recv<T>(type, 180000);
+    } finally {
+      if (current) current.waiting = undefined;
+    }
+  };
+  try {
+    await say(`${opts.foe} mandou ${displayName(b.mon(1).m)}!`, { auto: 800 });
+    await say(`Vai, ${displayName(b.mon(0).m)}!`, { auto: 600 });
+    if (opts.authority) {
+      for (;;) {
+        sendEvts([], 'act');
+        const theirsP = link.recv('act', 180000);
+        theirsP.catch(() => {});
+        const mine = (await chooseAction(b, bc))!;
+        if (current) current.waiting = `Esperando ${opts.foe}`;
+        const theirs = sanitize(b, await theirsP);
+        if (current) current.waiting = undefined;
+        const events = b.turn(mine, theirs);
+        if (b.over) {
+          sendEvts(events, 'end');
+          await play(events);
+          break;
+        }
+        const need0 = b.mon(0).hp <= 0;
+        const need1 = b.mon(1).hp <= 0;
+        sendEvts(events, need1 && !need0 ? 'rep' : 'wait');
+        await play(events);
+        if (need0) {
+          await forcedSwitch(b, bc);
+          const a = b.sides[0].active;
+          sendEvts([{ t: 'switch', side: 0, to: a }, { t: 'msg', text: `§send:0:${a}§` }, { t: 'hp', side: 0, hp: b.mon(0).hp }], need1 ? 'rep' : 'wait');
+        }
+        if (need1) {
+          const r = await waitFor<{ to: number }>('rep', `Esperando ${opts.foe} escolher`);
+          const to = b.sides[1].party[r?.to]?.hp > 0 ? r.to : b.sides[1].party.findIndex((p) => p.hp > 0);
+          const ev = b.replace(1, to);
+          sendEvts(ev, 'wait');
+          await play(ev);
+        }
+      }
+    } else {
+      for (;;) {
+        const msg = await waitFor<EvtsMsg>('evts', `Esperando ${opts.foe}`);
+        await play(msg.ev);
+        b.applySnapshot(msg.snap, true);
+        view.hp = [b.mon(0).hp, b.mon(1).hp];
+        view.visible = [b.mon(0).hp > 0, b.mon(1).hp > 0];
+        view.drop = [0, 0];
+        if (msg.next === 'end') break;
+        if (msg.next === 'act') link.send('act', (await chooseAction(b, bc))!);
+        else if (msg.next === 'rep') {
+          for (;;) {
+            const pick = await chooseParty(party, 'Quem vai entrar agora?', Math.max(0, party.findIndex((p) => p.hp > 0)));
+            if (pick >= 0 && party[pick].hp > 0) {
+              link.send('rep', { to: pick });
+              break;
+            }
+            await say('Escolha um MonKePo que ainda pode lutar.');
+          }
+        }
+      }
+    }
+    return party.some((p) => p.hp > 0) ? 'win' : 'lose';
+  } catch {
+    await say(`A conexão com ${opts.foe} caiu. A batalha foi cancelada.`);
+    return 'abort';
   } finally {
     current = null;
   }

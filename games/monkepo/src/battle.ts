@@ -17,7 +17,7 @@ export type BattleEvent =
   | { t: 'hp'; side: 0 | 1; hp: number }
   | { t: 'attack'; side: 0 | 1 }
   | { t: 'faint'; side: 0 | 1 }
-  | { t: 'switch'; side: 0 | 1 }
+  | { t: 'switch'; side: 0 | 1; to: number }
   | { t: 'ball'; shakes: number; caught: boolean }
   | { t: 'end'; result: 'win' | 'lose' | 'run' | 'caught' };
 
@@ -26,6 +26,8 @@ interface Volatile {
   flinch: boolean;
   sleep: number; // turnos restantes dormindo
 }
+
+export type Snapshot = [{ a: number; p: { hp: number; pp: number[]; st: Status | null }[] }, { a: number; p: { hp: number; pp: number[]; st: Status | null }[] }];
 
 export interface Side {
   party: PartyMon[];
@@ -58,6 +60,8 @@ export class Battle {
   sides: [Side, Side];
   rng: Rng;
   runAttempts = 0;
+  /** Batalha entre jogadores: textos com marcadores que cada lado traduz para o seu ponto de vista. */
+  pvp = false;
   over: BattleEvent | null = null;
   private fainted = new Set<PartyMon>();
 
@@ -74,6 +78,7 @@ export class Battle {
     return s.party[s.active];
   }
   label(side: 0 | 1): string {
+    if (this.pvp) return `§m:${side}:${this.sides[side].active}§`;
     const name = displayName(this.mon(side).m);
     if (side === 0) return name;
     return this.wild ? `${name} selvagem` : `${name} inimigo`;
@@ -151,12 +156,12 @@ export class Battle {
   private nonMove(side: 0 | 1, a: Action, ev: BattleEvent[]): void {
     const s = this.sides[side];
     if (a.kind === 'switch') {
-      ev.push({ t: 'msg', text: side === 0 ? `Volte, ${displayName(this.mon(0).m)}!` : `${s.name} trocou de MonKePo.` });
+      ev.push({ t: 'msg', text: this.pvp ? `§back:${side}:${s.active}§` : side === 0 ? `Volte, ${displayName(this.mon(0).m)}!` : `${s.name} trocou de MonKePo.` });
       s.active = a.to;
       s.v = freshVolatile();
       if (side === 0) this.sides[0].participants.add(a.to);
-      ev.push({ t: 'switch', side });
-      ev.push({ t: 'msg', text: side === 0 ? `Vai, ${displayName(this.mon(0).m)}!` : `${s.name} mandou ${displayName(this.mon(1).m)}!` });
+      ev.push({ t: 'switch', side, to: a.to });
+      ev.push({ t: 'msg', text: this.sendText(side) });
       ev.push({ t: 'hp', side, hp: this.mon(side).hp });
     } else if (a.kind === 'item') {
       const item = getItem(a.item)!;
@@ -385,10 +390,10 @@ export class Battle {
     }
     if (!any) return false;
     if (!this.sides[0].party.some((p) => p.hp > 0)) {
-      ev.push({ t: 'msg', text: 'Todos os seus MonKePos desmaiaram...' });
+      ev.push({ t: 'msg', text: this.pvp ? '§fim:0§' : 'Todos os seus MonKePos desmaiaram...' });
       this.finish(ev, 'lose');
     } else if (!this.sides[1].party.some((p) => p.hp > 0)) {
-      if (!this.wild) ev.push({ t: 'msg', text: `Você venceu ${this.sides[1].name}!` });
+      if (!this.wild) ev.push({ t: 'msg', text: this.pvp ? '§fim:1§' : `Você venceu ${this.sides[1].name}!` });
       this.finish(ev, 'win');
     }
     return true;
@@ -402,16 +407,47 @@ export class Battle {
     s.active = next;
     s.v = freshVolatile();
     this.sides[0].participants = new Set([this.sides[0].active]);
-    return [{ t: 'switch', side: 1 }, { t: 'msg', text: `${s.name} mandou ${displayName(this.mon(1).m)}!` }, { t: 'hp', side: 1, hp: this.mon(1).hp }];
+    return [{ t: 'switch', side: 1, to: next }, { t: 'msg', text: this.sendText(1) }, { t: 'hp', side: 1, hp: this.mon(1).hp }];
   }
 
   /** Jogador escolhe quem entra depois de um desmaio (não gasta turno). */
   playerReplace(to: number): BattleEvent[] {
-    const s = this.sides[0];
+    return this.replace(0, to);
+  }
+
+  /** Quem entra depois de um desmaio (não gasta turno). Na batalha entre jogadores vale para os dois lados. */
+  replace(side: 0 | 1, to: number): BattleEvent[] {
+    const s = this.sides[side];
+    if (!s.party[to] || s.party[to].hp <= 0) return [];
     s.active = to;
     s.v = freshVolatile();
-    s.participants.add(to);
-    return [{ t: 'switch', side: 0 }, { t: 'msg', text: `Vai, ${displayName(this.mon(0).m)}!` }, { t: 'hp', side: 0, hp: this.mon(0).hp }];
+    if (side === 0) s.participants.add(to);
+    return [{ t: 'switch', side, to }, { t: 'msg', text: this.sendText(side) }, { t: 'hp', side, hp: this.mon(side).hp }];
+  }
+
+  private sendText(side: 0 | 1): string {
+    const s = this.sides[side];
+    if (this.pvp) return `§send:${side}:${s.active}§`;
+    return side === 0 ? `Vai, ${displayName(this.mon(0).m)}!` : `${s.name} mandou ${displayName(this.mon(1).m)}!`;
+  }
+
+  /** Estado resumido (PS, PP, status e quem está lutando) para sincronizar o outro jogador. */
+  snapshot(): Snapshot {
+    return this.sides.map((s) => ({ a: s.active, p: s.party.map((p) => ({ hp: p.hp, pp: [...p.pp], st: p.status })) })) as Snapshot;
+  }
+
+  applySnapshot(snap: Snapshot, flip: boolean): void {
+    snap.forEach((s, i) => {
+      const side = this.sides[flip ? 1 - i : i];
+      side.active = s.a;
+      s.p.forEach((p, j) => {
+        const target = side.party[j];
+        if (!target) return;
+        target.hp = p.hp;
+        target.pp = [...p.pp];
+        target.status = p.st;
+      });
+    });
   }
 
   private finish(ev: BattleEvent[], result: 'win' | 'lose' | 'run' | 'caught'): void {

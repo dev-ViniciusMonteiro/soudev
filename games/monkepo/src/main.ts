@@ -6,6 +6,7 @@ import { carregar, currentSession, entrar, type ApiReply } from './api';
 import { currentBattle, drawBattle, inBattle } from './battleScene';
 import { H, W, clearPresses, ctx, drawWidgets, feedWidgets, image, preload, say, setFormMode, setupTouchPad, text, uiBusy } from './engine';
 import { chooseStarter, drawTransition, drawWorld, game, saveNow, startGame, updateWorld } from './game';
+import { mp, sendPos, setupMultiplayer } from './multiplayer';
 
 let started = false;
 
@@ -100,6 +101,7 @@ async function boot(): Promise<void> {
   const rev = Number(reply.rev ?? 0);
   const data = String(reply.monstros ?? '');
 
+  setupMultiplayer();
   if (monsters.length === 0) {
     const starter = await chooseStarter();
     monsters = [starter];
@@ -127,4 +129,4 @@ declare global {
     __monkepo?: unknown;
   }
 }
-window.__monkepo = { game, encodeMonsters, currentBattle, uiBusy, get started() { return started; } };
+window.__monkepo = { game, encodeMonsters, currentBattle, uiBusy, mp, sendPos, get started() { return started; } };

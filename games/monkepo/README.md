@@ -17,6 +17,18 @@ guarda só os monstros de cada jogador.
 `npm run build:monkepo-script`, cole o `apps-script/Code.gs` no editor e faça uma nova versão da implantação.
 Senão o servidor recusa saves com espécies ou golpes que ele não conhece.
 
+## Salas online (fase 3)
+
+- `src/net.ts`: conexão direta entre navegadores com [Trystero](https://github.com/dmotz/trystero) (MIT), WebRTC com
+  apresentação pelos relays públicos do Nostr. A senha da sala é o próprio código. Com `?rede=local` usa BroadcastChannel.
+- `src/multiplayer.ts`: criar/entrar/sair da sala, posição dos jogadores, desafios e a sala de cada visitante,
+  guardada no navegador do anfitrião (`monkepo.hospedados.<código>`). O código da sala de cada anfitrião é fixo.
+- Batalha entre jogadores (`runPvpBattle`): quem desafia calcula os turnos com o mesmo motor e manda os eventos;
+  o outro só escolhe ações. Times entram curados, sem mochila nem fuga, e nada muda nos monstros salvos.
+  O time recebido é conferido com as mesmas regras do servidor.
+- Limites: sem servidor TURN, algumas redes (empresa, 4G com CGNAT) bloqueiam a conexão direta; o nome de usuário
+  dentro da sala não é verificado pelo servidor (vale para o placar da sala, nunca para os monstros salvos).
+
 ## O que fica onde
 
 | Dado | Onde |
