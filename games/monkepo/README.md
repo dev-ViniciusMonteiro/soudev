@@ -4,6 +4,19 @@ Jogo de monstrinhos com as mecânicas da 3ª geração (tipos, naturezas, IVs/EV
 fórmula de atributos) e criaturas próprias. A sala multiplayer roda no PC de quem hospeda (WebRTC); a planilha
 guarda só os monstros de cada jogador.
 
+## O jogo (fase 2)
+
+- `src/engine.ts`: tela 480x320 em pixel art, teclado, toque (botões na tela) e janelas de diálogo/menu.
+- `src/world.ts`: mapa (Vila Raiz, Rota 1, Rota 2, Monte Gélido), tiles desenhados em código, NPCs, treinadores e áreas de encontro.
+- `src/battle.ts`: motor de batalha da 3ª geração (dano, crítico, precisão/evasão, estágios, status, prioridade, captura e fuga). Lógica pura, pronta para batalhas entre jogadores.
+- `src/battleScene.ts`, `src/party.ts`: telas de batalha, time e resumo.
+- `src/game.ts`: andar, grama alta, treinadores, Centro de Cura, Loja, Caixa, menu, evolução, derrota e salvamento.
+- Artes das criaturas: Tuxemon (CC BY-SA 4.0), créditos em `public/creditos.html`.
+
+**Sempre que `shared/` mudar** (espécies, golpes ou regras), gere e publique o servidor de novo:
+`npm run build:monkepo-script`, cole o `apps-script/Code.gs` no editor e faça uma nova versão da implantação.
+Senão o servidor recusa saves com espécies ou golpes que ele não conhece.
+
 ## O que fica onde
 
 | Dado | Onde |

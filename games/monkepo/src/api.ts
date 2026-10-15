@@ -48,13 +48,14 @@ export async function passwordHash(usuario: string, senha: string): Promise<stri
   return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
-async function call(body: Record<string, unknown>): Promise<ApiReply> {
+async function call(body: Record<string, unknown>, keepalive = false): Promise<ApiReply> {
   if (!API_URL) return { ok: false, codigo: 'config', erro: 'Servidor do jogo não configurado' };
   let lastError = 'Sem conexão com o servidor';
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
       // text/plain evita a checagem de CORS (preflight), que o Apps Script não responde.
-      const res = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) });
+      // keepalive: o salvamento continua mesmo se a aba estiver sendo fechada.
+      const res = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body), keepalive });
       const reply = (await res.json()) as ApiReply;
       if (typeof reply.token === 'string' && session) storeSession({ ...session, token: reply.token });
       if (reply.codigo === 'sessao') storeSession(null);
@@ -79,7 +80,7 @@ export async function entrar(usuario: string, senha: string): Promise<ApiReply> 
 }
 
 export const carregar = (): Promise<ApiReply> => call({ acao: 'carregar', authorization: authorized() });
-export const salvar = (rev: number, monstros: string): Promise<ApiReply> => call({ acao: 'salvar', authorization: authorized(), rev, monstros });
+export const salvar = (rev: number, monstros: string, keepalive = false): Promise<ApiReply> => call({ acao: 'salvar', authorization: authorized(), rev, monstros }, keepalive);
 export const ranking = (): Promise<ApiReply> => call({ acao: 'ranking' });
 
 export async function sair(): Promise<void> {
