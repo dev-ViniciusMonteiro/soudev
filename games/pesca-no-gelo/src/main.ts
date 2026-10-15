@@ -13,7 +13,9 @@ const H = 600;
 const SURFACE = 158; // nível da água
 const HOLE_X = 478;
 const ROD_TIP = { x: 478, y: 72 };
-const HOOK_MIN = SURFACE + 6;
+const HOOK_MIN = ROD_TIP.y + 30; // dá para tirar a linha da água, acima do buraco
+const LAND_Y = SURFACE - 20; // peixe pendurado fora d'água = pescado
+const LAND_Y_GIANT = SURFACE - 45;
 const HOOK_MAX = H - 46;
 const GOAL = 60;
 const MAX_WORMS = 5;
@@ -104,7 +106,6 @@ let targetY = 300;
 let hooked: Entity | null = null; // peixe (ou garoupa) no anzol
 let entities: Entity[] = [];
 let spawnTimers: Record<string, number> = {};
-let giantSpawned = false;
 let flash = 0;
 let lineShake = 0; // tremida da linha após uma pancada
 let message = '';
@@ -135,7 +136,6 @@ function resetGame(): void {
   hooked = null;
   entities = [];
   spawnTimers = { fish: 0.4, barrel: 4, jelly: 3, shark: 6, crab: 5, can: 22 };
-  giantSpawned = false;
   flash = 0;
   say('Mexa o mouse (ou o dedo) para subir e descer a linha', 3);
 }
@@ -274,8 +274,8 @@ function update(dt: number): void {
     }
   }
 
-  // Peixe chegou ao buraco.
-  if (hooked && hookY <= HOOK_MIN + 4) {
+  // Peixe saiu pelo buraco.
+  if (hooked && hookY <= (hooked.kind === 'giant' ? LAND_Y_GIANT : LAND_Y)) {
     if (hooked.kind === 'giant') {
       score += POINTS_GIANT;
       say('🏆 Você pescou a Garoupa Gigante!', 3);
@@ -318,8 +318,8 @@ function update(dt: number): void {
     if (worms < MAX_WORMS && count('can') === 0) spawn('can');
     spawnTimers.can = rand(18, 30);
   }
-  if (fishCount >= GOAL && !giantSpawned) {
-    giantSpawned = true;
+  // A garoupa aparece com 60 peixes e nunca some até ser pescada.
+  if (fishCount >= GOAL && hooked?.kind !== 'giant' && count('giant') === 0) {
     spawn('giant');
   }
 
@@ -333,9 +333,14 @@ function update(dt: number): void {
       // Vai e volta pela tela até ser fisgada.
       if (e.x > W - 120) e.vx = -Math.abs(e.vx);
       if (e.x < 120 && e.t > 4) e.vx = Math.abs(e.vx);
-      e.y = 380 + Math.sin(e.t * 0.8) * 60;
+      // Ronda o fundo; quando há um peixe no anzol dentro d'água, sobe atrás dele.
+      const bait = hooked?.kind === 'fish' && hookY + 18 > SURFACE + 50;
+      const goal = bait ? hookY + 18 : 380 + Math.sin(e.t * 0.8) * 60;
+      const step = (bait ? 90 : 60) * dt;
+      e.y += Math.max(-step, Math.min(step, goal - e.y));
+      e.y = Math.max(SURFACE + 60, e.y);
     }
-    if (e.x < -260 || e.x > W + 260 || e.y > H + 60) e.dead = true;
+    if (e.kind !== 'giant' && (e.x < -260 || e.x > W + 260 || e.y > H + 60)) e.dead = true;
     if (e.kind === 'barrel' || e.kind === 'boot' || e.kind === 'can') {
       if (e.y > H - 30) {
         e.y = H - 30;
