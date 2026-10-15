@@ -1,7 +1,7 @@
 import { angleDelta, clamp } from '../core/math';
 
 const WALK = 4.2;
-const RUN = 8;
+const RUN = 7;
 const TURN = 12; // rad/s the avatar rotates toward its travel direction
 
 /**

@@ -73,14 +73,16 @@ export class Controls {
     return key || tap || this.pad.wasPressed(GP.X);
   }
 
-  /** Radio tuner step this frame: +1 next station, -1 previous, 0 none. */
-  radioStep(): number {
-    const next = this.kb.wasPressed('BracketRight') || this.pad.wasPressed(GP.RB);
-    const prev = this.kb.wasPressed('BracketLeft') || this.pad.wasPressed(GP.LB);
-    const tap = this.touch?.consumeRadio() ?? false; // touch button only goes forward
-    if (next || tap) return 1;
-    if (prev) return -1;
-    return 0;
+  /** Abre/fecha o mapa da cidade: M, botão de mapa na tela ou Back/Select no controle. */
+  mapPressed(): boolean {
+    const key = this.kb.wasPressed('KeyM');
+    const tap = this.touch?.consumeMap() ?? false;
+    return key || tap || this.pad.wasPressed(8);
+  }
+
+  /** Nitro no carro: o mesmo botão de correr (Shift / botão de correr / controle). */
+  nitro(): boolean {
+    return this.sprint(false);
   }
 
   endFrame(): void {

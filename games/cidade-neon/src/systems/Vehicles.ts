@@ -72,13 +72,13 @@ const PED_REACH = CAR_RADIUS + 0.5; // contact distance for running a pedestrian
 
 const POLICE_COLOR = 0x12131c;
 const POLICE_POOL = 5; // one per wanted star
-const POLICE_SPEED = 32; // base cruise; rubber-bands up with the gap (pursuitSpeed)
-const POLICE_MAX_SPEED = 82; // chase ceiling — under the player's ~90 so escape is possible but hard
-const POLICE_RUBBERBAND = 0.6; // extra m/s of chase speed per metre of gap
-const POLICE_ACCEL = 5; // how hard cruisers wind up to their chase speed
-const POLICE_SPAWN_DIST = 72; // how far from the player a cruiser appears
-const POLICE_LEASH = 150; // a cop that falls beyond this is re-summoned near the player
-const POLICE_SIGHT = 70; // how far a cop can see the player (for the wanted cooldown)
+const POLICE_SPEED = 18; // base cruise; rubber-bands up with the gap (pursuitSpeed)
+const POLICE_MAX_SPEED = 37; // teto da perseguição: abaixo do sedã (40) e bem abaixo dos esportivos
+const POLICE_RUBBERBAND = 0.15; // extra m/s of chase speed per metre of gap
+const POLICE_ACCEL = 3.5; // how hard cruisers wind up to their chase speed
+const POLICE_SPAWN_DIST = 95; // how far from the player a cruiser appears
+const POLICE_LEASH = 320; // só reaparece perto se ficar MUITO para trás (antes: 150, impossível fugir) // a cop that falls beyond this is re-summoned near the player
+const POLICE_SIGHT = 50; // how far a cop can see the player (for the wanted cooldown)
 // Steering-behavior weights (Reynolds): blended into a desired direction.
 const POLICE_LEAD = 1.2; // s of interception lead, capped
 const POLICE_PURSUE_W = 1.0;
@@ -108,6 +108,8 @@ export class Vehicles {
   private explosions = 0; // car wrecks since main last consumed them (for SFX)
   private playerWreckPending = false; // player car blew up → main triggers WASTED
   wreckCount = 0; // monotonic total wrecks (debug/telemetry)
+  /** Nitro ligado neste passo (Cidade Neon): mais força e velocidade máxima maior. */
+  boost = false;
 
   // Cars are ECS entities in the shared game World; the per-car passes run over
   // query(Vehicle). (Collision and player-index logic stay array/index based.)
@@ -135,7 +137,7 @@ export class Vehicles {
       const z = lane.axis === 'z' ? along : lane.fixed;
       const color = rng.pick(TRAFFIC_COLORS);
       const profile = rng.pick(PROFILES);
-      this.spawn(scene, makeCar(color, shapeFor(profile.shapeId)), color, profile, x, z, 0, 'ai', lane, rng.range(10, 22));
+      this.spawn(scene, makeCar(color, shapeFor(profile.shapeId)), color, profile, x, z, 0, 'ai', lane, rng.range(8, 14));
     }
 
     for (const spot of city.parkingSpots) {
@@ -233,7 +235,10 @@ export class Vehicles {
 
     if (playerCar && this.curInput) {
       this.steer = this.curInput.steer;
-      const next = stepVehicle(playerCar, this.curInput, playerCar.profile, dt);
+      const cfg = this.boost
+        ? { ...playerCar.profile, enginePower: playerCar.profile.enginePower * 1.9, maxSpeed: playerCar.profile.maxSpeed * 1.3 }
+        : playerCar.profile;
+      const next = stepVehicle(playerCar, this.curInput, cfg, dt);
       playerCar.x = next.x;
       playerCar.z = next.z;
       playerCar.heading = next.heading;
@@ -665,6 +670,11 @@ export class Vehicles {
   }
 
   /** Player car body integrity (0–100), or full health on foot. */
+  /** Oficina: deixa o carro do jogador novo em folha. */
+  repairPlayer(): void {
+    if (this.playerIndex !== null) this.cars[this.playerIndex].health = CAR_MAX_HEALTH;
+  }
+
   playerCarHealth(): number {
     if (this.playerIndex === null) return CAR_MAX_HEALTH;
     return Math.max(0, this.cars[this.playerIndex].health);

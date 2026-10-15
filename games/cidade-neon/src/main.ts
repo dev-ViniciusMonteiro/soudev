@@ -18,7 +18,7 @@ import { loadOptions, saveOptions, qualityPixelRatio, type GameOptions } from '.
 import { lerp, angleLerp, starsFromHeat, daylightFactor } from './core/math';
 import { Sfx } from './audio/Sfx';
 import { type VehicleInput } from './vehicles/VehicleModel';
-import { Deliveries, loadMoney, saveMoney } from './systems/Deliveries';
+import { Garages, GARAGE_COLOR, MISSION_INFO, Missions, START_COLOR, loadMoney, saveMoney } from './systems/Missions';
 
 const toKmh = (speed: number): number => Math.abs(speed) * 3.6;
 
@@ -169,12 +169,26 @@ let mode: Mode = 'driving';
 player.x = city.center.x;
 player.z = city.center.z;
 
-// Missões de entrega + saldo em R$ (salvo no navegador).
-const deliveries = new Deliveries(env.scene, city);
-deliveries.reset(city.center);
+// Missões (entrega e corrida), oficinas, nitro e saldo em R$ (salvo no navegador).
+const missions = new Missions(env.scene, city);
+missions.reset(city.center);
+const garages = new Garages(env.scene, city);
+hud.setGarages(garages.spots, GARAGE_COLOR);
 let money = loadMoney();
 const FINE_BUSTED = 150; // multa ao ser preso
-const MISSION_COLORS = { pickup: '#3dff8a', dropoff: '#ffc533' } as const;
+const GARAGE_COST = 100; // conserto + despistar a polícia
+const NITRO_DRAIN = 30; // %/s com o nitro ligado
+const NITRO_REGEN = 8; // %/s recarregando
+let nitro = 100;
+let nitroOn = false;
+let inGarage = -1; // oficina em que o carro está (só cobra uma vez por visita)
+let prevStars = 0;
+
+const brl = (v: number): string => `R$ ${v.toLocaleString('pt-BR')}`;
+const clock = (seconds: number): string => {
+  const t = Math.max(0, Math.ceil(seconds));
+  return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`;
+};
 
 function addMoney(delta: number): void {
   money = Math.max(0, money + delta);
@@ -184,18 +198,62 @@ function addMoney(delta: number): void {
 function updateMission(dt: number): void {
   const pose = vehicles.playerPose();
   const p = mode === 'driving' && pose ? pose : player;
-  const event = deliveries.update(dt, p.x, p.z);
+  const event = missions.update(dt, p.x, p.z);
   if (!event) return;
-  if (event.type === 'picked') {
-    hud.toast(`📦 Encomenda coletada! Entregue em ${event.timeLimit}s`, MISSION_COLORS.pickup);
+  const info = event.type === 'checkpoint' ? MISSION_INFO.corrida : MISSION_INFO[event.kind];
+  if (event.type === 'started') {
+    hud.toast(
+      event.kind === 'entrega'
+        ? `📦 Encomenda coletada! Entregue em ${event.timeLimit}s`
+        : `🏁 Corrida! ${event.total} pontos em ${event.timeLimit}s`,
+      info.color,
+    );
     sfx.enterCar();
-  } else if (event.type === 'delivered') {
+  } else if (event.type === 'checkpoint') {
+    hud.toast(`🏁 Ponto ${event.index}/${event.total}`, info.color);
+    sfx.exitCar();
+  } else if (event.type === 'completed') {
     addMoney(event.reward);
-    hud.toast(`✅ Entrega feita! +R$ ${event.reward.toLocaleString('pt-BR')}`, MISSION_COLORS.pickup);
+    hud.toast(`${event.kind === 'entrega' ? '✅ Entrega feita!' : '🏆 Corrida vencida!'} +${brl(event.reward)}`, START_COLOR);
     sfx.exitCar();
   } else {
-    hud.toast('⏱️ Tempo esgotado! Nova coleta no mapa', '#ff6b5a');
+    hud.toast(`⏱️ Tempo esgotado na ${info.label.toLowerCase()}! Nova missão no mapa`, '#ff6b5a');
   }
+}
+
+/** Oficina: conserta o carro e zera o nível de procurado (cobra uma vez por visita). */
+function updateGarage(): void {
+  const pose = vehicles.playerPose();
+  const here = mode === 'driving' && pose ? garages.at(pose.x, pose.z) : -1;
+  if (here === -1 || here === inGarage) {
+    inGarage = here;
+    return;
+  }
+  inGarage = here;
+  const needed = stars > 0 || vehicles.playerCarHealth() < 100;
+  if (!needed) {
+    hud.toast('🔧 Oficina: volte quando precisar de conserto ou despistar a polícia', GARAGE_COLOR);
+    return;
+  }
+  if (money < GARAGE_COST) {
+    hud.toast(`🔧 Oficina custa ${brl(GARAGE_COST)}. Faça missões para juntar dinheiro`, '#ff6b5a');
+    return;
+  }
+  addMoney(-GARAGE_COST);
+  vehicles.repairPlayer();
+  heat = 0;
+  stars = 0;
+  sinceUnseen = 0;
+  wantedCooling = false;
+  hud.toast(`🔧 Carro consertado e polícia despistada! -${brl(GARAGE_COST)}`, GARAGE_COLOR);
+  sfx.enterCar();
+}
+
+/** Nitro: segura o botão de correr dirigindo. Gasta rápido, recarrega devagar. */
+function updateNitro(dt: number, throttle: number): void {
+  nitroOn = mode === 'driving' && controls.nitro() && throttle > 0.1 && nitro > 0;
+  nitro = nitroOn ? Math.max(0, nitro - NITRO_DRAIN * dt) : Math.min(100, nitro + NITRO_REGEN * dt);
+  vehicles.boost = nitroOn;
 }
 
 const MAX_HEALTH = 100;
@@ -211,9 +269,9 @@ let pedContact = false; // were we in contact with a car last frame (edge-trigge
 
 // Wanted system: "heat" rises with crimes and decays after a grace period;
 // it maps to 0–5 stars, and each star is one chasing police car.
-const CRIME_HEAT = 16; // heat added per pedestrian you personally run over
-const HEAT_GRACE = 4; // seconds OUT OF POLICE SIGHT before heat starts to cool
-const HEAT_DECAY = 11; // heat lost per second once cooling
+const CRIME_HEAT = 12; // heat added per pedestrian you personally run over
+const HEAT_GRACE = 3; // seconds OUT OF POLICE SIGHT before heat starts to cool
+const HEAT_DECAY = 15; // heat lost per second once cooling
 let heat = 0;
 let stars = 0;
 let sinceUnseen = 0; // seconds since a cop last had line of sight (the "get away" timer)
@@ -223,7 +281,7 @@ let prevRunOver = 0;
 // Busted: a chasing cop pins you slow for long enough → arrested, game resets.
 const BUST_RADIUS = 7; // a cop this close...
 const BUST_SPEED = 5; // ...while you're slower than this (m/s)...
-const BUST_FILL_TIME = 1.8; // ...for this long → BUSTED
+const BUST_FILL_TIME = 2.8; // ...for this long → BUSTED
 const BUSTED_TIME = 3; // seconds the BUSTED screen holds before respawn
 let busted = false;
 let bustedTimer = 0;
@@ -305,7 +363,8 @@ function respawn(): void {
   player.z = city.center.z + 6;
   player.heading = 0;
   // Encomenda perdida: recomeça com uma nova coleta.
-  if (deliveries.phase === 'dropoff') deliveries.reset(player);
+  if (missions.phase === 'active') missions.reset(player);
+  nitro = 100;
 }
 
 function enterBusted(): void {
@@ -417,15 +476,23 @@ function update(dt: number): void {
   }
 
   if (controls.enterExitPressed()) toggleVehicle();
+  if (controls.mapPressed()) hud.toggleMap();
 
   updateWanted(dt);
+  if (stars > 0 && prevStars === 0) {
+    hud.toast('🚨 Procurado! Saia da vista da polícia ou vá a uma 🔧 Oficina', '#ffd24a');
+  }
+  prevStars = stars;
   const chase = stars > 0 ? chaseTarget() : null;
 
   if (mode === 'driving') {
     if (controls.resetPressed()) vehicles.resetPlayer(city);
-    vehicles.update(city, dt, drivingInput(), null, chase);
+    const input = drivingInput();
+    updateNitro(dt, input.throttle);
+    vehicles.update(city, dt, input, null, chase);
     flushCarWrecks();
   } else {
+    updateNitro(dt, 0);
     vehicles.update(city, dt, null, { x: player.x, z: player.z }, chase);
     flushCarWrecks();
     updateFoot(dt);
@@ -450,6 +517,7 @@ function update(dt: number): void {
   }
 
   updateMission(dt);
+  updateGarage();
   updateBusted(dt);
   // Pedestrians fear the CAR only (not the player on foot): proximity, or a fast
   // car on a vector to hit them. Threat carries velocity for the vector trigger.
@@ -530,21 +598,30 @@ function render(alpha: number, frameDt: number): void {
   const shownHealth = mode === 'driving' ? vehicles.playerCarHealth() : health;
 
   // Missão: marcador 3D, ponto no radar e seta relativa à câmera.
-  deliveries.render(frameDt);
-  const missionColor = MISSION_COLORS[deliveries.phase];
-  hud.setTarget({ x: deliveries.target.x, z: deliveries.target.z, color: missionColor });
-  const dist = Math.round(deliveries.distanceTo(active.x, active.z));
+  missions.render(frameDt);
+  garages.render(frameDt);
+  const missionColor = missions.color;
+  hud.setTarget({ x: missions.target.x, z: missions.target.z, color: missionColor });
+  const dist = Math.round(missions.distanceTo(active.x, active.z));
   // Rumo até o alvo no mesmo sistema do jogo (0 = +X, anti-horário); a seta gira em relação à câmera.
-  const bearing = Math.atan2(-(deliveries.target.z - active.z), deliveries.target.x - active.x);
+  const bearing = Math.atan2(-(missions.target.z - active.z), missions.target.x - active.x);
   const arrowDeg = ((follow.yaw - bearing) * 180) / Math.PI;
-  if (deliveries.phase === 'pickup') {
-    hud.setObjective(`📦 Busque a encomenda · ${dist} m`, arrowDeg, missionColor);
+  const missionInfo = MISSION_INFO[missions.kind];
+  if (missions.phase === 'start') {
+    hud.setObjective(`${missionInfo.icon} ${missionInfo.label} disponível · vá até o ponto verde · ${dist} m`, arrowDeg, missionColor);
+  } else if (missions.kind === 'entrega') {
+    hud.setObjective(`📦 Entregue em ${clock(missions.timeLeft)} · ${dist} m`, arrowDeg, missionColor, missions.timeLeft <= 10);
   } else {
-    const t = Math.max(0, Math.ceil(deliveries.timeLeft));
-    const clock = `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`;
-    hud.setObjective(`🏁 Entregue em ${clock} · ${dist} m`, arrowDeg, missionColor, t <= 10);
+    hud.setObjective(
+      `🏁 Ponto ${missions.index + 1}/${missions.total} · ${clock(missions.timeLeft)} · ${dist} m`,
+      arrowDeg,
+      missionColor,
+      missions.timeLeft <= 10,
+    );
   }
   hud.setMoney(money);
+  hud.setNitro(nitro, nitroOn, mode === 'driving');
+  hud.setPlayerOnMap(active.x, active.z, active.heading);
 
   hud.update(speedKmh, mode, active, vehicles.positions(), shownHealth, wasted);
   hud.setCarName(mode === 'driving' ? vehicles.playerCarName() : null);
@@ -599,7 +676,9 @@ declare global {
       readonly busted: boolean;
       readonly runOverCount: number;
       readonly money: number;
-      readonly mission: { phase: string; target: { x: number; z: number }; timeLeft: number };
+      readonly mission: { phase: string; kind: string; index: number; total: number; target: { x: number; z: number }; timeLeft: number };
+      readonly nitro: number;
+      readonly garages: { x: number; z: number }[];
       readonly wanted: number;
       readonly wantedCooling: boolean;
       readonly police: number;
@@ -636,8 +715,14 @@ window.__game = {
   get money() {
     return money;
   },
+  get nitro() {
+    return nitro;
+  },
+  get garages() {
+    return garages.spots;
+  },
   get mission() {
-    return { phase: deliveries.phase, target: { ...deliveries.target }, timeLeft: deliveries.timeLeft };
+    return { phase: missions.phase, kind: missions.kind, index: missions.index, total: missions.total, target: { ...missions.target }, timeLeft: missions.timeLeft };
   },
   get wanted() {
     return stars;

@@ -42,15 +42,16 @@ export interface VehicleConfig {
 }
 
 export const DEFAULT_VEHICLE: VehicleConfig = {
-  enginePower: 13, // lower accel: it takes a while to wind up to top speed
-  brakePower: 34,
-  reverseMaxSpeed: 16,
-  maxSpeed: 90, // ~200 mph — fast enough that the readout matches the sensation
-  drag: 0.06, // light drag so the high top speed is reachable
+  // Cidade Neon: escala de cidade (quadras de 42 m). Sedã chega a ~144 km/h.
+  enginePower: 8,
+  brakePower: 26,
+  reverseMaxSpeed: 10,
+  maxSpeed: 40,
+  drag: 0.1,
   rollingResistance: 4,
-  turnRate: 2.7,
-  gripSpeed: 9,
-  gripNormal: 10,
+  turnRate: 2.5,
+  gripSpeed: 7,
+  gripNormal: 11,
   gripHandbrake: 0.7,
   handbrakeDrag: 4,
   handbrakeSteer: 1.4,

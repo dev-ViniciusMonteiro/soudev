@@ -193,10 +193,11 @@ export class Menu {
     h.style.opacity = '.9';
     wrap.append(
       h,
-      line('Dirigir: WASD / setas · <b>Espaço</b> freio de mão · <b>F</b> entrar/sair do carro'),
+      line('Dirigir: WASD / setas · <b>Espaço</b> freio de mão · <b>Shift</b> nitro · <b>F</b> entrar/sair do carro'),
       line('A pé: WASD · <b>Shift</b> correr · <b>Espaço</b> soco · <b>F</b> entrar no carro'),
       line('Controle: RT/LT acelerar/frear · analógico direção · <b>A</b> entrar / segurar para correr · <b>B</b> freio de mão · <b>X</b> soco'),
-      line('<b>Esc</b> / Start: pausar · <b>R</b> desvirar o carro · Missão: siga a seta até o ponto verde, depois o amarelo'),
+      line('<b>M</b> mapa · <b>Esc</b> / Start: pausar · <b>R</b> desvirar o carro'),
+      line('Missões: siga a seta até o ponto verde (entrega ou corrida) · Polícia: saia da vista dela ou vá a uma oficina azul'),
     );
     return wrap;
   }

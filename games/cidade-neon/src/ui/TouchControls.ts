@@ -6,6 +6,7 @@ import {
   Hand,
   ChevronsRight,
   RotateCcw,
+  Map as MapIcon,
   Grab,
   Maximize,
   Minimize,
@@ -37,7 +38,7 @@ export class TouchControls {
   private sprintHeld = false;
   private enterEdge = false;
   private resetEdge = false;
-  private radioEdge = false;
+  private mapEdge = false;
   private punchEdge = false;
 
   private stickPointer: number | null = null;
@@ -121,6 +122,7 @@ export class TouchControls {
       () => (this.sprintHeld = false),
     );
     this.holdButton(pad, 'tc-reset', RotateCcw, 'reset', () => (this.resetEdge = true));
+    this.holdButton(pad, 'tc-map', MapIcon, 'mapa', () => (this.mapEdge = true));
     this.holdButton(pad, 'tc-punch', Grab, 'punch', () => (this.punchEdge = true));
 
     this.addFullscreenButton(root);
@@ -224,9 +226,9 @@ export class TouchControls {
     this.resetEdge = false;
     return r;
   }
-  consumeRadio(): boolean {
-    const r = this.radioEdge;
-    this.radioEdge = false;
+  consumeMap(): boolean {
+    const r = this.mapEdge;
+    this.mapEdge = false;
     return r;
   }
   consumePunch(): boolean {

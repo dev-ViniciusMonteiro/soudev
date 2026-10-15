@@ -1,7 +1,18 @@
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { daylightFactor, sunPosition } from '../core/math';
 import { makeGlowTexture } from './textures';
 import type { City } from '../world/City';
+
+/** Reescreve as coordenadas de textura de uma geometria (para girar/repetir o mosaico). */
+function remapUv(geo: THREE.BufferGeometry, fn: (u: number, v: number) => [number, number]): void {
+  const uv = geo.getAttribute('uv') as THREE.BufferAttribute;
+  for (let i = 0; i < uv.count; i++) {
+    const [a, b] = fn(uv.getX(i), uv.getY(i));
+    uv.setXY(i, a, b);
+  }
+  uv.needsUpdate = true;
+}
 
 /**
  * Owns the renderer, scene graph, camera and the static environment (ground +
@@ -166,14 +177,30 @@ export class SceneEnv {
     this.sunDisc.material.opacity = 0.45 + 0.4 * d;
   }
 
+  /** Texturas CC0 do ambientCG (ver public/textures/CREDITOS.txt), repetidas em mosaico. */
+  private texture(file: string, color: boolean): THREE.Texture {
+    const t = new THREE.TextureLoader().load(`${import.meta.env.BASE_URL}textures/${file}`);
+    t.wrapS = t.wrapT = THREE.RepeatWrapping;
+    if (color) t.colorSpace = THREE.SRGBColorSpace;
+    t.anisotropy = Math.min(8, this.renderer.capabilities.getMaxAnisotropy());
+    return t;
+  }
+
   private addGround(city: City): void {
     const size = city.extent * 2;
-    // In the streamed world the ground is asphalt-dark (it stands in for the
-    // road grid, which isn't drawn as planes) and follows the player.
-    const ground = new THREE.Mesh(
-      new THREE.PlaneGeometry(size, size),
-      new THREE.MeshStandardMaterial({ color: this.streaming ? 0x1a1e28 : 0x0c0e14, roughness: 1 }),
-    );
+    // Calçadas e praças: paralelepípedo (ladrilho de 6 m x 3 m). No mundo
+    // infinito o chão faz o papel das ruas, então fica em asfalto.
+    const material = this.streaming
+      ? new THREE.MeshStandardMaterial({ color: 0x1a1e28, roughness: 1 })
+      : new THREE.MeshStandardMaterial({
+          map: this.texture('paving_color.jpg', true),
+          normalMap: this.texture('paving_normal.jpg', false),
+          color: 0xb4b4b4,
+          roughness: 0.95,
+        });
+    const geometry = new THREE.PlaneGeometry(size, size);
+    if (!this.streaming) remapUv(geometry, (u, v) => [(u * size) / 6, (v * size) / 3]);
+    const ground = new THREE.Mesh(geometry, material);
     ground.rotation.x = -Math.PI / 2;
     ground.receiveShadow = true;
     this.scene.add(ground);
@@ -192,23 +219,73 @@ export class SceneEnv {
     this.ground.position.set(x, 0, z);
   }
 
+  /**
+   * Ruas em trechos entre cruzamentos (textura com faixas pintadas, uma
+   * repetição a cada largura de rua) e cruzamentos em asfalto liso, para as
+   * faixas não se cruzarem e as duas camadas não brigarem (z-fighting).
+   * Tudo é mesclado em poucas malhas: 3 draw calls para a cidade inteira.
+   */
   private addRoads(city: City): void {
-    const asphalt = new THREE.MeshStandardMaterial({ color: 0x202430, roughness: 0.9 });
-    const roadGeoH = new THREE.PlaneGeometry(city.extent, city.config.roadWidth);
-    const roadGeoV = new THREE.PlaneGeometry(city.config.roadWidth, city.extent);
+    const w = city.config.roadWidth;
+    const half = city.half;
+    const centers = [...city.roadCenters].sort((a, b) => a - b);
 
-    for (const c of city.roadCenters) {
-      const h = new THREE.Mesh(roadGeoH, asphalt);
-      h.rotation.x = -Math.PI / 2;
-      h.position.set(0, 0.02, c);
-      h.receiveShadow = true;
-      this.scene.add(h);
+    // Intervalos de um eixo que não são atravessados por outra rua.
+    const spans: [number, number][] = [];
+    let cursor = -half;
+    for (const c of centers) {
+      if (c - w / 2 - cursor > 0.5) spans.push([cursor, c - w / 2]);
+      cursor = c + w / 2;
+    }
+    if (half - cursor > 0.5) spans.push([cursor, half]);
 
-      const v = new THREE.Mesh(roadGeoV, asphalt);
-      v.rotation.x = -Math.PI / 2;
-      v.position.set(c, 0.02, 0);
-      v.receiveShadow = true;
-      this.scene.add(v);
+    const along: THREE.BufferGeometry[] = [];
+    const crossings: THREE.BufferGeometry[] = [];
+    for (const c of centers) {
+      for (const [a, b] of spans) {
+        const len = b - a;
+        const mid = (a + b) / 2;
+        // Rua no eixo X (em z = c): a textura corre ao longo do comprimento.
+        const h = new THREE.PlaneGeometry(len, w);
+        remapUv(h, (u, v) => [v, (u * len) / w]);
+        h.rotateX(-Math.PI / 2);
+        h.translate(mid, 0.02, c);
+        along.push(h);
+        // Rua no eixo Z (em x = c).
+        const v = new THREE.PlaneGeometry(w, len);
+        remapUv(v, (u, vv) => [u, (vv * len) / w]);
+        v.rotateX(-Math.PI / 2);
+        v.translate(c, 0.02, mid);
+        along.push(v);
+      }
+      for (const c2 of centers) {
+        const x = new THREE.PlaneGeometry(w, w);
+        remapUv(x, (u, v) => [(u * w) / 8, (v * w) / 8]);
+        x.rotateX(-Math.PI / 2);
+        x.translate(c, 0.02, c2);
+        crossings.push(x);
+      }
+    }
+
+    const roadMat = new THREE.MeshStandardMaterial({
+      map: this.texture('road_color.jpg', true),
+      normalMap: this.texture('road_normal.jpg', false),
+      color: 0xc4c8d2,
+      roughness: 0.85,
+    });
+    const crossMat = new THREE.MeshStandardMaterial({
+      map: this.texture('asphalt_color.jpg', true),
+      color: 0x9aa0ab,
+      roughness: 0.9,
+    });
+    for (const [geos, mat] of [
+      [along, roadMat],
+      [crossings, crossMat],
+    ] as const) {
+      const mesh = new THREE.Mesh(mergeGeometries(geos as THREE.BufferGeometry[]), mat);
+      mesh.receiveShadow = true;
+      this.scene.add(mesh);
+      for (const g of geos) g.dispose();
     }
   }
 

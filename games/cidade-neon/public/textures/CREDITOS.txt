@@ -1,0 +1,6 @@
+Texturas do ambientCG (https://ambientcg.com), licença CC0 1.0 (domínio público).
+Reduzidas para 512 px para uso no jogo Cidade Neon.
+
+road_color.jpg, road_normal.jpg      Road007          https://ambientcg.com/view?id=Road007
+asphalt_color.jpg                    Asphalt031       https://ambientcg.com/view?id=Asphalt031
+paving_color.jpg, paving_normal.jpg  PavingStones150  https://ambientcg.com/view?id=PavingStones150

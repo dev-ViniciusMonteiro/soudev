@@ -3,6 +3,7 @@ import type { City } from '../world/City';
 export type Mode = 'driving' | 'foot';
 
 const MAP_SIZE = 190;
+const BIG_MAP = 640; // resolução do mapa completo (tecla M)
 // Streamed world: the minimap is a player-centred radar spanning this many metres
 // (the finite precomputed road/footprint map doesn't apply to an unbounded world).
 const STREAM_VIEW_METERS = 320;
@@ -35,6 +36,15 @@ export class HUD {
   private readonly toastEl: HTMLElement;
   private toastTimer = 0;
   private target: { x: number; z: number; color: string } | null = null;
+  private garages: { x: number; z: number }[] = [];
+  private garageColor = '#4aa3ff';
+  private readonly nitroTrack: HTMLElement;
+  private readonly nitroFill: HTMLElement;
+  private readonly bigMap: HTMLElement;
+  private readonly bigCanvas: HTMLCanvasElement;
+  private bigStatic: HTMLCanvasElement | null = null;
+  private mapOpen = false;
+  private playerPos = { x: 0, z: 0, heading: 0 };
   private readonly carEl: HTMLElement;
   private readonly wantedEl: HTMLElement;
   private readonly clockEl: HTMLElement;
@@ -77,7 +87,7 @@ export class HUD {
 
     this.wantedEl = document.createElement('div');
     this.wantedEl.style.cssText =
-      'position:absolute;left:20px;top:74px;font-size:18px;letter-spacing:3px;' +
+      'position:absolute;left:20px;top:90px;font-size:18px;letter-spacing:3px;' +
       'color:#ffd24a;text-shadow:0 1px 4px #000;';
     const wantedStyle = document.createElement('style');
     wantedStyle.textContent = '@keyframes wantedFlash{0%{opacity:1}100%{opacity:.25}}';
@@ -93,6 +103,16 @@ export class HUD {
       'height:100%;width:100%;background:linear-gradient(90deg,#3ad17a,#7dffa6);transition:width .1s linear;';
     healthTrack.appendChild(this.healthFill);
     root.appendChild(healthTrack);
+
+    // Nitro (só aparece dirigindo).
+    this.nitroTrack = document.createElement('div');
+    this.nitroTrack.style.cssText =
+      'position:absolute;left:20px;top:76px;width:182px;height:8px;background:rgba(12,16,26,.6);' +
+      'border:1px solid rgba(255,255,255,.07);border-radius:5px;overflow:hidden;';
+    this.nitroFill = document.createElement('div');
+    this.nitroFill.style.cssText = 'height:100%;width:100%;background:linear-gradient(90deg,#3a7bff,#7ff3ff);';
+    this.nitroTrack.appendChild(this.nitroFill);
+    root.appendChild(this.nitroTrack);
 
     // Saldo das entregas (topo, centro).
     this.moneyEl = document.createElement('div');
@@ -126,7 +146,7 @@ export class HUD {
     this.clockEl = document.createElement('div');
     this.clockEl.style.cssText =
       (touch
-        ? 'position:absolute;left:20px;top:104px;'
+        ? 'position:absolute;left:20px;top:120px;'
         : 'position:absolute;right:20px;top:16px;') +
       'font-size:14px;font-weight:700;letter-spacing:1px;' + CHIP;
     root.appendChild(this.clockEl);
@@ -174,6 +194,114 @@ export class HUD {
     this.mapCtx = this.mapCanvas.getContext('2d')!;
 
     this.staticMap = this.buildStaticMap();
+
+    // Mapa completo da cidade (tecla M / botão de mapa). Toque fora para fechar.
+    this.bigMap = document.createElement('div');
+    this.bigMap.style.cssText =
+      'position:fixed;inset:0;z-index:40;display:none;flex-direction:column;align-items:center;justify-content:center;' +
+      'gap:10px;background:rgba(3,5,10,.82);pointer-events:auto;backdrop-filter:blur(3px);';
+    this.bigCanvas = document.createElement('canvas');
+    this.bigCanvas.width = this.bigCanvas.height = BIG_MAP;
+    this.bigCanvas.style.cssText =
+      'width:min(86vw,78vh);height:min(86vw,78vh);border-radius:12px;border:1px solid rgba(255,255,255,.2);background:#080a10;';
+    const legend = document.createElement('div');
+    legend.style.cssText = 'font-size:12px;opacity:.85;text-align:center;padding:0 12px;';
+    legend.innerHTML =
+      '<span style="color:#54ff84">▲ você</span> · <span style="color:#3dff8a">●</span> missão · ' +
+      '<span style="color:#4aa3ff">■</span> oficina · <b>M</b> ou toque para fechar';
+    this.bigMap.append(this.bigCanvas, legend);
+    this.bigMap.addEventListener('pointerdown', () => this.toggleMap(false));
+    root.appendChild(this.bigMap);
+  }
+
+  private buildBigStatic(): HTMLCanvasElement {
+    const c = document.createElement('canvas');
+    c.width = c.height = BIG_MAP;
+    const ctx = c.getContext('2d')!;
+    const s = BIG_MAP / this.city.extent;
+    const x = (wx: number): number => (wx + this.city.half) * s;
+    ctx.strokeStyle = 'rgba(120,140,180,.6)';
+    ctx.lineWidth = this.city.config.roadWidth * s * 0.7;
+    for (const rc of this.city.roadCenters) {
+      ctx.beginPath();
+      ctx.moveTo(x(rc), 0);
+      ctx.lineTo(x(rc), BIG_MAP);
+      ctx.moveTo(0, x(rc));
+      ctx.lineTo(BIG_MAP, x(rc));
+      ctx.stroke();
+    }
+    ctx.fillStyle = 'rgba(180,200,235,.3)';
+    for (const b of this.city.buildings) {
+      ctx.fillRect(x(b.cx - b.width / 2), x(b.cz - b.depth / 2), b.width * s, b.depth * s);
+    }
+    return c;
+  }
+
+  private drawBigMap(): void {
+    if (this.streaming) return;
+    this.bigStatic ??= this.buildBigStatic();
+    const ctx = this.bigCanvas.getContext('2d')!;
+    const s = BIG_MAP / this.city.extent;
+    const x = (wx: number): number => (wx + this.city.half) * s;
+    ctx.clearRect(0, 0, BIG_MAP, BIG_MAP);
+    ctx.drawImage(this.bigStatic, 0, 0);
+    for (const g of this.garages) {
+      ctx.fillStyle = this.garageColor;
+      ctx.fillRect(x(g.x) - 8, x(g.z) - 8, 16, 16);
+      ctx.fillStyle = '#06101f';
+      ctx.font = 'bold 11px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('🔧', x(g.x), x(g.z) + 1);
+    }
+    if (this.target) {
+      ctx.fillStyle = this.target.color;
+      ctx.strokeStyle = '#000';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(x(this.target.x), x(this.target.z), 9, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+    }
+    const px = x(this.playerPos.x);
+    const pz = x(this.playerPos.z);
+    const fx = Math.cos(this.playerPos.heading);
+    const fz = -Math.sin(this.playerPos.heading);
+    ctx.fillStyle = '#54ff84';
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(px + fx * 14, pz + fz * 14);
+    ctx.lineTo(px - fz * 9 - fx * 7, pz + fx * 9 - fz * 7);
+    ctx.lineTo(px + fz * 9 - fx * 7, pz - fx * 9 - fz * 7);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  }
+
+  toggleMap(open = !this.mapOpen): void {
+    this.mapOpen = open && !this.streaming;
+    this.bigMap.style.display = this.mapOpen ? 'flex' : 'none';
+  }
+
+  isMapOpen(): boolean {
+    return this.mapOpen;
+  }
+
+  setGarages(spots: { x: number; z: number }[], color: string): void {
+    this.garages = spots;
+    this.garageColor = color;
+  }
+
+  setPlayerOnMap(x: number, z: number, heading: number): void {
+    this.playerPos = { x, z, heading };
+    if (this.mapOpen) this.drawBigMap();
+  }
+
+  setNitro(value: number, active: boolean, visible: boolean): void {
+    this.nitroTrack.style.display = visible ? 'block' : 'none';
+    this.nitroFill.style.width = `${Math.max(0, Math.min(100, value))}%`;
+    this.nitroFill.style.boxShadow = active ? '0 0 12px #7ff3ff' : 'none';
   }
 
   private mapX(wx: number): number {
@@ -243,6 +371,10 @@ export class HUD {
     for (const car of cars) {
       ctx.fillRect(this.mapX(car.x) - 1.5, this.mapY(car.z) - 1.5, 3, 3);
     }
+
+    // Oficinas.
+    ctx.fillStyle = this.garageColor;
+    for (const g of this.garages) ctx.fillRect(this.mapX(g.x) - 3.5, this.mapY(g.z) - 3.5, 7, 7);
 
     // Destino da missão (preso à borda do radar quando está fora da área visível).
     if (this.target) {

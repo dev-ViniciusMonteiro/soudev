@@ -38,34 +38,34 @@ export const PROFILES: CarProfile[] = [
   },
   {
     id: 'komuter-bean', manufacturer: 'Komuter', model: 'Bean', class: 'compact', shapeId: 'compact', mass: 1000,
-    ...tune({ enginePower: 12, maxSpeed: 78, turnRate: 3.1, gripNormal: 11 }), // zippy, low top end
+    ...tune({ enginePower: 7.5, maxSpeed: 34, turnRate: 2.9, gripNormal: 12 }), // zippy, low top end
   },
   {
     id: 'velocci-strada', manufacturer: 'Velocci', model: 'Strada', class: 'sports', shapeId: 'sports', mass: 1200,
-    ...tune({ enginePower: 16, maxSpeed: 102, turnRate: 3.1, gripNormal: 12, gripSpeed: 11 }),
+    ...tune({ enginePower: 9.5, maxSpeed: 47, turnRate: 2.8, gripNormal: 12.5, gripSpeed: 8 }),
   },
   {
     id: 'velocci-furia', manufacturer: 'Velocci', model: 'Furia', class: 'super', shapeId: 'sports', mass: 1300,
-    ...tune({ enginePower: 19, brakePower: 40, maxSpeed: 118, turnRate: 3.0, gripNormal: 12.5, gripSpeed: 12 }),
+    ...tune({ enginePower: 11, brakePower: 32, maxSpeed: 53, turnRate: 2.8, gripNormal: 13, gripSpeed: 9 }),
   },
   {
     id: 'mosca-brute', manufacturer: 'Mosca', model: 'Brute', class: 'muscle', shapeId: 'sedan', mass: 1650,
-    ...tune({ enginePower: 17, maxSpeed: 99, turnRate: 2.4, gripNormal: 8, gripHandbrake: 0.6 }), // power, loose tail
+    ...tune({ enginePower: 10, maxSpeed: 45, turnRate: 2.3, gripNormal: 9, gripHandbrake: 0.6 }), // power, loose tail
   },
   {
     id: 'delivr-boxer', manufacturer: 'Delivr', model: 'Boxer', class: 'van', shapeId: 'van', mass: 2400,
-    ...tune({ enginePower: 10, maxSpeed: 74, turnRate: 2.1, gripNormal: 8 }),
+    ...tune({ enginePower: 6, maxSpeed: 31, turnRate: 2.0, gripNormal: 9 }),
   },
   {
     id: 'bunker-hauler', manufacturer: 'Bunker', model: 'Hauler', class: 'truck', shapeId: 'pickup', mass: 4500,
-    ...tune({ enginePower: 8, brakePower: 26, maxSpeed: 62, turnRate: 1.9, gripNormal: 7, gripSpeed: 12 }),
+    ...tune({ enginePower: 5, brakePower: 20, maxSpeed: 27, turnRate: 1.8, gripNormal: 8, gripSpeed: 8 }),
   },
 ];
 
 /** Police interceptor — fast and planted, what cruisers (and a carjacked cop car) drive. */
 export const INTERCEPTOR: CarProfile = {
   id: 'crown-interceptor', manufacturer: 'Crown', model: 'Interceptor', class: 'interceptor', shapeId: 'sports', mass: 1700,
-  ...tune({ enginePower: 15, maxSpeed: 94, turnRate: 2.9, gripNormal: 11 }),
+  ...tune({ enginePower: 8.5, maxSpeed: 42, turnRate: 2.6, gripNormal: 11 }),
 };
 
 /** The car you spawn in. */
