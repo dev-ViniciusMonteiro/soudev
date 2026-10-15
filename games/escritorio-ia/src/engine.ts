@@ -33,6 +33,9 @@ export interface EngineInput {
 
 const now = (): string => new Date().toISOString();
 
+/** O OpenRouter pode devolver o id sem o sufixo :free; compara o modelo base. */
+const sameModel = (a: string, b: string): boolean => a.replace(/:free$/, '') === b.replace(/:free$/, '');
+
 const sleep = (seconds: number, signal: AbortSignal): Promise<void> =>
   new Promise((resolve, reject) => {
     if (seconds <= 0) return resolve();
@@ -79,13 +82,17 @@ export async function runMission(input: EngineInput): Promise<MissionRun> {
   const chatOpts = { signal, onWait: hooks.onWait };
 
   try {
-    for (let round = 1; round <= settings.maxRounds; round++) {
+    // Retomada: começa da rodada em que parou e pula o que já foi entregue.
+    const firstRound = Math.max(1, run.round);
+    for (let round = firstRound; round <= settings.maxRounds; round++) {
       run.round = round;
-      hooks.onLog(`▶️ Rodada ${round} de ${settings.maxRounds}`);
+      const resumed = agents.some((a) => a.reports.some((r) => r.round === round));
+      hooks.onLog(`▶️ Rodada ${round} de ${settings.maxRounds}${resumed ? ' (continuando de onde parou)' : ''}`);
 
       // 1) Cada agente trabalha (um de cada vez, respeitando o limite de pedidos dos modelos gratuitos).
       for (const agent of agents) {
         signal.throwIfAborted();
+        if (agent.reports.some((r) => r.round === round)) continue; // já entregou nesta rodada
         const last = agent.reports[agent.reports.length - 1];
         const fb = agent.feedback[agent.feedback.length - 1];
         const prompt = round === 1 || !last || !fb ? workerFirstPrompt(run.objective, agent) : workerRetryPrompt(run.objective, agent, last, fb, round);
@@ -105,7 +112,8 @@ export async function runMission(input: EngineInput): Promise<MissionRun> {
           model: res.model,
           tokensIn: res.tokensIn,
           tokensOut: res.tokensOut,
-          cost: price(agent.model, res.tokensIn, res.tokensOut),
+          // Cobra pelo modelo realmente usado (reservas só existem entre modelos gratuitos).
+          cost: price(res.model, res.tokensIn, res.tokensOut) || price(agent.model, res.tokensIn, res.tokensOut),
           at: now(),
         };
         agent.reports.push(report);
@@ -113,12 +121,15 @@ export async function runMission(input: EngineInput): Promise<MissionRun> {
         run.totalCost += report.cost;
         hooks.onReport(agent, report);
         hooks.onAgent(agent);
-        hooks.onLog(`📄 ${agent.name} entregou o relatório da rodada ${round}.`);
+        if (sameModel(res.model, agent.model)) hooks.onLog(`📄 ${agent.name} entregou o relatório da rodada ${round}.`);
+        else hooks.onLog(`📄 ${agent.name} entregou usando o modelo reserva ${res.model} (${agent.model} estava indisponível).`);
         await pause();
       }
 
       // 2) O líder lê todos os relatórios e decide.
       signal.throwIfAborted();
+      // Retomada: o líder já avaliou esta rodada (e pediu para refazer); segue para a próxima.
+      if (run.reviews.some((r) => r.round === round)) continue;
       hooks.onLog('🧑‍💼 O líder está lendo os relatórios…');
       hooks.onLeader(true);
       const messages: ChatMessage[] = [
@@ -126,7 +137,7 @@ export async function runMission(input: EngineInput): Promise<MissionRun> {
         { role: 'user', content: leaderPrompt(run.objective, agents, round, settings.maxRounds) },
       ];
       let res = await chat(settings.leaderModel, messages, { ...chatOpts, json: true });
-      let cost = price(settings.leaderModel, res.tokensIn, res.tokensOut);
+      let cost = (price(res.model, res.tokensIn, res.tokensOut) || price(settings.leaderModel, res.tokensIn, res.tokensOut));
       let parsed = parseLeaderJson(res.text, agents);
       if (!parsed) {
         hooks.onLog('⚠️ O líder não respondeu no formato esperado. Pedindo de novo…');
@@ -136,7 +147,7 @@ export async function runMission(input: EngineInput): Promise<MissionRun> {
           [...messages, { role: 'assistant', content: res.text }, { role: 'user', content: JSON_RETRY }],
           { ...chatOpts, json: true },
         );
-        cost += price(settings.leaderModel, res.tokensIn, res.tokensOut);
+        cost += (price(res.model, res.tokensIn, res.tokensOut) || price(settings.leaderModel, res.tokensIn, res.tokensOut));
         parsed = parseLeaderJson(res.text, agents);
       }
       const review: LeaderReview = {

@@ -78,6 +78,7 @@ export interface Settings {
   pauseSeconds: number;
   freeOnly: boolean;
   demo: boolean;
+  useFallbacks: boolean; // modelos grátis reserva quando o escolhido está sobrecarregado
 }
 
 export interface ModelInfo {

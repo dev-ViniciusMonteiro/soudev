@@ -8,6 +8,7 @@ import {
   KEY_STORAGE_NAME,
   defaultModel,
   demoChat,
+  fallbackModels,
   fetchModels,
   finishOAuthIfNeeded,
   getKey,
@@ -42,7 +43,7 @@ interface State {
 
 const DEFAULT_STATE: State = {
   agents: [],
-  settings: { leaderModel: '', maxRounds: 3, pauseSeconds: 3, freeOnly: true, demo: !getKey() },
+  settings: { leaderModel: '', maxRounds: 3, pauseSeconds: 3, freeOnly: true, demo: !getKey(), useFallbacks: true },
   objective: '',
   run: null,
   log: [],
@@ -127,7 +128,11 @@ function toast(text: string): void {
 
 const uid = (): string => Math.random().toString(36).slice(2, 7);
 const hasKey = (): boolean => !!getKey();
-const modelInfo = (id: string): ModelInfo | undefined => catalog.find((m) => m.id === id);
+/** Acha o modelo mesmo quando o OpenRouter devolve o id sem :free ou com data no fim (ex.: gpt-4o-mini-2024-07-18). */
+const modelInfo = (id: string): ModelInfo | undefined =>
+  catalog.find((m) => m.id === id) ??
+  catalog.find((m) => m.id.replace(/:free$/, '') === id.replace(/:free$/, '')) ??
+  catalog.filter((m) => id.startsWith(m.id)).sort((x, y) => y.id.length - x.id.length)[0];
 const price = (model: string, tokensIn: number, tokensOut: number): number => {
   const m = modelInfo(model);
   return m ? m.promptPrice * tokensIn + m.completionPrice * tokensOut : 0;
@@ -366,6 +371,9 @@ function renderMission(): HTMLElement[] {
         { class: 'card' },
         h('h3', {}, `📋 ${label}`, h('span', { class: 'small muted', text: `rodada ${run.round}/${run.maxRounds} · ${money(run.totalCost)}` })),
         run.error ? h('div', { class: 'notice error', text: run.error }) : null,
+        !running && (run.status === 'erro' || run.status === 'cancelada') && run.round >= 1
+          ? h('button', { class: 'btn primary', text: '🔄 Continuar de onde parou', onclick: continueMission })
+          : null,
         h('div', { class: 'log' }, ...state.log.slice(-60).map((l) => h('div', { text: l }))),
         run.doc
           ? h(
@@ -450,6 +458,11 @@ function renderAccount(): HTMLElement[] {
     save();
     render();
   });
+  const fallbacks = h('input', { type: 'checkbox', checked: state.settings.useFallbacks }) as HTMLInputElement;
+  fallbacks.addEventListener('change', () => {
+    state.settings.useFallbacks = fallbacks.checked;
+    save();
+  });
   return [
     h(
       'div',
@@ -478,6 +491,7 @@ function renderAccount(): HTMLElement[] {
       h('h3', {}, '⚙️ Preferências'),
       h('label', { class: 'check' }, demo, 'Modo demonstração (respostas simuladas, sem custo e sem chave)'),
       h('label', { class: 'check' }, freeOnly, 'Mostrar só modelos gratuitos na busca'),
+      h('label', { class: 'check' }, fallbacks, 'Se um modelo grátis estiver sobrecarregado, usar outro grátis como reserva'),
       h('p', { class: 'small muted', text: catalogError || `${catalog.length} modelos carregados do OpenRouter (${catalog.filter((m) => m.free).length} gratuitos).` }),
     ),
   ];
@@ -687,13 +701,34 @@ async function startMission(): Promise<void> {
   };
   state.run = run;
   state.log = [`🚀 Missão iniciada com ${state.agents.length} funcionário(s)${state.settings.demo ? ' (modo demonstração)' : ''}.`];
+  await executeRun(run);
+}
+
+/** Retoma uma missão interrompida (erro, cancelamento ou página fechada) sem refazer o que já foi entregue. */
+async function continueMission(): Promise<void> {
+  const run = state.run;
+  if (running || !run || (run.status !== 'erro' && run.status !== 'cancelada')) return;
+  if (!state.settings.demo && !hasKey()) {
+    setTab('conta');
+    return toast('Conecte o OpenRouter ou ative o modo demonstração.');
+  }
+  run.status = 'rodando';
+  run.error = undefined;
+  run.finishedAt = undefined;
+  state.log.push(`${new Date().toLocaleTimeString('pt-BR')} 🔄 Continuando a missão de onde parou…`);
+  await executeRun(run);
+}
+
+async function executeRun(run: MissionRun): Promise<void> {
   running = new AbortController();
   tab = 'missao';
   save();
   syncScene();
   render();
 
-  const chat = state.settings.demo ? demoChat() : openRouterChat(getKey());
+  const chat = state.settings.demo
+    ? demoChat()
+    : openRouterChat(getKey(), (model) => (state.settings.useFallbacks ? fallbackModels(catalog, model) : []));
   const agents = state.agents.slice().sort((a, b) => a.desk - b.desk);
   const log = (m: string): void => {
     state.log.push(`${new Date().toLocaleTimeString('pt-BR')} ${m}`);
@@ -716,7 +751,10 @@ async function startMission(): Promise<void> {
       onReport: () => save(),
       onReview: () => save(),
       onLog: log,
-      onWait: (s, reason) => toast(`⏳ Aguardando ${Math.round(s)}s: ${reason}`),
+      onWait: (s, reason) => {
+        toast(`⏳ Aguardando ${Math.round(s)}s: ${reason}`);
+        log(`⏳ Tentando de novo em ${Math.round(s)}s: ${reason}`);
+      },
       onLeader: (reading) => {
         leaderReading = reading;
         syncScene();

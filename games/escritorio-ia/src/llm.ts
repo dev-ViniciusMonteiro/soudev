@@ -152,63 +152,109 @@ const sleep = (ms: number, signal?: AbortSignal): Promise<void> =>
     });
   });
 
-export function openRouterChat(apiKey: string): ChatFn {
+/**
+ * Modelos reserva para quando o escolhido está sobrecarregado: só para modelos
+ * gratuitos (nunca troca um modelo pago por outro sem você escolher). Prefere
+ * fornecedores diferentes, já que a sobrecarga costuma ser do provedor inteiro.
+ */
+export function fallbackModels(models: ModelInfo[], primary: string, max = 2): string[] {
+  const info = models.find((m) => m.id === primary);
+  if (!info?.free) return [];
+  const vendor = (id: string): string => id.split('/')[0];
+  const general = models
+    .filter((m) => m.free && m.id !== primary && !NOT_GENERAL.test(m.id))
+    .sort((a, b) => paramsBillions(b.id) - paramsBillions(a.id) || b.context - a.context);
+  const picked: string[] = [];
+  for (const m of general) {
+    if (picked.length >= max) break;
+    if (vendor(m.id) === vendor(primary) || picked.some((p) => vendor(p) === vendor(m.id))) continue;
+    picked.push(m.id);
+  }
+  return picked;
+}
+
+const RETRYABLE = new Set([408, 429, 500, 502, 503, 504, 524, 529]);
+const RETRY_WAITS = [5, 10, 20, 40, 60]; // segundos (~2 min no total antes de desistir)
+
+/**
+ * Chamada ao OpenRouter. O OpenRouter às vezes devolve o erro do provedor no
+ * corpo de uma resposta HTTP 200 (ex.: {"error":{"code":503,"metadata":{"error_type":"provider_overloaded"}}}),
+ * então o erro é lido do corpo e do status. Erros temporários esperam e tentam
+ * de novo; com `models`, o próprio OpenRouter passa para um modelo reserva.
+ */
+export function openRouterChat(apiKey: string, fallbacksFor: (model: string) => string[] = () => []): ChatFn {
   return async (model, messages, opts = {}) => {
+    const fallbacks = fallbacksFor(model).filter((m) => m !== model).slice(0, 2);
     const body: Record<string, unknown> = { model, messages, temperature: 0.4 };
+    if (fallbacks.length) body.models = [model, ...fallbacks];
     if (opts.json) body.response_format = { type: 'json_object' };
+    let lastMessage = '';
 
-    for (let attempt = 0; ; attempt++) {
-      const res = await fetch(`${API}/chat/completions`, {
-        method: 'POST',
-        signal: opts.signal,
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-          'HTTP-Referer': location.origin,
-          'X-Title': 'Escritorio IA',
-        },
-        body: JSON.stringify(body),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        if (data.error) throw new LlmError(data.error.message ?? 'Erro do provedor do modelo.', false);
-        const text: string = data.choices?.[0]?.message?.content ?? '';
-        if (!text.trim()) {
-          if (attempt < 2) continue;
-          throw new LlmError('O modelo respondeu vazio.', false);
-        }
-        return {
-          text,
-          tokensIn: data.usage?.prompt_tokens ?? 0,
-          tokensOut: data.usage?.completion_tokens ?? 0,
-          model: data.model ?? model,
-        };
-      }
-
-      // Alguns modelos não aceitam response_format: tenta de novo sem ele.
-      if (res.status === 400 && body.response_format && attempt === 0) {
-        delete body.response_format;
-        continue;
-      }
-      if (res.status === 401) throw new LlmError('Chave do OpenRouter inválida ou revogada. Conecte de novo na aba Conta.', true);
-      if (res.status === 402) throw new LlmError('Sem créditos no OpenRouter para este modelo. Use um modelo gratuito ou adicione créditos.', true);
-      if ((res.status === 429 || res.status >= 500) && attempt < 4) {
-        const retryAfter = Number(res.headers.get('retry-after'));
-        const wait = Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter : 8 * 2 ** attempt;
-        opts.onWait?.(wait, res.status === 429 ? 'limite de pedidos do modelo' : 'instabilidade do provedor');
-        await sleep(wait * 1000, opts.signal);
-        continue;
-      }
-      let message = `Erro ${res.status} ao chamar o modelo ${model}.`;
+    for (let attempt = 0; attempt <= RETRY_WAITS.length; attempt++) {
+      let res: Response | null = null;
+      let data: Record<string, any> | null = null;
       try {
-        const err = await res.json();
-        if (err?.error?.message) message = `${message} ${err.error.message}`;
-      } catch {
-        // resposta sem JSON
+        res = await fetch(`${API}/chat/completions`, {
+          method: 'POST',
+          signal: opts.signal,
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': location.origin,
+            'X-Title': 'Escritorio IA',
+          },
+          body: JSON.stringify(body),
+        });
+        data = await res.json().catch(() => null);
+      } catch (error) {
+        if (opts.signal?.aborted) throw error;
+        // Falha de rede: tratada como temporária.
       }
-      throw new LlmError(message, res.status === 404);
+
+      const err = data?.error ?? data?.choices?.[0]?.error;
+      if (res?.ok && !err) {
+        const text: string = data?.choices?.[0]?.message?.content ?? '';
+        if (text.trim()) {
+          return {
+            text,
+            tokensIn: data?.usage?.prompt_tokens ?? 0,
+            tokensOut: data?.usage?.completion_tokens ?? 0,
+            model: data?.model ?? model,
+          };
+        }
+        lastMessage = 'O modelo respondeu vazio.';
+      } else {
+        const code = Number(err?.code ?? res?.status ?? 0);
+        lastMessage = String(err?.message ?? (res ? `Erro ${res.status}` : 'Falha de conexão com o OpenRouter'));
+        // Alguns modelos não aceitam response_format: tenta de novo sem ele.
+        if (code === 400 && body.response_format && attempt === 0) {
+          delete body.response_format;
+          continue;
+        }
+        if (code === 401) throw new LlmError('Chave do OpenRouter inválida ou revogada. Conecte de novo na aba Conta.', true);
+        if (code === 402) throw new LlmError('Sem créditos no OpenRouter para este modelo. Use um modelo gratuito ou adicione créditos.', true);
+        const temporary = !res || RETRYABLE.has(code) || /overload|temporar|unavailable|timeout|rate.?limit/i.test(lastMessage);
+        if (!temporary) throw new LlmError(`${lastMessage} (modelo ${model})`, code === 404);
+      }
+
+      if (attempt === RETRY_WAITS.length) break;
+      const retryAfter = Number(res?.headers.get('retry-after'));
+      const wait = Number.isFinite(retryAfter) && retryAfter > 0 ? Math.min(retryAfter, 90) : RETRY_WAITS[attempt];
+      const overloaded = err?.metadata?.error_type === 'provider_overloaded' || /overload/i.test(lastMessage);
+      opts.onWait?.(
+        wait,
+        overloaded
+          ? `provedor do modelo sobrecarregado (${lastMessage})`
+          : Number(err?.code ?? res?.status) === 429
+            ? 'limite de pedidos do modelo'
+            : lastMessage,
+      );
+      await sleep(wait * 1000, opts.signal);
     }
+    throw new LlmError(
+      `O modelo ${model}${fallbacks.length ? ' e os modelos reserva' : ''} continuaram indisponíveis depois de várias tentativas: ${lastMessage} Troque o modelo na mesa do agente ou clique em "Continuar de onde parou" mais tarde.`,
+      false,
+    );
   };
 }
 
