@@ -164,7 +164,8 @@ function spawn(kind: Kind, x?: number, y?: number): Entity {
       break;
     case 'barrel':
     case 'boot':
-      Object.assign(base, { x: x ?? HOLE_X + rand(-120, 120), y: y ?? SURFACE + 4, vx: 0, vy: rand(45, 75) * Math.sqrt(d), w: kind === 'barrel' ? 38 : 40, h: kind === 'barrel' ? 48 : 34, color: kind === 'barrel' ? '#8b5a2b' : '#5b4636' });
+      // Atravessam a tela de um lado para o outro, como os peixes.
+      Object.assign(base, { vx: side.dir * rand(70, 120) * Math.sqrt(d), w: kind === 'barrel' ? 38 : 40, h: kind === 'barrel' ? 48 : 34, color: kind === 'barrel' ? '#8b5a2b' : '#5b4636' });
       break;
     case 'can':
       Object.assign(base, { x: x ?? HOLE_X + rand(-70, 70), y: y ?? SURFACE + 4, vx: 0, vy: 38, w: 30, h: 34, color: '#c9d4dd' });
@@ -633,7 +634,7 @@ function drawEntity(e: Entity): void {
     case 'barrel': {
       ctx.save();
       ctx.translate(e.x, e.y);
-      ctx.rotate(e.vy ? 0.08 : 0);
+      ctx.rotate(Math.sin(e.t * 2) * 0.12);
       ctx.fillStyle = e.color;
       ctx.fillRect(-e.w / 2, -e.h / 2, e.w, e.h);
       ctx.fillStyle = '#4b5563';
@@ -645,7 +646,8 @@ function drawEntity(e: Entity): void {
     case 'boot': {
       ctx.save();
       ctx.translate(e.x, e.y);
-      ctx.rotate(e.vy ? -0.1 : 0);
+      if (e.vx < 0) ctx.scale(-1, 1);
+      ctx.rotate(Math.sin(e.t * 2) * 0.12);
       ctx.fillStyle = e.color;
       ctx.fillRect(-10, -e.h / 2, 18, e.h - 8);
       ctx.fillRect(-10, e.h / 2 - 12, e.w - 6, 12);
