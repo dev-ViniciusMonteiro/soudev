@@ -6,13 +6,15 @@
     "dev": "npm run build:game && next dev",
     "build": "npm run build:game && next build",
     "start": "next start",
-    "build:game": "vite build games/cidade-neon --logLevel warn",
-    "typecheck:game": "tsc -p games/cidade-neon --noEmit"
+    "build:game": "vite build games/cidade-neon --logLevel warn && vite build games/escritorio-ia --logLevel warn",
+    "typecheck:game": "tsc -p games/cidade-neon --noEmit && tsc -p games/escritorio-ia --noEmit"
   },
   "dependencies": {
     "docx": "^9.11.0",
+    "dompurify": "^3.4.17",
     "lucide": "^1.17.0",
     "mammoth": "^1.13.0",
+    "marked": "^15.0.12",
     "next": "^16.4.1",
     "pdf-lib": "^1.17.1",
     "qrcode": "^1.5.4",

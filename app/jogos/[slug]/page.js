@@ -127,9 +127,9 @@ export default async function GamePage({ params }) {
         <p className="muted">
           {game.credits.text}{' '}
           <a href={game.credits.url} target="_blank" rel="noopener noreferrer">
-            Ver o projeto original
-          </a>{' '}
-          (licença {game.credits.license}).
+            {game.credits.linkText ?? 'Ver o projeto original'}
+          </a>
+          {game.credits.license ? ` (licença ${game.credits.license}).` : '.'}
         </p>
       </section>
 
