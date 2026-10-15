@@ -28,6 +28,14 @@ const components = {
   'gerador-recibo': dynamic(() => import('./tools/Recibo'), { loading }),
   'gerador-cpf': dynamic(() => import('./tools/GeradorCpf'), { loading }),
   'gerador-cnpj': dynamic(() => import('./tools/GeradorCnpj'), { loading }),
+  'dividir-pdf': dynamic(() => import('./tools/DividirPdf'), { loading }),
+  'assinar-pdf': dynamic(() => import('./tools/AssinarPdf'), { loading }),
+  'heic-para-jpg': dynamic(() => import('./tools/HeicJpg'), { loading }),
+  'calculadora-horas-extras': dynamic(() => import('./tools/HorasExtras'), { loading }),
+  'calculadora-seguro-desemprego': dynamic(() => import('./tools/SeguroDesemprego'), { loading }),
+  'simulador-financiamento': dynamic(() => import('./tools/Financiamento'), { loading }),
+  'consulta-cep': dynamic(() => import('./tools/ConsultaCep'), { loading }),
+  sorteador: dynamic(() => import('./tools/Sorteador'), { loading }),
 }
 
 export default function ToolRenderer({ slug }) {

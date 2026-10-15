@@ -116,7 +116,7 @@ export default async function ToolPage({ params }) {
             <p key={paragraph.slice(0, 40)}>{paragraph}</p>
           ))}
           <p className="muted small privacy-note">
-            🔒 Esta ferramenta roda inteiramente no seu navegador. Nenhum dado ou arquivo é enviado para servidores. Feita por{' '}
+            🔒 {tool.privacy ?? 'Esta ferramenta roda inteiramente no seu navegador. Nenhum dado ou arquivo é enviado para servidores.'} Feita por{' '}
             <Link href="/#sobre">{site.name}</Link>.
           </p>
         </section>
