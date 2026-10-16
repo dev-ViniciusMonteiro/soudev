@@ -2365,3 +2365,79 @@ textarea {
     display: none;
   }
 }
+
+/* ---------- Verificar arquivo ---------- */
+
+.scan-result {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+  padding-top: 8px;
+  min-width: 0;
+}
+
+.scan-result .actions .btn {
+  white-space: normal;
+  text-align: center;
+}
+
+.scan-result + .scan-result {
+  border-top: 1px solid var(--line);
+  padding-top: 22px;
+}
+
+.scan-file {
+  overflow-wrap: anywhere;
+}
+
+.scan-where {
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.scan-hash strong {
+  font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+  font-size: 0.8rem;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+.scan-contents summary {
+  cursor: pointer;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.scan-path {
+  overflow-wrap: anywhere;
+  min-width: 160px;
+}
+
+.scan-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border: 1px solid var(--line-strong);
+  white-space: nowrap;
+}
+
+.scan-badge.danger {
+  color: var(--red);
+  border-color: rgba(248, 113, 113, 0.5);
+}
+
+.scan-badge.warn {
+  color: var(--amber);
+  border-color: rgba(251, 191, 36, 0.45);
+}
+
+.scan-badge.ok {
+  color: var(--green);
+  border-color: rgba(74, 222, 128, 0.4);
+}
+
+.scan-badge.info {
+  color: var(--blue);
+}

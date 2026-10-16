@@ -38,6 +38,7 @@ const components = {
   sorteador: dynamic(() => import('./tools/Sorteador'), { loading }),
   'verificar-site-confiavel': dynamic(() => import('./tools/VerificarSite'), { loading }),
   'conferir-boleto': dynamic(() => import('./tools/ConferirBoleto'), { loading }),
+  'verificar-arquivo-virus': dynamic(() => import('./tools/VerificarArquivo'), { loading }),
   'consulta-ddd': dynamic(() => import('./tools/ConsultaDdd'), { loading }),
   'consulta-cnpj': dynamic(() => import('./tools/ConsultaCnpj'), { loading }),
   'socorro-perto-de-mim': dynamic(() => import('./tools/SocorroPerto'), { loading }),
