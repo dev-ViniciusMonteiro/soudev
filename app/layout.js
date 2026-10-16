@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import Script from 'next/script'
+import Analytics from '@/components/Analytics'
+import { GA_ID, gaInitScript } from '@/lib/analytics'
 import { SITE_URL, site } from '@/lib/site'
 import './globals.css'
 
@@ -40,6 +42,9 @@ export default function RootLayout({ children }) {
   const year = new Date().getFullYear()
   return (
     <html lang="pt-BR">
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: gaInitScript }} />
+      </head>
       <body>
         <header className="site-header">
           <div className="container header-inner">
@@ -77,6 +82,10 @@ export default function RootLayout({ children }) {
           </div>
           <div className="container muted small footer-copy">© {year} {site.name}. Os resultados das calculadoras são estimativas.</div>
         </footer>
+
+        {/* Carrega depois da página ficar interativa: não atrasa a renderização nem os Core Web Vitals. */}
+        <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
+        <Analytics />
 
         {adsenseClient && (
           <Script

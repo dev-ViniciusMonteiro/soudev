@@ -94,7 +94,7 @@ export default async function ToolPage({ params }) {
         </div>
       </header>
 
-      <section className="tool-card-main" aria-label={tool.name}>
+      <section className="tool-card-main" aria-label={tool.name} data-tool-slug={tool.slug} data-tool-category={tool.category}>
         <ToolRenderer slug={tool.slug} />
       </section>
 

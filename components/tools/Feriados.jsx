@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import { downloadBlob } from '@/lib/client'
 import { feriadosDoAno, isoDate, parseIso } from '@/lib/feriados'
 
 const ANO_INICIAL = 2026
@@ -41,12 +42,7 @@ export default function Feriados() {
   const prolongados = lista.filter((f) => [1, 2, 4, 5].includes(parseIso(f.data).getDay())).length
 
   const baixar = () => {
-    const blob = new Blob([ics(lista, ano)], { type: 'text/calendar' })
-    const a = document.createElement('a')
-    a.href = URL.createObjectURL(blob)
-    a.download = `feriados-${ano}.ics`
-    a.click()
-    setTimeout(() => URL.revokeObjectURL(a.href), 2000)
+    downloadBlob(new Blob([ics(lista, ano)], { type: 'text/calendar' }), `feriados-${ano}.ics`)
   }
 
   return (

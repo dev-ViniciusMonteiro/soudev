@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { track } from '@/lib/analytics'
 import { Field } from './ui'
 
 export default function ContactForm() {
@@ -18,8 +19,10 @@ export default function ContactForm() {
         body: JSON.stringify({ nome: form.nome.trim(), mensagem: form.mensagem.trim() }),
       })
       setState(response.ok ? 'sent' : 'error')
+      track(response.ok ? 'generate_lead' : 'contact_error', { form: 'contato' })
     } catch {
       setState('error')
+      track('contact_error', { form: 'contato' })
     }
   }
 

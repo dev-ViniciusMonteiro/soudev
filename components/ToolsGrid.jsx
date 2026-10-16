@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import ToolCard from './ToolCard'
+import { track } from '@/lib/analytics'
 import { categories, tools } from '@/lib/tools'
 
 const normalize = (text) => text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
@@ -16,6 +17,13 @@ export default function ToolsGrid() {
       (category === 'todas' || tool.category === category) &&
       (!q || normalize([tool.name, tool.short, ...tool.keywords].join(' ')).includes(q)),
   )
+
+  // Buscas sem resultado mostram quais ferramentas as pessoas procuram e ainda não existem.
+  useEffect(() => {
+    if (q.length < 2) return
+    const timer = setTimeout(() => track('search', { search_term: q.slice(0, 100), results_count: visible.length, category }), 1200)
+    return () => clearTimeout(timer)
+  }, [q, category, visible.length])
 
   return (
     <div className="tools-browser">
@@ -35,7 +43,10 @@ export default function ToolsGrid() {
               type="button"
               className={category === item.id ? 'chip active' : 'chip'}
               aria-pressed={category === item.id}
-              onClick={() => setCategory(item.id)}
+              onClick={() => {
+                if (item.id !== category) track('filter_category', { category: item.id })
+                setCategory(item.id)
+              }}
             >
               {item.name}
             </button>

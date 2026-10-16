@@ -71,7 +71,7 @@ export default async function GamePage({ params }) {
   ]
 
   return (
-    <main className="container tool-page">
+    <main className="container tool-page" data-game-slug={game.slug}>
       <nav className="breadcrumb" aria-label="Você está em">
         <Link href="/">Início</Link>
         <span aria-hidden="true">/</span>

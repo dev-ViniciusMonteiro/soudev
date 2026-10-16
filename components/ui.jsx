@@ -1,6 +1,7 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { clip, track } from '@/lib/analytics'
 import { formatBytes } from '@/lib/client'
 
 export function Field({ label, hint, children, className = '' }) {
@@ -27,7 +28,11 @@ export function Tabs({ tabs, value, onChange }) {
           role="tab"
           aria-selected={value === id}
           className={value === id ? 'tab active' : 'tab'}
-          onClick={() => onChange(id)}
+          data-ga="tab"
+          onClick={() => {
+            if (id !== value) track('tool_tab', { tab_id: id })
+            onChange(id)
+          }}
         >
           {label}
         </button>
@@ -41,6 +46,7 @@ export function CopyButton({ text, label = 'Copiar', className = 'btn btn-ghost'
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(text)
+      track('copy_result', { action_label: clip(label) })
       setCopied(true)
       setTimeout(() => setCopied(false), 1600)
     } catch {
@@ -48,7 +54,7 @@ export function CopyButton({ text, label = 'Copiar', className = 'btn btn-ghost'
     }
   }
   return (
-    <button type="button" className={className} onClick={copy} disabled={!text}>
+    <button type="button" className={className} onClick={copy} disabled={!text} data-ga="copy">
       {copied ? 'Copiado!' : label}
     </button>
   )
@@ -58,9 +64,16 @@ export function FileDrop({ accept, multiple = false, onFiles, label, hint }) {
   const inputRef = useRef(null)
   const [dragging, setDragging] = useState(false)
 
-  const handle = (fileList) => {
+  const handle = (fileList, method) => {
     const files = Array.from(fileList || [])
-    if (files.length) onFiles(multiple ? files : [files[0]])
+    if (!files.length) return
+    track('file_upload', {
+      method,
+      file_count: files.length,
+      file_types: clip([...new Set(files.map((file) => file.type || 'desconhecido'))].join(',')),
+      total_size_kb: Math.round(files.reduce((sum, file) => sum + file.size, 0) / 1024),
+    })
+    onFiles(multiple ? files : [files[0]])
   }
 
   return (
@@ -74,7 +87,7 @@ export function FileDrop({ accept, multiple = false, onFiles, label, hint }) {
       onDrop={(event) => {
         event.preventDefault()
         setDragging(false)
-        handle(event.dataTransfer.files)
+        handle(event.dataTransfer.files, 'arrastar')
       }}
     >
       <input
@@ -84,11 +97,11 @@ export function FileDrop({ accept, multiple = false, onFiles, label, hint }) {
         multiple={multiple}
         hidden
         onChange={(event) => {
-          handle(event.target.files)
+          handle(event.target.files, 'escolher')
           event.target.value = ''
         }}
       />
-      <button type="button" className="btn btn-primary" onClick={() => inputRef.current?.click()}>
+      <button type="button" className="btn btn-primary" data-ga="upload" onClick={() => inputRef.current?.click()}>
         {label || (multiple ? 'Escolher arquivos' : 'Escolher arquivo')}
       </button>
       <p>ou arraste e solte aqui</p>
@@ -157,6 +170,11 @@ export function Rows({ title, rows, total, negative = false }) {
 }
 
 export function Notice({ kind = 'info', children }) {
+  const message = typeof children === 'string' ? children : ''
+  const visible = Boolean(children)
+  useEffect(() => {
+    if (kind === 'error' && visible) track('tool_error', { error_message: clip(message) || 'erro' })
+  }, [kind, message, visible])
   if (!children) return null
   return <p className={`notice ${kind}`} role={kind === 'error' ? 'alert' : 'status'}>{children}</p>
 }

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { track } from '@/lib/analytics'
 
 // O jogo 3D só é carregado quando a pessoa clica em Jogar: a página fica leve
 // para o Google e não gasta dados móveis de quem só está lendo.
@@ -23,7 +24,10 @@ export default function GamePlayer({ name, playUrl }) {
   const toggleFullscreen = async () => {
     try {
       if (document.fullscreenElement) await document.exitFullscreen()
-      else await wrapRef.current?.requestFullscreen()
+      else {
+        track('game_fullscreen')
+        await wrapRef.current?.requestFullscreen()
+      }
     } catch {
       // iPhone não tem tela cheia em elementos: abrimos o jogo em uma página própria.
       window.open(playUrl, '_blank', 'noopener')
@@ -42,7 +46,10 @@ export default function GamePlayer({ name, playUrl }) {
             allowFullScreen
           />
         ) : (
-          <button type="button" className="game-start" onClick={() => setPlaying(true)}>
+          <button type="button" className="game-start" onClick={() => {
+            track('game_start')
+            setPlaying(true)
+          }}>
             <span className="game-start-title">{name}</span>
             <span className="game-start-play" aria-hidden="true">▶</span>
             <span>Clique para jogar</span>
@@ -55,7 +62,7 @@ export default function GamePlayer({ name, playUrl }) {
             {fullscreen ? 'Sair da tela cheia' : '⛶ Tela cheia'}
           </button>
         )}
-        <a className="btn btn-ghost" href={playUrl} target="_blank" rel="noopener">
+        <a className="btn btn-ghost" href={playUrl} target="_blank" rel="noopener" onClick={() => track('game_new_tab')}>
           Abrir em nova aba
         </a>
         <span className="muted small">No celular, use na horizontal e em tela cheia.</span>

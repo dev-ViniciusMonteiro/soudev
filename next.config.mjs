@@ -13,6 +13,11 @@ const nextConfig = {
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(self)' },
         ],
       },
+      {
+        // Arquivos do jogo: o Google rastreia, lê o noindex e indexa só a página /jogos/<nome>.
+        source: '/jogar/:path*',
+        headers: [{ key: 'X-Robots-Tag', value: 'noindex, follow' }],
+      },
     ]
   },
 }
