@@ -20,6 +20,7 @@ const components = {
   'juros-compostos': dynamic(() => import('./tools/JurosCompostos'), { loading }),
   'calculadora-porcentagem': dynamic(() => import('./tools/Porcentagem'), { loading }),
   'calculadora-imc': dynamic(() => import('./tools/Imc'), { loading }),
+  'correcao-exercicios-camera': dynamic(() => import('./tools/CorrecaoTreino'), { loading }),
   'regra-de-tres': dynamic(() => import('./tools/RegraDeTres'), { loading }),
   'calculadora-datas': dynamic(() => import('./tools/Datas'), { loading }),
   'contador-caracteres': dynamic(() => import('./tools/ContadorCaracteres'), { loading }),

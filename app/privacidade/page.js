@@ -36,7 +36,7 @@ export default function Privacidade() {
           Algumas ferramentas consultam serviços públicos para buscar informações: BrasilAPI (CEP, CNPJ, DDD, bancos, ISBN), Banco Central
           e AwesomeAPI (cotações e taxas), FIPE (preço de veículos), Open-Meteo (clima e qualidade do ar), OpenStreetMap (endereços e
           lugares próximos) e os registros de domínios (registro.br e RDAP). Na verificação de arquivos, o arquivo é analisado no navegador e só a impressão digital (SHA-256) é consultada nas bases CIRCL e MalwareBazaar. Só o dado necessário para a consulta é enviado, e a página de
-          cada ferramenta explica o que é consultado. Sua localização só é usada quando você permite, no próprio navegador.
+          cada ferramenta explica o que é consultado. Sua localização e sua câmera só são usadas quando você permite, no próprio navegador: o vídeo da correção de exercícios é analisado ao vivo no aparelho e nunca é gravado nem enviado.
         </p>
 
         <h2>Formulário de contato</h2>
