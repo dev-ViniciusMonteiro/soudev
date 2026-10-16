@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Notice, Stats } from '../ui'
 import { track } from '@/lib/analytics'
 import { loadPoseLandmarker } from '@/lib/client'
-import { EXERCICIOS, OSSOS, criarTreino, getExercicio } from '@/lib/treino'
+import { EXERCICIOS, GRUPOS, OSSOS, criarTreino, getExercicio } from '@/lib/treino'
 
 const CORES = { ok: '#4ade80', erro: '#f87171', neutro: 'rgba(226, 232, 240, 0.75)' }
 
@@ -250,18 +250,25 @@ export default function CorrecaoTreino() {
     <div className="tool-stack">
       {!treinando && (
         <>
-          <div className="treino-opcoes" role="radiogroup" aria-label="Exercício">
-            {EXERCICIOS.map((e) => (
-              <button
-                key={e.id}
-                type="button"
-                role="radio"
-                aria-checked={exercicioId === e.id}
-                className={exercicioId === e.id ? 'treino-opcao active' : 'treino-opcao'}
-                onClick={() => setExercicioId(e.id)}
-              >
-                {e.nome}
-              </button>
+          <div className="treino-grupos" role="radiogroup" aria-label="Exercício">
+            {GRUPOS.map(([grupo, titulo]) => (
+              <div key={grupo} className="treino-grupo">
+                <span className="treino-grupo-titulo">{titulo}</span>
+                <div className="treino-opcoes">
+                  {EXERCICIOS.filter((e) => e.grupo === grupo).map((e) => (
+                    <button
+                      key={e.id}
+                      type="button"
+                      role="radio"
+                      aria-checked={exercicioId === e.id}
+                      className={exercicioId === e.id ? 'treino-opcao active' : 'treino-opcao'}
+                      onClick={() => setExercicioId(e.id)}
+                    >
+                      {e.nome}
+                    </button>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
           <div className="treino-instrucao">

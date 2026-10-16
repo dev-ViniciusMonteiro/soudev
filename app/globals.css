@@ -2597,3 +2597,21 @@ textarea {
     aspect-ratio: 3 / 4;
   }
 }
+
+.treino-grupos {
+  display: grid;
+  gap: 14px;
+}
+
+.treino-grupo {
+  display: grid;
+  gap: 8px;
+}
+
+.treino-grupo-titulo {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
