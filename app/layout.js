@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import Script from 'next/script'
 import Analytics from '@/components/Analytics'
+import CookieConsent, { CookiePreferencesButton } from '@/components/CookieConsent'
 import { GA_ID, gaInitScript } from '@/lib/analytics'
 import { SITE_URL, site } from '@/lib/site'
 import './globals.css'
@@ -78,6 +79,8 @@ export default function RootLayout({ children }) {
               <Link href="/jogos">Jogos grátis</Link>
               <a href={site.instagram} target="_blank" rel="noopener noreferrer">Instagram {site.instagramHandle}</a>
               <Link href="/#contato">Fale comigo</Link>
+              <Link href="/privacidade">Privacidade</Link>
+              <CookiePreferencesButton />
             </div>
           </div>
           <div className="container muted small footer-copy">© {year} {site.name}. Os resultados das calculadoras são estimativas.</div>
@@ -86,6 +89,7 @@ export default function RootLayout({ children }) {
         {/* Carrega depois da página ficar interativa: não atrasa a renderização nem os Core Web Vitals. */}
         <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
         <Analytics />
+        <CookieConsent />
 
         {adsenseClient && (
           <Script

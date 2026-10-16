@@ -22,5 +22,6 @@ export default function sitemap() {
       priority: 0.8,
       images: [`${SITE_URL}/jogos/${game.slug}/opengraph-image`],
     })),
+    { url: `${SITE_URL}/privacidade`, lastModified, changeFrequency: 'yearly', priority: 0.3 },
   ]
 }
