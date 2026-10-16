@@ -4,40 +4,19 @@ import { useEffect, useState } from 'react'
 import { Field, Notice, NumberInput, Stats, Tabs } from '../ui'
 import { fmt } from '@/lib/br'
 import { DATA_INICIAL, addDays, diferencaCalendario, diffDays, parseDate, toInputDate } from '@/lib/trabalhista'
+import { contarDiasUteis as contarUteis, somarDiasUteis } from '@/lib/feriados'
 
 // Começa com uma data fixa (igual no servidor e no navegador) e troca por hoje após carregar.
 function useHoje(setter, offset = 0) {
   useEffect(() => setter(toInputDate(addDays(new Date(), offset))), [setter, offset])
 }
 
-const FERIADOS_FIXOS = ['01-01', '04-21', '05-01', '09-07', '10-12', '11-02', '11-15', '11-20', '12-25']
 const SEMANA = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado']
-
-const isDiaUtil = (date) => {
-  const dia = date.getDay()
-  const md = `${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
-  return dia !== 0 && dia !== 6 && !FERIADOS_FIXOS.includes(md)
-}
 
 const longDate = (date) => date.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })
 
-function contarDiasUteis(inicio, fim) {
-  const [a, b] = inicio <= fim ? [inicio, fim] : [fim, inicio]
-  let count = 0
-  for (let d = addDays(a, 1); d <= b; d = addDays(d, 1)) if (isDiaUtil(d)) count++
-  return count
-}
-
-function somarDiasUteis(inicio, dias) {
-  const passo = dias >= 0 ? 1 : -1
-  let restante = Math.abs(dias)
-  let d = inicio
-  while (restante > 0) {
-    d = addDays(d, passo)
-    if (isDiaUtil(d)) restante--
-  }
-  return d
-}
+// Feriados nacionais com os móveis (Carnaval, Sexta-feira Santa, Corpus Christi) calculados pela Páscoa.
+const contarDiasUteis = (inicio, fim) => Math.abs(contarUteis(inicio, fim))
 
 const plural = (n, um, varios) => `${fmt(n, 0)} ${n === 1 ? um : varios}`
 
@@ -69,7 +48,7 @@ function EntreDatas() {
         São {plural(cal.anos, 'ano', 'anos')}, {plural(cal.meses, 'mês', 'meses')} e {plural(cal.dias, 'dia', 'dias')}
         {dias < 0 ? ' (a data final é anterior à inicial)' : ''}.
       </p>
-      <p className="muted small">Dias úteis desconsideram a data inicial, fins de semana e feriados nacionais fixos.</p>
+      <p className="muted small">Dias úteis desconsideram a data inicial, fins de semana e feriados nacionais (inclusive Carnaval, Sexta-feira Santa e Corpus Christi).</p>
     </Form>
   )
 }

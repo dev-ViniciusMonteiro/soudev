@@ -36,6 +36,18 @@ const components = {
   'simulador-financiamento': dynamic(() => import('./tools/Financiamento'), { loading }),
   'consulta-cep': dynamic(() => import('./tools/ConsultaCep'), { loading }),
   sorteador: dynamic(() => import('./tools/Sorteador'), { loading }),
+  'verificar-site-confiavel': dynamic(() => import('./tools/VerificarSite'), { loading }),
+  'conferir-boleto': dynamic(() => import('./tools/ConferirBoleto'), { loading }),
+  'consulta-ddd': dynamic(() => import('./tools/ConsultaDdd'), { loading }),
+  'consulta-cnpj': dynamic(() => import('./tools/ConsultaCnpj'), { loading }),
+  'socorro-perto-de-mim': dynamic(() => import('./tools/SocorroPerto'), { loading }),
+  'alerta-clima': dynamic(() => import('./tools/AlertaClima'), { loading }),
+  'tabela-fipe': dynamic(() => import('./tools/TabelaFipe'), { loading }),
+  'comparador-investimentos': dynamic(() => import('./tools/OndeInvestir'), { loading }),
+  'conversor-moedas': dynamic(() => import('./tools/ConversorMoedas'), { loading }),
+  'calculadora-dias-uteis': dynamic(() => import('./tools/DiasUteis'), { loading }),
+  feriados: dynamic(() => import('./tools/Feriados'), { loading }),
+  'consulta-isbn': dynamic(() => import('./tools/ConsultaIsbn'), { loading }),
 }
 
 export default function ToolRenderer({ slug }) {

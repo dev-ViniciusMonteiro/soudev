@@ -1995,3 +1995,287 @@ textarea {
     margin: 18mm;
   }
 }
+
+/* ---------- Ferramentas de consulta (golpes, emergência, clima) ---------- */
+
+.verdict {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 18px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line-strong);
+  background: var(--bg-2);
+}
+.verdict strong {
+  font-size: 1.2rem;
+}
+.verdict.ok {
+  border-color: rgba(74, 222, 128, 0.45);
+  background: rgba(74, 222, 128, 0.08);
+}
+.verdict.ok strong {
+  color: var(--green);
+}
+.verdict.warn {
+  border-color: rgba(251, 191, 36, 0.45);
+  background: rgba(251, 191, 36, 0.08);
+}
+.verdict.warn strong {
+  color: var(--amber);
+}
+.verdict.danger {
+  border-color: rgba(248, 113, 113, 0.55);
+  background: rgba(248, 113, 113, 0.1);
+}
+.verdict.danger strong {
+  color: var(--red);
+}
+
+.signal-list,
+.alert-list,
+.place-list,
+.holiday-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0;
+  margin: 0;
+}
+.signal-list li,
+.alert-list li {
+  position: relative;
+  padding: 10px 12px 10px 36px;
+  border-radius: 10px;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  font-size: 0.95rem;
+}
+.signal-list li::before,
+.alert-list li::before {
+  position: absolute;
+  left: 12px;
+  top: 10px;
+  font-weight: 700;
+}
+.signal-list li.danger,
+.alert-list li.danger {
+  border-color: rgba(248, 113, 113, 0.45);
+}
+.signal-list li.danger::before,
+.alert-list li.danger::before {
+  content: '✕';
+  color: var(--red);
+}
+.signal-list li.warn,
+.alert-list li.warn {
+  border-color: rgba(251, 191, 36, 0.4);
+}
+.signal-list li.warn::before,
+.alert-list li.warn::before {
+  content: '!';
+  color: var(--amber);
+}
+.signal-list li.ok::before {
+  content: '✓';
+  color: var(--green);
+}
+.signal-list li.info::before,
+.alert-list li.info::before {
+  content: 'i';
+  color: var(--blue);
+}
+.alert-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.alert-list li span {
+  color: var(--muted);
+}
+
+.sos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+.sos-card {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(248, 113, 113, 0.08);
+  border: 1px solid rgba(248, 113, 113, 0.35);
+  color: var(--text);
+  text-decoration: none;
+}
+.sos-card:hover {
+  border-color: var(--red);
+}
+.sos-card strong {
+  font-size: 1.5rem;
+  color: var(--red);
+  line-height: 1.1;
+}
+.sos-card span {
+  font-weight: 700;
+}
+.sos-card small {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.place-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+}
+.place-list li > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.place-list small {
+  color: var(--muted);
+}
+.place-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.tag {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.tag.ok {
+  background: rgba(74, 222, 128, 0.15);
+  color: var(--green);
+}
+.tag.danger {
+  background: rgba(248, 113, 113, 0.15);
+  color: var(--red);
+}
+
+.day-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 10px;
+}
+.day-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 14px;
+  border-radius: 12px;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  text-align: center;
+}
+.day-card small {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+.day-icon {
+  font-size: 2rem;
+}
+
+.holiday-list li {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+}
+.holiday-list li.past {
+  opacity: 0.55;
+}
+.holiday-list li > span:last-child {
+  display: flex;
+  flex-direction: column;
+}
+.holiday-list small {
+  color: var(--muted);
+}
+.holiday-date {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 52px;
+  padding: 4px 0;
+  border-radius: 10px;
+  background: rgba(103, 232, 249, 0.1);
+  color: var(--cyan);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+}
+.holiday-date b {
+  font-size: 1.3rem;
+  line-height: 1.1;
+}
+
+.book {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+}
+.book img {
+  width: 140px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+.book .rows {
+  flex: 1;
+  min-width: 0;
+}
+
+.bar {
+  height: 6px;
+  margin: 6px 0 4px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+.bar span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--cyan), var(--purple));
+}
+.neg {
+  color: var(--red);
+}
+.pos {
+  color: var(--green);
+}
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 640px) {
+  .place-list li {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .book {
+    flex-direction: column;
+  }
+  .book img {
+    width: 110px;
+  }
+}
