@@ -3400,3 +3400,88 @@ html.sx-tela-cheia .site-footer {
     text-align: right;
   }
 }
+
+/* Assistente de perguntas do MEI na Mão */
+
+.mf-resposta p {
+  margin: 0;
+}
+
+.mf-resposta {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mf-pergunta-feita {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.mf-resposta-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-left: 22px;
+  font-size: 0.98rem;
+}
+
+.mf-resposta-lista li span {
+  margin-right: 8px;
+}
+
+.mf-resposta .mf-ouvir {
+  align-self: flex-start;
+}
+
+.mf-perguntas {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mf-perguntas h2 {
+  font-size: 1.2rem;
+}
+
+.mf-escrever {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.mf-escrever input {
+  flex: 1 1 240px;
+  font-size: 1.1rem !important;
+  padding: 14px 16px !important;
+}
+
+.mf-escrever .mf-continuar {
+  flex: 0 0 auto;
+  min-height: 52px;
+}
+
+.mf-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mf-chips button {
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: var(--panel);
+  font-size: 0.95rem;
+  cursor: pointer;
+  text-align: left;
+}
+
+.mf-chips button:hover {
+  border-color: var(--sx-cor);
+}
+
+.mf-chips .mf-chip-mais {
+  color: var(--cyan);
+  border-style: dashed;
+}

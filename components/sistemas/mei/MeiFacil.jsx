@@ -12,6 +12,7 @@ import { concluirVenda } from '@/lib/sistemas/acoes'
 import { AJUDA, MEI, limiteDoAno, precisaNota, proximoDAS, reaisFalado, receitasDoMes, situacaoLimite, valorDAS } from '@/lib/sistemas/mei'
 import { falar, falaDisponivel, interpretar, ouvir, vozDisponivel } from '@/lib/sistemas/voz'
 import { qrDoProduto } from '@/lib/sistemas/visao'
+import { PERGUNTAS_PRONTAS, perguntar } from '@/lib/sistemas/assistente'
 import { addDias, brl, dataBR, hojeISO, num, parseValor, round2 } from '@/lib/sistemas/regras'
 
 // Itens ditos na tela inicial ("vendi 2 coxinhas") seguem para a tela de venda.
@@ -51,16 +52,6 @@ function useResumo() {
     }
     return r
   }, [vendas, lancamentos])
-}
-
-function respostaConsulta(cmd, r) {
-  const nomes = { hoje: 'hoje', semana: 'nos últimos 7 dias', mes: 'este mês', ano: 'este ano' }
-  const chave = { hoje: 'Hoje', semana: 'Semana', mes: 'Mes', ano: 'Ano' }[cmd.periodo]
-  const vendas = r[cmd.periodo]
-  const gastos = r[`gastos${chave}`]
-  if (cmd.oque === 'gastos') return `Você gastou ${reaisFalado(gastos)} ${nomes[cmd.periodo]}.`
-  if (cmd.oque === 'lucro') return `${nomes[cmd.periodo][0].toUpperCase()}${nomes[cmd.periodo].slice(1)} você vendeu ${reaisFalado(vendas)} e gastou ${reaisFalado(gastos)}. Sobrou ${reaisFalado(vendas - gastos)}.`
-  return `Você vendeu ${reaisFalado(vendas)} ${nomes[cmd.periodo]}.`
 }
 
 /* ---------- Botão de voz ---------- */
@@ -105,31 +96,46 @@ export function Inicio() {
   const { banco, ir } = useSistema()
   const cfg = useConfig()
   const r = useResumo()
-  const [resposta, setResposta] = useState('')
+  const vendas = useTabela('vendas')
+  const lancamentos = useTabela('lancamentos')
+  const produtos = useTabela('produtos')
+  const clientes = useTabela('clientes')
+  const [resposta, setResposta] = useState(null)
+  const [maisPerguntas, setMaisPerguntas] = useState(false)
+  const [escrito, setEscrito] = useState('')
   const das = valorDAS(cfg.mei_atividade)
   const prox = proximoDAS()
   const limite = limiteDoAno(cfg.mei_abertura)
   const pct = Math.min(100, (r.ano / limite.valor) * 100)
-  const pagos = useTabela('lancamentos').some((l) => l.ref_id === `das:${prox.competencia.getFullYear()}-${String(prox.competencia.getMonth() + 1).padStart(2, '0')}`)
+  const pagos = lancamentos.some((l) => l.ref_id === `das:${prox.competencia.getFullYear()}-${String(prox.competencia.getMonth() + 1).padStart(2, '0')}`)
 
-  const responder = (t) => {
-    setResposta(t)
-    falar(t)
+  /** Mostra e fala a resposta. Aceita texto simples ou o resultado do assistente. */
+  const responder = (res, pergunta = '') => {
+    const final = typeof res === 'string' ? { tela: res, fala: res } : res
+    setResposta({ ...final, pergunta })
+    falar(final.fala)
   }
 
-  const comando = (cmd) => {
-    if (cmd.acao === 'consulta') return responder(respostaConsulta(cmd, r))
-    if (cmd.acao === 'gasto') {
-      if (!cmd.valor) return responder('Não entendi o valor. Diga, por exemplo: gastei 50 reais de luz.')
+  const comando = (cmd, texto) => {
+    if (cmd.acao === 'gasto' && cmd.valor) {
       registrarGasto(banco, cmd)
-      return responder(`Pronto, anotei um gasto de ${reaisFalado(cmd.valor)}: ${cmd.descricao}.`)
+      return responder({ tela: `Pronto, anotei um gasto de ${brl(cmd.valor)}: ${cmd.descricao}.`, fala: `Pronto, anotei um gasto de ${reaisFalado(cmd.valor)}: ${cmd.descricao}.` }, texto)
     }
     if (cmd.acao === 'vender') {
       carrinhoPendente = cmd.itens
       return ir('venda-facil')
     }
+    const res = perguntar(texto, { vendas, lancamentos, produtos, clientes, cfg })
+    if (res) return responder(res, texto)
+    if (cmd.acao === 'gasto') return responder('Não entendi o valor. Diga, por exemplo: gastei 50 reais de luz.', texto)
     if (cmd.acao === 'nota') return ir('vendas')
-    responder('Não entendi. Tente: vendi duas coxinhas, gastei 30 reais de gás ou quanto vendi hoje.')
+    responder('Não entendi. Tente: “qual o produto mais vendido?”, “qual meu maior gasto?”, “vendi duas coxinhas” ou toque numa das perguntas abaixo.', texto)
+  }
+
+  // Pergunta escrita ou tocada passa pelo mesmo caminho da voz.
+  const enviar = (texto) => {
+    if (!texto.trim()) return
+    comando(interpretar(texto, produtos.filter((p) => p.ativo !== false)), texto)
   }
 
   return (
@@ -142,7 +148,7 @@ export function Inicio() {
         <button type="button" className="mf-acao" onClick={() => ir('gastos')}>
           <span>💸</span>Anotar gasto
         </button>
-        <button type="button" className="mf-acao" onClick={() => responder(respostaConsulta({ periodo: 'mes', oque: 'lucro' }, r))}>
+        <button type="button" className="mf-acao" onClick={() => enviar('quanto sobrou este mês')}>
           <span>📊</span>Quanto ganhei
         </button>
         <button type="button" className="mf-acao" onClick={() => ir('vendas')}>
@@ -156,12 +162,55 @@ export function Inicio() {
         </button>
       </div>
 
-      <BotaoVoz onComando={comando} exemplos="Ex.: “vendi duas coxinhas e um café”, “gastei 50 reais de luz”, “quanto vendi hoje?”" />
+      <BotaoVoz onComando={comando} exemplos="Ex.: “qual o produto mais vendido?”, “qual meu maior gasto?”, “vendi duas coxinhas”, “gastei 50 reais de luz”" />
       {resposta && (
-        <p className="mf-resposta" role="status">
-          {resposta}
-        </p>
+        <div className="mf-resposta" role="status">
+          {resposta.pergunta && <small className="mf-pergunta-feita">“{resposta.pergunta}”</small>}
+          <p>{resposta.tela}</p>
+          {resposta.lista?.length > 0 && (
+            <ol className="mf-resposta-lista">
+              {resposta.lista.map(([rotulo, valor]) => (
+                <li key={rotulo}>
+                  <span>{rotulo}</span>
+                  <strong>{valor}</strong>
+                </li>
+              ))}
+            </ol>
+          )}
+          {falaDisponivel() && (
+            <button type="button" className="mf-ouvir" onClick={() => falar(resposta.fala)}>
+              🔊 Ouvir de novo
+            </button>
+          )}
+        </div>
       )}
+
+      <section className="mf-perguntas" aria-label="Perguntas prontas">
+        <h2>Pergunte ao sistema</h2>
+        <form
+          className="mf-escrever"
+          onSubmit={(e) => {
+            e.preventDefault()
+            enviar(escrito)
+            setEscrito('')
+          }}
+        >
+          <input value={escrito} onChange={(e) => setEscrito(e.target.value)} placeholder="Escreva: quanto vendi em setembro?" aria-label="Escreva sua pergunta" />
+          <button type="submit" className="mf-continuar">
+            Perguntar
+          </button>
+        </form>
+        <div className="mf-chips">
+          {(maisPerguntas ? PERGUNTAS_PRONTAS : PERGUNTAS_PRONTAS.slice(0, 8)).map((q) => (
+            <button key={q} type="button" onClick={() => enviar(q)}>
+              {q}
+            </button>
+          ))}
+          <button type="button" className="mf-chip-mais" onClick={() => setMaisPerguntas((v) => !v)}>
+            {maisPerguntas ? 'Menos' : `+ ${PERGUNTAS_PRONTAS.length - 8} perguntas`}
+          </button>
+        </div>
+      </section>
 
       <div className="mf-numeros">
         <div>
@@ -495,7 +544,11 @@ const CATEGORIAS = [
 
 export function Gastos() {
   const { banco } = useSistema()
+  const cfg = useConfig()
   const lancamentos = useTabela('lancamentos')
+  const vendas = useTabela('vendas')
+  const produtos = useTabela('produtos')
+  const clientes = useTabela('clientes')
   const [categoria, setCategoria] = useState(null)
   const [valor, setValor] = useState('')
   const [descricao, setDescricao] = useState('')
@@ -533,10 +586,15 @@ export function Gastos() {
             ))}
           </div>
           <BotaoVoz
-            exemplos="Ex.: “gastei 80 reais de mercadoria”, “paguei 120 de luz”"
-            onComando={(cmd) => {
+            exemplos="Ex.: “gastei 80 reais de mercadoria”, “paguei 120 de luz”, “qual meu maior gasto?”"
+            onComando={(cmd, texto) => {
               if (cmd.acao !== 'gasto' || !cmd.valor) {
-                setFala('Não entendi. Diga, por exemplo: gastei 50 reais de luz.')
+                const res = perguntar(texto, { vendas, lancamentos, produtos, clientes, cfg })
+                if (res) {
+                  setFala(res.tela)
+                  return falar(res.fala)
+                }
+                setFala('Não entendi. Diga, por exemplo: gastei 50 reais de luz, ou pergunte: qual meu maior gasto?')
                 return falar('Não entendi. Diga, por exemplo: gastei 50 reais de luz.')
               }
               registrarGasto(banco, cmd)
