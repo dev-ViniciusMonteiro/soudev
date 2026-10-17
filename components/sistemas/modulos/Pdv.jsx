@@ -8,6 +8,7 @@ import { Pagamento, htmlCupom, htmlProposta, imprimir } from '../comuns'
 import { caixaAberto, concluirVenda } from '@/lib/sistemas/acoes'
 import { brl, contaVenda, linkWhats, num, parseValor, resumoItens, round2, saldos } from '@/lib/sistemas/regras'
 import { AbrirCaixa } from './Caixa'
+import { NotaFiscal, SeloFiscal } from '../Fiscal'
 
 export default function Pdv() {
   const { banco, usuario, ativos, ir } = useSistema()
@@ -26,6 +27,7 @@ export default function Pdv() {
   const [feita, setFeita] = useState(null)
   const [camera, setCamera] = useState(false)
   const [aviso, setAviso] = useState('')
+  const [nota, setNota] = useState(null)
   const buscaRef = useRef(null)
 
   const precisaCaixa = ativos.includes('caixa')
@@ -249,6 +251,7 @@ export default function Pdv() {
           <div className="sx-sucesso">
             <strong>{brl(feita.total)}</strong>
             {feita.troco > 0 && <p className="sx-troco">Troco: {brl(feita.troco)}</p>}
+            {feita.fiscal && <SeloFiscal fiscal={feita.fiscal} />}
           </div>
           <div className="sx-acoes">
             <button type="button" className="btn btn-primary" autoFocus onClick={() => setFeita(null)}>
@@ -257,6 +260,9 @@ export default function Pdv() {
             <button type="button" className="btn btn-ghost" onClick={() => imprimir(htmlCupom(feita, cfg), { cupom: true, titulo: 'Cupom' })}>
               Imprimir cupom
             </button>
+            <button type="button" className="btn btn-ghost" onClick={() => setNota(feita)}>
+              {feita.fiscal ? 'Ver nota fiscal' : 'Emitir nota fiscal (simulação)'}
+            </button>
             {feita.telefone && (
               <a className="btn btn-ghost" target="_blank" rel="noopener noreferrer" href={linkWhats(feita.telefone, `${cfg.empresa_nome || ''}: obrigado pela compra! ${resumoItens(feita.itens)}. Total ${brl(feita.total)}.`)}>
                 Enviar no WhatsApp
@@ -264,6 +270,15 @@ export default function Pdv() {
             )}
           </div>
         </Modal>
+      )}
+      {nota && (
+        <NotaFiscal
+          venda={nota}
+          onFechar={() => {
+            setNota(null)
+            setFeita((f) => (f ? banco.get('vendas', f.id) || f : f))
+          }}
+        />
       )}
     </div>
   )

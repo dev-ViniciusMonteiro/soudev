@@ -18,6 +18,7 @@ const grupos = [
   ['E-mails', ['emails_notificacao', 'email_cliente']],
   ['Funcionamento e agenda', ['abre', 'fecha', 'dias', 'intervalo_agenda']],
   ['Cardápio, mesas e mensalidades', ['loja_aberta', 'taxa_entrega', 'pedido_minimo', 'tempo_entrega', 'mesas', 'taxa_servico', 'multa_atraso']],
+  ['Nota fiscal (simulação: nada é enviado à SEFAZ)', ['uf', 'ie', 'im', 'regime', 'serie_nfce', 'nfce_auto']],
 ]
 
 export default function Config() {

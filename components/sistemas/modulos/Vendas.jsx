@@ -9,6 +9,7 @@ import { cancelarVenda, concluirVenda } from '@/lib/sistemas/acoes'
 import { FORMAS_PAGAMENTO, tabelas } from '@/lib/sistemas/schema'
 import { brl, csv, dataBR, linkWhats, num, pagamentosResumo, resumoItens } from '@/lib/sistemas/regras'
 import { downloadBlob } from '@/lib/client'
+import { NotaFiscal, SeloFiscal } from '../Fiscal'
 
 const origemNome = (o) => tabelas.vendas.campos.find((c) => c.id === 'origem').opcoes.find(([id]) => id === o)?.[1] ?? o
 const tom = { concluida: 'ok', aberta: 'aviso', orcamento: 'info', cancelada: 'erro' }
@@ -75,7 +76,7 @@ export default function Vendas() {
                   <td>{origemNome(v.origem)}</td>
                   <td>{brl(v.total)}</td>
                   <td>
-                    <Selo tom={tom[v.status]}>{statusNome[v.status]}</Selo>
+                    <Selo tom={tom[v.status]}>{statusNome[v.status]}</Selo> <SeloFiscal fiscal={v.fiscal} />
                   </td>
                 </tr>
               ))}
@@ -93,6 +94,7 @@ function DetalheVenda({ venda, onFechar }) {
   const { banco, usuario } = useSistema()
   const cfg = useConfig()
   const [pagar, setPagar] = useState(false)
+  const [nota, setNota] = useState(false)
   const v = banco.get('vendas', venda.id) || venda
   return (
     <Modal
@@ -103,6 +105,11 @@ function DetalheVenda({ venda, onFechar }) {
           <button type="button" className="btn btn-ghost" onClick={() => imprimir(v.status === 'orcamento' ? htmlProposta(v, cfg) : htmlCupom(v, cfg), { cupom: v.status !== 'orcamento', titulo: `Venda ${v.numero}` })}>
             Imprimir
           </button>
+          {v.status === 'concluida' && (
+            <button type="button" className="btn btn-primary" onClick={() => setNota(true)}>
+              {v.fiscal ? 'Nota fiscal' : 'Emitir nota (simulação)'}
+            </button>
+          )}
           {v.status === 'orcamento' && (
             <button type="button" className="btn btn-primary" onClick={() => setPagar(true)}>
               Converter em venda
@@ -118,6 +125,10 @@ function DetalheVenda({ venda, onFechar }) {
               type="button"
               className="btn btn-ghost"
               onClick={() => {
+                if (v.fiscal?.status === 'autorizada') {
+                  alert('Esta venda tem nota fiscal autorizada. Cancele a nota primeiro (botão "Nota fiscal").')
+                  return
+                }
                 const motivo = prompt('Motivo do cancelamento')
                 if (motivo === null) return
                 cancelarVenda(banco, v, motivo)
@@ -173,6 +184,12 @@ function DetalheVenda({ venda, onFechar }) {
       </ul>
       {(v.pagamentos || []).length > 0 && <p className="small">Pago: {pagamentosResumo(v.pagamentos, FORMAS_PAGAMENTO)}{Number(v.troco) ? ` · troco ${brl(v.troco)}` : ''}</p>}
       {v.obs && <p className="small muted">{v.obs}</p>}
+      {v.fiscal && (
+        <p className="small">
+          <SeloFiscal fiscal={v.fiscal} /> emitida em {dataBR(v.fiscal.emitida_em, true)} (simulação)
+        </p>
+      )}
+      {nota && <NotaFiscal venda={v} onFechar={() => setNota(false)} />}
       {pagar && (
         <Pagamento
           total={v.total}

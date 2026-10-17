@@ -30,7 +30,7 @@ const faqComum = [
   ['Funciona sem internet?', 'Sim. As vendas e os cadastros ficam guardados no aparelho e sobem para a planilha quando a internet volta. O status no topo mostra quantas alterações estão na fila.'],
   ['Como funciona o login?', 'Por e-mail, sem senha: você digita o e-mail e recebe um código de 6 dígitos. O dono da planilha cadastra os funcionários na aba de usuários, com papel de gerente ou operador de caixa.'],
   ['Recebo um e-mail a cada venda?', 'Sim, se quiser. O servidor da planilha manda um e-mail para os endereços que você escolher a cada venda concluída e a cada pedido ou agendamento online. Uma conta Gmail comum envia até cerca de 100 e-mails por dia.'],
-  ['Emite nota fiscal?', 'Não. O sistema imprime cupom não fiscal, OS, proposta e recibo. A NFC-e exige certificado digital e integração com a SEFAZ.'],
+  ['Emite nota fiscal?', 'Na demonstração, a NFC-e (venda de produto) e a NFS-e (serviço) saem em modo simulação: o sistema mostra todo o fluxo, gera a chave de acesso e imprime o DANFE com QR Code, mas nada vai para a SEFAZ e a nota não tem valor fiscal. A emissão de verdade entra num sistema sob medida, ligado a uma API fiscal com o certificado digital do seu negócio.'],
 ]
 
 export default async function NichoPage({ params }) {

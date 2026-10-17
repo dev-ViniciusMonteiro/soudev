@@ -103,7 +103,7 @@ export default function SistemasIndex() {
           de vendas do CRM. Campos novos viram colunas novas sozinhos.
         </p>
         <p className="muted small">
-          Os sistemas emitem cupom não fiscal. Nota fiscal (NFC-e) exige certificado digital e integração com a SEFAZ, o que não faz parte desta versão.
+          Nota fiscal: a NFC-e e a NFS-e aparecem em modo simulação, com chave de acesso, DANFE e cancelamento, sem valor fiscal. A emissão real, com o certificado digital do seu negócio, entra num projeto sob medida.
         </p>
       </section>
 
