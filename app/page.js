@@ -1,8 +1,9 @@
 import Link from 'next/link'
 import ContactForm from '@/components/ContactForm'
-import ToolsGrid from '@/components/ToolsGrid'
 import { SITE_URL, jsonLd, site } from '@/lib/site'
-import { tools } from '@/lib/tools'
+import { categories, tools } from '@/lib/tools'
+import { nichos } from '@/lib/sistemas/nichos'
+import { games } from '@/lib/games'
 
 export const metadata = {
   alternates: { canonical: '/' },
@@ -40,8 +41,48 @@ const servicos = [
   ['Aulas e mentoria', 'Programação e IA aplicada para pessoas e times.'],
 ]
 
+const icones = {
+  golpes: '🛡️',
+  saude: '💪',
+  emergencia: '🚨',
+  pdf: '📄',
+  trabalho: '💼',
+  dia: '🧮',
+  texto: '🔐',
+  geradores: '⚙️',
+}
+
+// Vitrine: as categorias de ferramentas mais os sistemas e os jogos, cada uma com os seus itens.
+const vitrine = [
+  ...categories.map((c) => ({
+    id: c.id,
+    icone: icones[c.id] ?? '🧰',
+    nome: c.name,
+    descricao: c.description,
+    verTodos: `/ferramentas#${c.id}`,
+    itens: tools.filter((t) => t.category === c.id).map((t) => ({ href: `/ferramentas/${t.slug}`, badge: t.badge, nome: t.name, texto: t.short })),
+  })),
+  {
+    id: 'sistemas',
+    icone: '🏪',
+    nome: 'Sistemas de gestão',
+    descricao: 'PDV, cardápio online, agenda, ordem de serviço, academia e CRM. Teste na hora; se quiser, guarde os dados na sua planilha do Google.',
+    verTodos: '/sistemas',
+    itens: nichos.map((n) => ({ href: `/sistemas/${n.slug}`, badge: n.badge, nome: n.nome, texto: n.curto, emoji: true })),
+  },
+  {
+    id: 'jogos',
+    icone: '🎮',
+    nome: 'Jogos',
+    descricao: 'Jogos grátis direto no navegador, no PC ou no celular, sem baixar nada.',
+    verTodos: '/jogos',
+    itens: games.map((g) => ({ href: `/jogos/${g.slug}`, badge: g.badge, nome: g.name, texto: g.short })),
+  },
+]
+
 export default function Home() {
   const featured = destaques.map((slug) => tools.find((tool) => tool.slug === slug))
+  const total = vitrine.reduce((s, c) => s + c.itens.length, 0)
 
   return (
     <main>
@@ -51,15 +92,19 @@ export default function Home() {
             <span className="dot" /> {site.name} · {site.role}
           </p>
           <h1>
-            Ferramentas online grátis que resolvem <span className="gradient-text">em segundos</span>.
+            Ferramentas, sistemas e jogos grátis que resolvem <span className="gradient-text">em segundos</span>.
           </h1>
           <p className="lead">
-            {tools.length} ferramentas de PDF, cálculos trabalhistas, QR Code Pix, recibos e geradores. Tudo roda direto no seu navegador:
-            sem cadastro, sem limite de uso, e seus arquivos nunca saem do seu computador.
+            {tools.length} ferramentas de PDF, cálculos trabalhistas, QR Code Pix e geradores, {nichos.length} sistemas de gestão para pequenos negócios e {games.length} jogos. Tudo roda direto no
+            navegador: sem cadastro, sem limite de uso, e seus arquivos nunca saem do seu computador.
           </p>
           <div className="hero-actions">
-            <Link href="#ferramentas" className="btn btn-primary btn-lg">Ver todas as ferramentas</Link>
-            <Link href="#sobre" className="btn btn-ghost btn-lg">Quem fez</Link>
+            <Link href="#categorias" className="btn btn-primary btn-lg">
+              Ver por categoria
+            </Link>
+            <Link href="/ferramentas" className="btn btn-ghost btn-lg">
+              Buscar ferramenta
+            </Link>
           </div>
           <div className="featured">
             {featured.map((tool) => (
@@ -87,27 +132,57 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="ferramentas" className="container section">
+      <section id="categorias" className="container section">
         <div className="section-head">
-          <h2>Todas as ferramentas</h2>
-          <p className="muted">Escolha uma categoria ou busque pelo nome.</p>
+          <h2>Categorias</h2>
+          <p className="muted">
+            {total} itens em {vitrine.length} categorias. Toque numa categoria para ir direto a ela.
+          </p>
         </div>
-        <ToolsGrid />
+        <nav className="vitrine-categorias" aria-label="Categorias">
+          {vitrine.map((c) => (
+            <a key={c.id} href={`#cat-${c.id}`} className="vitrine-categoria">
+              <span className="vitrine-icone" aria-hidden="true">
+                {c.icone}
+              </span>
+              <span className="vitrine-categoria-nome">{c.nome}</span>
+              <span className="vitrine-qtd">{c.itens.length} {c.itens.length === 1 ? 'item' : 'itens'}</span>
+            </a>
+          ))}
+        </nav>
       </section>
 
-      <section className="container section">
-        <Link href="/jogos/cidade-neon" className="game-banner">
-          <span className="game-banner-art" aria-hidden="true">
-            CIDADE<span>NEON</span>
-          </span>
-          <span className="game-banner-body">
-            <span className="eyebrow">Novo · Jogo grátis</span>
-            <strong>Cidade Neon: mundo aberto 3D no navegador</strong>
-            <span className="muted">Dirija pela cidade, faça entregas por dinheiro e fuja da polícia. Sem baixar nada, no PC ou no celular.</span>
-            <span className="btn btn-primary">Jogar agora</span>
-          </span>
-        </Link>
-      </section>
+      <div className="container vitrine">
+        {vitrine.map((c) => (
+          <section key={c.id} id={`cat-${c.id}`} className="vitrine-secao" aria-labelledby={`titulo-${c.id}`}>
+            <header className="vitrine-cabecalho">
+              <span className="vitrine-icone" aria-hidden="true">
+                {c.icone}
+              </span>
+              <div>
+                <h2 id={`titulo-${c.id}`}>{c.nome}</h2>
+                <p className="muted">{c.descricao}</p>
+              </div>
+              <Link href={c.verTodos} className="vitrine-ver">
+                Ver tudo →
+              </Link>
+            </header>
+            <div className="vitrine-grade">
+              {c.itens.map((item) => (
+                <Link key={item.href} href={item.href} className="minicard">
+                  <span className={item.emoji ? 'minicard-badge emoji' : 'minicard-badge'} aria-hidden="true">
+                    {item.badge}
+                  </span>
+                  <span className="minicard-corpo">
+                    <strong>{item.nome}</strong>
+                    <span>{item.texto}</span>
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
 
       <section id="sobre" className="container section about">
         <div className="about-text">
