@@ -2845,3 +2845,34 @@ textarea {
     grid-template-columns: 1fr;
   }
 }
+
+/* ---------- Home: faixa de propostas ---------- */
+
+.proposta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px 24px;
+  margin-top: 16px;
+  padding: 18px 22px;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(103, 232, 249, 0.35);
+  background: linear-gradient(120deg, rgba(103, 232, 249, 0.1), rgba(167, 139, 250, 0.1)), var(--panel);
+}
+
+.proposta > div {
+  flex: 1 1 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.proposta strong {
+  font-size: 1.05rem;
+}
+
+.proposta span {
+  color: var(--muted);
+  font-size: 0.92rem;
+}

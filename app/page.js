@@ -132,6 +132,18 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="container">
+        <div className="proposta">
+          <div>
+            <strong>Aberto a propostas</strong>
+            <span>Crio sistemas personalizados para o seu negócio: do jeito que você trabalha, com as integrações que precisar. Conte a ideia e eu preparo uma proposta.</span>
+          </div>
+          <Link href="#contato" className="btn btn-primary">
+            Falar comigo
+          </Link>
+        </div>
+      </section>
+
       <section id="categorias" className="container section">
         <div className="section-head">
           <h2>Categorias</h2>
