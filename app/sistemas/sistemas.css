@@ -2390,3 +2390,29 @@ html.sx-tela-cheia .site-footer {
 .sx-guia code {
   overflow-wrap: anywhere;
 }
+
+/* ---------- Chamada para sistema sob medida ---------- */
+
+.sx-sob-medida {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px 28px;
+  margin-top: 32px;
+  padding: 24px 28px;
+  border-radius: var(--radius-lg);
+  border: 1px solid color-mix(in srgb, var(--sx-cor) 45%, transparent);
+  background: radial-gradient(600px 220px at 100% 0%, color-mix(in srgb, var(--sx-cor) 14%, transparent), transparent 70%), var(--panel);
+}
+
+.sx-sob-medida > div {
+  flex: 1 1 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sx-sob-medida h2 {
+  font-size: 1.35rem;
+}

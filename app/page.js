@@ -66,7 +66,7 @@ const vitrine = [
     id: 'sistemas',
     icone: '🏪',
     nome: 'Sistemas de gestão',
-    descricao: 'PDV, cardápio online, agenda, ordem de serviço, academia e CRM. Teste na hora; se quiser, guarde os dados na sua planilha do Google.',
+    descricao: 'PDV, cardápio online, agenda, ordem de serviço, academia e CRM para usar sem limite. Precisa de algo do jeito do seu negócio? Faço sob medida.',
     verTodos: '/sistemas',
     itens: nichos.map((n) => ({ href: `/sistemas/${n.slug}`, badge: n.badge, nome: n.nome, texto: n.curto, emoji: true })),
   },
@@ -92,7 +92,7 @@ export default function Home() {
             <span className="dot" /> {site.name} · {site.role}
           </p>
           <h1>
-            Ferramentas, sistemas e jogos grátis que resolvem <span className="gradient-text">em segundos</span>.
+            Ferramentas, sistemas e jogos para usar <span className="gradient-text">sem limite</span>.
           </h1>
           <p className="lead">
             {tools.length} ferramentas de PDF, cálculos trabalhistas, QR Code Pix e geradores, {nichos.length} sistemas de gestão para pequenos negócios e {games.length} jogos. Tudo roda direto no
@@ -123,8 +123,8 @@ export default function Home() {
           <span>Arquivos e dados processados localmente, sem upload.</span>
         </div>
         <div>
-          <strong>Grátis e sem cadastro</strong>
-          <span>Abra, use e pronto. Sem conta, sem limite diário.</span>
+          <strong>Sem limite e sem cadastro</strong>
+          <span>Abra, use e pronto, quantas vezes quiser. Sem conta e sem limite diário.</span>
         </div>
         <div>
           <strong>Tabelas de 2026</strong>
@@ -210,9 +210,9 @@ export default function Home() {
       <section id="contato" className="container section contact">
         <div>
           <p className="eyebrow">Contato</p>
-          <h2>Sugira uma ferramenta ou peça um projeto.</h2>
+          <h2>Sugira uma ferramenta ou peça um sistema sob medida.</h2>
           <p className="muted">
-            Faltou alguma ferramenta? Quer um site, sistema ou automação com IA? Mande uma mensagem ou me acompanhe no Instagram{' '}
+            Faltou alguma ferramenta? Quer um sistema personalizado para o seu negócio, um site ou uma automação com IA? Conte o que precisa que eu preparo uma proposta. Mande uma mensagem ou me acompanhe no Instagram{' '}
             <a href={site.instagram} target="_blank" rel="noopener noreferrer">{site.instagramHandle}</a>.
           </p>
         </div>

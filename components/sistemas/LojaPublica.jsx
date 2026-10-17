@@ -78,7 +78,7 @@ export default function LojaPublica({ pagina }) {
         {cfg.endereco && <span>{cfg.endereco}</span>}
         {cfg.empresa_telefone && <span>{cfg.empresa_telefone}</span>}
         <span className="muted small">
-          Sistema grátis de <a href="/sistemas">vinicius.dev/sistemas</a>
+          Sistema feito por <a href="/sistemas">vinicius.dev/sistemas</a>
         </span>
       </footer>
     </div>

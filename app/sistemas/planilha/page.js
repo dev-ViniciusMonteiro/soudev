@@ -5,7 +5,7 @@ import { nichos } from '@/lib/sistemas/nichos'
 
 const title = 'Como Ligar os Sistemas à Sua Planilha do Google'
 const description =
-  'Passo a passo para guardar os dados dos sistemas de gestão grátis numa planilha do Google: criar a planilha, colar o código, publicar e entrar com o código do e-mail.'
+  'Passo a passo para guardar os dados dos sistemas de gestão numa planilha do Google: criar a planilha, colar o código, publicar e entrar com o código do e-mail.'
 
 export const metadata = {
   title,

@@ -24,7 +24,8 @@ export async function generateMetadata({ params }) {
 }
 
 const faqComum = [
-  ['É grátis mesmo?', 'Sim. A demonstração roda no seu navegador e, para usar de verdade, os dados ficam numa planilha do Google na sua conta, que também é grátis. Não há mensalidade.'],
+  ['Tem limite de uso ou mensalidade?', 'Não. Use quanto quiser, com quantas vendas, clientes e aparelhos precisar. A demonstração roda no seu navegador e, para usar de verdade, os dados ficam numa planilha do Google na sua conta.'],
+  ['Dá para fazer um sistema do jeito do meu negócio?', 'Sim. Se precisar de outro fluxo, integração com o que você já usa, nota fiscal, app ou um sistema totalmente sob medida, mande uma mensagem pelo formulário de contato e eu preparo uma proposta.'],
   ['Onde ficam os meus dados?', 'Na demonstração, só no seu navegador. Conectado, numa planilha do Google Planilhas que é sua: cada tabela é uma aba e você pode abrir, filtrar e baixar tudo a qualquer momento.'],
   ['Funciona sem internet?', 'Sim. As vendas e os cadastros ficam guardados no aparelho e sobem para a planilha quando a internet volta. O status no topo mostra quantas alterações estão na fila.'],
   ['Como funciona o login?', 'Por e-mail, sem senha: você digita o e-mail e recebe um código de 6 dígitos. O dono da planilha cadastra os funcionários na aba de usuários, com papel de gerente ou operador de caixa.'],
@@ -88,7 +89,7 @@ export default async function NichoPage({ params }) {
         </span>
         <div>
           <h1>{n.titulo}</h1>
-          <p className="lead">{n.curto} Grátis, no navegador, com os dados na sua planilha do Google.</p>
+          <p className="lead">{n.curto} Use sem limite, no navegador, com os dados na sua planilha do Google.</p>
           <div className="hero-actions">
             <Link href={`/sistemas/${n.slug}/app`} className="btn btn-primary btn-lg">
               Abrir demonstração
@@ -150,6 +151,19 @@ export default async function NichoPage({ params }) {
         </p>
       </section>
 
+      <section className="sx-sob-medida" style={{ '--sx-cor': n.cor }}>
+        <div>
+          <h2>Precisa do seu jeito?</h2>
+          <p className="muted">
+            Faço versões personalizadas deste sistema ou um sistema do zero para o seu negócio: outros fluxos, integração com o que você já usa, app, nota fiscal e o que mais precisar. Conte a ideia e eu
+            preparo uma proposta.
+          </p>
+        </div>
+        <Link href="/#contato" className="btn btn-primary btn-lg">
+          Pedir uma proposta
+        </Link>
+      </section>
+
       <section className="tool-info">
         <h2>Perguntas frequentes</h2>
         <div className="faq">
@@ -163,7 +177,7 @@ export default async function NichoPage({ params }) {
       </section>
 
       <section className="tool-info">
-        <h2>Outros sistemas grátis</h2>
+        <h2>Outros sistemas</h2>
         <div className="sx-nichos">
           {outros.map((o) => (
             <Link key={o.slug} href={`/sistemas/${o.slug}`} className="sx-nicho-card" style={{ '--sx-cor': o.cor }}>

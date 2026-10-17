@@ -2,9 +2,9 @@ import Link from 'next/link'
 import { SITE_URL, jsonLd } from '@/lib/site'
 import { nichos } from '@/lib/sistemas/nichos'
 
-const title = 'Sistemas de Gestão Grátis: PDV, Cardápio Online, Agenda e OS'
+const title = 'Sistemas de Gestão: PDV, Cardápio Online, Agenda e OS'
 const description =
-  'Sistemas de gestão grátis que funcionam no navegador e guardam os dados na sua planilha do Google: PDV, cardápio online, agenda, ordem de serviço, academia, pet shop e CRM.'
+  'Sistemas de gestão para usar sem limite no navegador, com os dados na sua planilha do Google: PDV, cardápio online, agenda, ordem de serviço, academia, pet shop e CRM.'
 
 export const metadata = {
   title,
@@ -43,7 +43,7 @@ export default function SistemasIndex() {
         <span>Sistemas</span>
       </nav>
       <header className="index-header">
-        <h1>Sistemas de gestão grátis</h1>
+        <h1>Sistemas de gestão</h1>
         <p className="lead">
           PDV, caixa, cardápio online, agenda, ordem de serviço, mensalidades e CRM. Todos usam o mesmo banco de dados, uma planilha do Google sua, então os módulos se ligam: o cliente do cardápio é o mesmo da
           agenda, e a venda baixa o estoque e entra no caixa.
@@ -80,6 +80,19 @@ export default function SistemasIndex() {
             Como ligar à sua planilha: passo a passo →
           </Link>
         </p>
+      </section>
+
+      <section className="sx-sob-medida">
+        <div>
+          <h2>Não achou o sistema do seu negócio?</h2>
+          <p className="muted">
+            Todos aqui são para usar sem limite. Se você precisa de algo diferente, como outro nicho, integrações, app ou um fluxo do seu jeito, eu desenvolvo sob medida. Conte a ideia e eu preparo uma
+            proposta.
+          </p>
+        </div>
+        <Link href="/#contato" className="btn btn-primary btn-lg">
+          Pedir uma proposta
+        </Link>
       </section>
 
       <section className="tool-info prose">
