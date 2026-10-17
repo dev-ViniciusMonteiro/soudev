@@ -2,6 +2,7 @@ import Link from 'next/link'
 import Script from 'next/script'
 import Analytics from '@/components/Analytics'
 import CookieConsent, { CookiePreferencesButton } from '@/components/CookieConsent'
+import MenuMobile from '@/components/MenuMobile'
 import { GA_ID, gaInitScript } from '@/lib/analytics'
 import { SITE_URL, site } from '@/lib/site'
 import './globals.css'
@@ -39,6 +40,14 @@ export const viewport = {
   initialScale: 1,
 }
 
+const menu = [
+  ['/ferramentas', 'Ferramentas'],
+  ['/sistemas', 'Sistemas'],
+  ['/jogos', 'Jogos'],
+  ['/#sobre', 'Sobre'],
+  ['/#contato', 'Contato'],
+]
+
 export default function RootLayout({ children }) {
   const year = new Date().getFullYear()
   return (
@@ -62,6 +71,7 @@ export default function RootLayout({ children }) {
               <Link href="/#sobre">Sobre</Link>
               <Link href="/#contato" className="nav-cta">Contato</Link>
             </nav>
+            <MenuMobile links={menu} />
           </div>
         </header>
 
