@@ -75,6 +75,11 @@ export default function SistemasIndex() {
             </li>
           ))}
         </ol>
+        <p className="see-all">
+          <Link href="/sistemas/planilha" className="btn btn-ghost">
+            Como ligar à sua planilha: passo a passo →
+          </Link>
+        </p>
       </section>
 
       <section className="tool-info prose">

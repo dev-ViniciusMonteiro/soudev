@@ -16,6 +16,7 @@ export default function sitemap() {
       images: [`${SITE_URL}/ferramentas/${tool.slug}/opengraph-image`],
     })),
     { url: `${SITE_URL}/sistemas`, lastModified, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${SITE_URL}/sistemas/planilha`, lastModified, changeFrequency: 'monthly', priority: 0.7 },
     ...nichos.map((n) => ({ url: `${SITE_URL}/sistemas/${n.slug}`, lastModified, changeFrequency: 'monthly', priority: 0.8 })),
     { url: `${SITE_URL}/jogos`, lastModified, changeFrequency: 'weekly', priority: 0.8 },
     ...games.map((game) => ({

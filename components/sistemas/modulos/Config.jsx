@@ -175,6 +175,13 @@ function Planilha() {
   return (
     <section className="sx-cartao">
       <h2>{status.estado === 'sessao' ? 'Entre de novo na planilha' : 'Guardar os dados numa planilha do Google (grátis)'}</h2>
+      <p className="notice ok">
+        Primeira vez?{' '}
+        <a href="/sistemas/planilha" target="_blank" rel="noopener noreferrer">
+          Abra o guia passo a passo ↗
+        </a>{' '}
+        (5 minutos, com o que clicar em cada tela). Ele abre em outra aba para você seguir junto.
+      </p>
       <ol className="sx-passos">
         <li>
           Crie uma planilha nova em <a href="https://sheets.new" target="_blank" rel="noopener noreferrer">sheets.new</a> e abra <b>Extensões → Apps Script</b>.

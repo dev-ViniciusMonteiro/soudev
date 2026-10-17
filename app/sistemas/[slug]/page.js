@@ -143,6 +143,11 @@ export default async function NichoPage({ params }) {
           <li>Cole o link no sistema e entre com o código que chega no seu e-mail. Se quiser, leve junto os dados da demonstração.</li>
           <li>Cadastre seus produtos, serviços e funcionários. Pronto: cada venda vai para a planilha e para o seu e-mail.</li>
         </ol>
+        <p className="see-all">
+          <Link href="/sistemas/planilha" className="btn btn-ghost">
+            Ver o guia completo, tela por tela →
+          </Link>
+        </p>
       </section>
 
       <section className="tool-info">

@@ -2227,3 +2227,166 @@ html.sx-tela-cheia .site-footer {
     padding-bottom: 80px;
   }
 }
+
+/* ---------- Guia da planilha (/sistemas/planilha) ---------- */
+
+.sx-guia-resumo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 12px;
+  margin: 8px 0 28px;
+}
+
+.sx-guia-resumo > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.sx-guia-resumo span {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.sx-guia-passos {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sx-guia-passo {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 16px;
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
+  background: var(--panel);
+  scroll-margin-top: 80px;
+}
+
+.sx-guia-n {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-weight: 800;
+  font-size: 1.15rem;
+  color: #06101f;
+  background: linear-gradient(135deg, var(--cyan), var(--blue));
+}
+
+.sx-guia-conteudo {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.sx-guia-conteudo h3 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 1.15rem;
+}
+
+.sx-guia-conteudo h3 small {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.sx-guia-sub {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 20px;
+}
+
+.sx-caminho {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line-strong);
+  background: var(--bg-2);
+  width: fit-content;
+  max-width: 100%;
+  font-size: 0.92rem;
+}
+
+.sx-caminho > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sx-caminho i {
+  color: var(--muted);
+  font-style: normal;
+}
+
+.sx-guia-copiar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.sx-guia-copiar .notice {
+  flex-basis: 100%;
+}
+
+.sx-guia-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.sx-guia-links .chip:hover {
+  text-decoration: none;
+}
+
+.sx-guia kbd {
+  padding: 1px 6px;
+  border-radius: 6px;
+  border: 1px solid var(--line-strong);
+  background: var(--bg-2);
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 0.85em;
+}
+
+.sx-guia .table th {
+  width: 40%;
+}
+
+@media (max-width: 560px) {
+  .sx-guia-passo {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 16px;
+  }
+
+  .sx-guia-n {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+.sx-guia .table td {
+  white-space: normal;
+}
+
+.sx-guia code {
+  overflow-wrap: anywhere;
+}
