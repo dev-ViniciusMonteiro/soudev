@@ -1,6 +1,7 @@
 import { SITE_URL, site } from '@/lib/site'
 import { games } from '@/lib/games'
 import { tools } from '@/lib/tools'
+import { nichos } from '@/lib/sistemas/nichos'
 
 export default function sitemap() {
   const lastModified = new Date(`${site.updated}T00:00:00Z`)
@@ -14,6 +15,8 @@ export default function sitemap() {
       priority: 0.8,
       images: [`${SITE_URL}/ferramentas/${tool.slug}/opengraph-image`],
     })),
+    { url: `${SITE_URL}/sistemas`, lastModified, changeFrequency: 'weekly', priority: 0.8 },
+    ...nichos.map((n) => ({ url: `${SITE_URL}/sistemas/${n.slug}`, lastModified, changeFrequency: 'monthly', priority: 0.8 })),
     { url: `${SITE_URL}/jogos`, lastModified, changeFrequency: 'weekly', priority: 0.8 },
     ...games.map((game) => ({
       url: `${SITE_URL}/jogos/${game.slug}`,
