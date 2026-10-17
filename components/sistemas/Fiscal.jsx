@@ -13,9 +13,10 @@ import { track } from '@/lib/analytics'
 
 const ETAPAS = {
   nfce: ['Validando os dados da venda', 'Gerando o XML no layout 4.00', 'Assinando com o certificado A1', 'Enviando à SEFAZ', 'Autorizada'],
+  nfe: ['Validando os dados da venda', 'Gerando o XML da NF-e (modelo 55)', 'Assinando com o certificado A1', 'Enviando à SEFAZ', 'Autorizada'],
   nfse: ['Validando os dados do serviço', 'Gerando a DPS (padrão nacional)', 'Assinando com o certificado A1', 'Enviando ao Ambiente de Dados Nacional', 'Autorizada'],
 }
-const NOME = { nfce: 'NFC-e', nfse: 'NFS-e' }
+const NOME = { nfce: 'NFC-e', nfe: 'NF-e', nfse: 'NFS-e' }
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c])
 const formaNome = (f) => FORMAS_PAGAMENTO.find(([id]) => id === f)?.[1] ?? f
 const AVISO = 'EMITIDA EM AMBIENTE DE SIMULAÇÃO - SEM VALOR FISCAL'
@@ -30,13 +31,13 @@ export function SeloFiscal({ fiscal }) {
 }
 
 /** Janela para emitir, ver, imprimir e cancelar a nota simulada de uma venda. */
-export function NotaFiscal({ venda: inicial, onFechar }) {
+export function NotaFiscal({ venda: inicial, onFechar, documentoInicial = '' }) {
   const { banco } = useSistema()
   const cfg = useConfig()
   const produtos = useMapa('produtos')
   const venda = banco.get('vendas', inicial.id) || inicial
-  const tipo = venda.fiscal?.tipo ?? tipoNota(venda, produtos)
-  const [cpf, setCpf] = useState('')
+  const [cpf, setCpf] = useState(documentoInicial)
+  const tipo = venda.fiscal?.tipo ?? tipoNota(venda, produtos, cpf)
   const [passo, setPasso] = useState(venda.fiscal ? ETAPAS[tipo].length : -1)
   const [erro, setErro] = useState('')
   const [cancelar, setCancelar] = useState(false)
@@ -72,7 +73,7 @@ export function NotaFiscal({ venda: inicial, onFechar }) {
         f ? (
           <>
             <button type="button" className="btn btn-primary" onClick={() => imprimirNota(venda, f, cfg, produtos)}>
-              Imprimir {f.tipo === 'nfce' ? 'DANFE NFC-e' : 'DANFSe'}
+              Imprimir {f.tipo === 'nfce' ? 'DANFE NFC-e' : f.tipo === 'nfe' ? 'DANFE' : 'DANFSe'}
             </button>
             {f.status === 'autorizada' && !cancelar && (
               <button type="button" className="btn btn-ghost" onClick={() => setCancelar(true)}>
@@ -97,10 +98,10 @@ export function NotaFiscal({ venda: inicial, onFechar }) {
           <p>
             Venda #{venda.numero || '—'} · <strong>{brl(venda.total)}</strong> · {(venda.itens || []).length} itens
           </p>
-          {tipo === 'nfce' && (
+          {tipo !== 'nfse' && (
             <label className="field">
-              <span className="field-label">CPF na nota (opcional)</span>
-              <input inputMode="numeric" value={cpf} onChange={(e) => setCpf(e.target.value)} placeholder="000.000.000-00" />
+              <span className="field-label">CPF ou CNPJ do cliente (opcional para consumidor; com CNPJ vira NF-e)</span>
+              <input inputMode="numeric" value={cpf} onChange={(e) => setCpf(e.target.value)} placeholder="CPF ou CNPJ" />
             </label>
           )}
           {checagem.avisos.length > 0 && (
@@ -143,7 +144,7 @@ export function NotaFiscal({ venda: inicial, onFechar }) {
           )}
           <p className="small muted">
             Emitida em {dataBR(f.emitida_em, true)}
-            {f.cpf ? ` · CPF ${formatCpf(f.cpf)}` : ' · consumidor não identificado'}
+            {f.cpf ? ` · ${f.cpf.length === 14 ? `CNPJ ${formatCnpj(f.cpf)}` : `CPF ${formatCpf(f.cpf)}`}` : ' · consumidor não identificado'}
             {f.status === 'cancelada' && ` · cancelada em ${dataBR(f.cancelada_em, true)}: ${f.motivo_cancelamento}`}
           </p>
           {f.avisos?.length > 0 && (
@@ -198,6 +199,7 @@ export async function imprimirNota(venda, fiscal, cfg, produtos) {
   const { default: QR } = await import('qrcode')
   const qr = await QR.toDataURL(qrConteudo(fiscal), { width: 260, margin: 1 })
   if (fiscal.tipo === 'nfse') imprimir(htmlDanfse(venda, fiscal, cfg, qr), { titulo: `NFS-e ${fiscal.numero}` })
+  else if (fiscal.tipo === 'nfe') imprimir(htmlDanfeNfe(venda, fiscal, cfg, qr, produtos), { titulo: `NF-e ${fiscal.numero}` })
   else imprimir(htmlDanfeNfce(venda, fiscal, cfg, qr, produtos), { cupom: true, titulo: `NFC-e ${fiscal.numero}` })
 }
 
@@ -235,6 +237,24 @@ function htmlDanfeNfce(venda, f, cfg, qr, produtos) {
     <p class="c"><img src="${qr}" width="140" height="140" alt="QR Code"></p>
     <p class="c">Tributos totais incidentes (Lei Federal 12.741/2012): Federal ${brl(f.tributos.federal)} Estadual ${brl(f.tributos.estadual)} (valores aproximados de exemplo)</p>
     <hr><p class="c t">${AVISO}</p>`
+}
+
+function htmlDanfeNfe(venda, f, cfg, qr, produtos) {
+  const itens = (venda.itens || [])
+    .map((i) => {
+      const p = produtos.get(i.produto_id)
+      return `<tr><td>${esc(p?.codigo_barras || '')}</td><td>${esc(i.nome)}</td><td>${esc(p?.ncm || '—')}</td><td>${esc(p?.cfop || '5102')}</td><td class="n">${num(i.qtd, 3)}</td><td class="n">${brl(i.preco)}</td><td class="n">${brl(i.preco * i.qtd)}</td></tr>`
+    })
+    .join('')
+  return `<p style="text-align:center;font-weight:bold;border:2px solid #b00;color:#b00;padding:6px">${AVISO}${f.status === 'cancelada' ? ' · NOTA CANCELADA' : ''}</p>
+    <div class="topo"><div><h1>DANFE · Documento Auxiliar da NF-e</h1><div class="muted">${esc(cfg.empresa_nome || '')} · CNPJ ${docEmitente(cfg)} · IE ${esc(cfg.ie || '—')}</div><div class="muted">${esc(cfg.endereco || '')}</div></div>
+    <div style="text-align:right"><b>NF-e nº ${String(f.numero).padStart(9, '0')}</b><div>Série ${String(f.serie).padStart(3, '0')} · 1 - Saída</div><div>Emissão ${dataBR(f.emitida_em, true)}</div></div></div>
+    <h2>Chave de acesso</h2><p style="font-family:monospace;font-size:15px">${formatarChave(f.chave)}</p><p class="muted">Protocolo de autorização ${f.protocolo} · ${dataBR(f.emitida_em, true)}</p>
+    <h2>Destinatário</h2><div class="grade"><div>${esc(venda.cliente_nome || '')}</div><div>CNPJ ${formatCnpj(f.cpf)}</div></div>
+    <h2>Produtos</h2><table><tr><th>Código</th><th>Descrição</th><th>NCM</th><th>CFOP</th><th class="n">Qtd</th><th class="n">Valor un.</th><th class="n">Total</th></tr>${itens}
+    <tr><td colspan="6" class="total">Valor total da nota</td><td class="n total">${brl(venda.total)}</td></tr></table>
+    <h2>Dados adicionais</h2><p class="muted">Documento emitido por ME/EPP optante pelo Simples Nacional (MEI). Não gera direito a crédito fiscal de IPI. Tributos aproximados: federal ${brl(f.tributos.federal)}, estadual ${brl(f.tributos.estadual)} (exemplo).</p>
+    <p style="text-align:center"><img src="${qr}" width="120" height="120" alt="QR Code"></p>`
 }
 
 function htmlDanfse(venda, f, cfg, qr) {

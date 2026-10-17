@@ -19,6 +19,7 @@ const grupos = [
   ['Funcionamento e agenda', ['abre', 'fecha', 'dias', 'intervalo_agenda']],
   ['Cardápio, mesas e mensalidades', ['loja_aberta', 'taxa_entrega', 'pedido_minimo', 'tempo_entrega', 'mesas', 'taxa_servico', 'multa_atraso']],
   ['Nota fiscal (simulação: nada é enviado à SEFAZ)', ['uf', 'ie', 'im', 'regime', 'serie_nfce', 'nfce_auto']],
+  ['MEI', ['mei_atividade', 'mei_abertura']],
 ]
 
 export default function Config() {

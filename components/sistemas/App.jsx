@@ -29,8 +29,9 @@ import Financeiro from './modulos/Financeiro'
 import Relatorios from './modulos/Relatorios'
 import Cadastro from './modulos/Cadastro'
 import Config from './modulos/Config'
+import { Inicio, VendaFacil, Gastos, ProdutosFacil, CentralMei } from './mei/MeiFacil'
 
-const telas = { painel: Painel, pdv: Pdv, caixa: Caixa, pedidos: Pedidos, mesas: Mesas, cardapio: Cardapio, agenda: Agenda, ordens: Ordens, mensalidades: Mensalidades, checkin: Checkin, funil: Funil, vacinas: Vacinas, vendas: Vendas, estoque: Estoque, financeiro: Financeiro, relatorios: Relatorios, config: Config }
+const telas = { painel: Painel, pdv: Pdv, caixa: Caixa, pedidos: Pedidos, mesas: Mesas, cardapio: Cardapio, agenda: Agenda, ordens: Ordens, mensalidades: Mensalidades, checkin: Checkin, funil: Funil, vacinas: Vacinas, vendas: Vendas, estoque: Estoque, financeiro: Financeiro, relatorios: Relatorios, config: Config, facil: Inicio, 'venda-facil': VendaFacil, gastos: Gastos, 'produtos-facil': ProdutosFacil, mei: CentralMei }
 
 const SO_GESTOR = ['config', 'tabela:usuarios', 'financeiro', 'relatorios']
 
@@ -115,7 +116,7 @@ function Casca({ nicho, banco, conexao }) {
     document.querySelector('.sx-principal')?.scrollTo(0, 0)
   }, [])
 
-  const atual = ativos.includes(tela) ? tela : 'painel'
+  const atual = ativos.includes(tela) ? tela : ativos[0]
   const ctx = useMemo(() => ({ banco, nicho, conexao, papel, usuario, ir, ativos, recarregar: () => forcar((n) => n + 1) }), [banco, nicho, conexao, papel, usuario, ir, ativos])
   const Tela = modulos[atual]?.tabela ? null : telas[atual]
 
