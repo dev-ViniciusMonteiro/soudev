@@ -12,9 +12,11 @@ const carregando = () => (
 
 const Treino = dynamic(() => import('./treino/Treino'), { ssr: false, loading: carregando })
 const Editor = dynamic(() => import('./editor/Editor'), { ssr: false, loading: carregando })
+const Globo = dynamic(() => import('./globo/Globo'), { ssr: false, loading: carregando })
 
 export function AppCliente({ slug }) {
   if (slug === 'treino') return <Treino />
   if (slug === 'editor-de-video') return <Editor />
+  if (slug === 'globo') return <Globo />
   return null
 }
