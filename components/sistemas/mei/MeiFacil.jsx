@@ -2,21 +2,21 @@
 
 // MEI na Mão: telas grandes e poucos passos para quem não tem costume com sistema.
 // Venda por toque, câmera (reconhece o produto), código/QR ou voz; gastos; produtos com foto; Central MEI.
+// Em todas as telas, a barra de comando (Comando.jsx) entende perguntas e pedidos por voz ou escritos.
 
 import { useCallback, useMemo, useState } from 'react'
 import { Modal, useConfig, useSistema, useTabela } from '../base'
 import { QrPix, htmlCupom, imprimir } from '../comuns'
 import { NotaFiscal, SeloFiscal } from '../Fiscal'
 import { Ensinar, LerCodigo, Reconhecer } from './Camera'
-import { concluirVenda } from '@/lib/sistemas/acoes'
+import { BarraComando, competenciaDAS, imprimirRelatorioMensal, pendente, registrarGasto } from './Comando'
+import { concluirVenda, fiadoEmAberto } from '@/lib/sistemas/acoes'
 import { AJUDA, MEI, limiteDoAno, precisaNota, proximoDAS, reaisFalado, receitasDoMes, situacaoLimite, valorDAS } from '@/lib/sistemas/mei'
-import { falar, falaDisponivel, interpretar, ouvir, vozDisponivel } from '@/lib/sistemas/voz'
+import { falar, falaDisponivel } from '@/lib/sistemas/voz'
 import { qrDoProduto } from '@/lib/sistemas/visao'
-import { PERGUNTAS_PRONTAS, perguntar } from '@/lib/sistemas/assistente'
-import { addDias, brl, dataBR, hojeISO, num, parseValor, round2 } from '@/lib/sistemas/regras'
+import { addDias, brl, dataBR, hojeISO, num, parseValor, round2, saldos } from '@/lib/sistemas/regras'
 
-// Itens ditos na tela inicial ("vendi 2 coxinhas") seguem para a tela de venda.
-let carrinhoPendente = null
+export { registrarGasto }
 
 const diaDe = (iso) => hojeISO(new Date(iso))
 
@@ -27,116 +27,40 @@ function useResumo() {
     const hoje = hojeISO()
     const mes = hoje.slice(0, 7)
     const ano = hoje.slice(0, 4)
-    const semana = addDias(hoje, -6)
-    const r = { hoje: 0, semana: 0, mes: 0, ano: 0, gastosHoje: 0, gastosSemana: 0, gastosMes: 0, gastosAno: 0, qtdHoje: 0 }
+    const r = { hoje: 0, mes: 0, ano: 0, gastosMes: 0 }
     for (const v of vendas) {
       if (v.status !== 'concluida') continue
       const d = diaDe(v.concluida_em || v.criado_em)
       const t = Number(v.total) || 0
-      if (d === hoje) {
-        r.hoje += t
-        r.qtdHoje++
-      }
-      if (d >= semana) r.semana += t
+      if (d === hoje) r.hoje += t
       if (d.startsWith(mes)) r.mes += t
       if (d.startsWith(ano)) r.ano += t
     }
-    for (const l of lancamentos) {
-      if (l.tipo !== 'despesa' || !l.pago_em) continue
-      const d = l.pago_em
-      const t = Number(l.valor) || 0
-      if (d === hoje) r.gastosHoje += t
-      if (d >= semana) r.gastosSemana += t
-      if (d.startsWith(mes)) r.gastosMes += t
-      if (d.startsWith(ano)) r.gastosAno += t
-    }
+    for (const l of lancamentos) if (l.tipo === 'despesa' && String(l.pago_em).startsWith(mes)) r.gastosMes += Number(l.valor) || 0
     return r
   }, [vendas, lancamentos])
 }
 
-/* ---------- Botão de voz ---------- */
-
-export function BotaoVoz({ onComando, exemplos }) {
-  const { banco } = useSistema()
-  const [ouvindo, setOuvindo] = useState(false)
-  const [texto, setTexto] = useState('')
-  const [erro, setErro] = useState('')
-  const disponivel = vozDisponivel()
-  const comecar = () => {
-    setErro('')
-    setTexto('')
-    setOuvindo(true)
-    ouvir({
-      onParcial: setTexto,
-      onFinal: (t) => {
-        setTexto(t)
-        onComando(interpretar(t, banco.lista('produtos').filter((p) => p.ativo !== false)), t)
-      },
-      onErro: setErro,
-      onFim: () => setOuvindo(false),
-    })
-  }
-  return (
-    <div className="mf-voz">
-      <button type="button" className={ouvindo ? 'mf-mic ouvindo' : 'mf-mic'} onClick={comecar} disabled={!disponivel || ouvindo} aria-label="Falar um comando">
-        🎤
-      </button>
-      <div>
-        <strong>{ouvindo ? 'Pode falar…' : disponivel ? 'Toque e fale' : 'Voz indisponível neste navegador'}</strong>
-        <span className="muted">{texto ? `“${texto}”` : exemplos}</span>
-        {erro && <span className="mf-erro">{erro}</span>}
-      </div>
-    </div>
-  )
+function useSaldos() {
+  const movs = useTabela('estoque_mov')
+  return useMemo(() => saldos(movs), [movs])
 }
 
 /* ---------- Início ---------- */
 
 export function Inicio() {
-  const { banco, ir } = useSistema()
+  const { ir } = useSistema()
   const cfg = useConfig()
   const r = useResumo()
-  const vendas = useTabela('vendas')
   const lancamentos = useTabela('lancamentos')
   const produtos = useTabela('produtos')
-  const clientes = useTabela('clientes')
-  const [resposta, setResposta] = useState(null)
-  const [maisPerguntas, setMaisPerguntas] = useState(false)
-  const [escrito, setEscrito] = useState('')
+  const saldo = useSaldos()
   const das = valorDAS(cfg.mei_atividade)
   const prox = proximoDAS()
   const limite = limiteDoAno(cfg.mei_abertura)
   const pct = Math.min(100, (r.ano / limite.valor) * 100)
-  const pagos = lancamentos.some((l) => l.ref_id === `das:${prox.competencia.getFullYear()}-${String(prox.competencia.getMonth() + 1).padStart(2, '0')}`)
-
-  /** Mostra e fala a resposta. Aceita texto simples ou o resultado do assistente. */
-  const responder = (res, pergunta = '') => {
-    const final = typeof res === 'string' ? { tela: res, fala: res } : res
-    setResposta({ ...final, pergunta })
-    falar(final.fala)
-  }
-
-  const comando = (cmd, texto) => {
-    if (cmd.acao === 'gasto' && cmd.valor) {
-      registrarGasto(banco, cmd)
-      return responder({ tela: `Pronto, anotei um gasto de ${brl(cmd.valor)}: ${cmd.descricao}.`, fala: `Pronto, anotei um gasto de ${reaisFalado(cmd.valor)}: ${cmd.descricao}.` }, texto)
-    }
-    if (cmd.acao === 'vender') {
-      carrinhoPendente = cmd.itens
-      return ir('venda-facil')
-    }
-    const res = perguntar(texto, { vendas, lancamentos, produtos, clientes, cfg })
-    if (res) return responder(res, texto)
-    if (cmd.acao === 'gasto') return responder('Não entendi o valor. Diga, por exemplo: gastei 50 reais de luz.', texto)
-    if (cmd.acao === 'nota') return ir('vendas')
-    responder('Não entendi. Tente: “qual o produto mais vendido?”, “qual meu maior gasto?”, “vendi duas coxinhas” ou toque numa das perguntas abaixo.', texto)
-  }
-
-  // Pergunta escrita ou tocada passa pelo mesmo caminho da voz.
-  const enviar = (texto) => {
-    if (!texto.trim()) return
-    comando(interpretar(texto, produtos.filter((p) => p.ativo !== false)), texto)
-  }
+  const pagos = lancamentos.some((l) => l.ref_id === `das:${competenciaDAS()}`)
+  const baixos = produtos.filter((p) => p.ativo !== false && p.controla_estoque && (saldo.get(p.id) || 0) <= (Number(p.estoque_minimo) || 0))
 
   return (
     <div className="mf">
@@ -148,69 +72,21 @@ export function Inicio() {
         <button type="button" className="mf-acao" onClick={() => ir('gastos')}>
           <span>💸</span>Anotar gasto
         </button>
-        <button type="button" className="mf-acao" onClick={() => enviar('quanto sobrou este mês')}>
-          <span>📊</span>Quanto ganhei
-        </button>
-        <button type="button" className="mf-acao" onClick={() => ir('vendas')}>
-          <span>🧾</span>Nota fiscal
+        <button type="button" className="mf-acao" onClick={() => ir('mei')}>
+          <span>🧾</span>Central MEI
         </button>
         <button type="button" className="mf-acao" onClick={() => ir('produtos-facil')}>
           <span>📸</span>Meus produtos
         </button>
-        <button type="button" className="mf-acao" onClick={() => ir('mei')}>
-          <span>❓</span>Central MEI
+        <button type="button" className="mf-acao" onClick={() => ir('tabela:clientes')}>
+          <span>👥</span>Clientes
+        </button>
+        <button type="button" className="mf-acao" onClick={() => ir('vendas')}>
+          <span>📜</span>Vendas e notas
         </button>
       </div>
 
-      <BotaoVoz onComando={comando} exemplos="Ex.: “qual o produto mais vendido?”, “qual meu maior gasto?”, “vendi duas coxinhas”, “gastei 50 reais de luz”" />
-      {resposta && (
-        <div className="mf-resposta" role="status">
-          {resposta.pergunta && <small className="mf-pergunta-feita">“{resposta.pergunta}”</small>}
-          <p>{resposta.tela}</p>
-          {resposta.lista?.length > 0 && (
-            <ol className="mf-resposta-lista">
-              {resposta.lista.map(([rotulo, valor]) => (
-                <li key={rotulo}>
-                  <span>{rotulo}</span>
-                  <strong>{valor}</strong>
-                </li>
-              ))}
-            </ol>
-          )}
-          {falaDisponivel() && (
-            <button type="button" className="mf-ouvir" onClick={() => falar(resposta.fala)}>
-              🔊 Ouvir de novo
-            </button>
-          )}
-        </div>
-      )}
-
-      <section className="mf-perguntas" aria-label="Perguntas prontas">
-        <h2>Pergunte ao sistema</h2>
-        <form
-          className="mf-escrever"
-          onSubmit={(e) => {
-            e.preventDefault()
-            enviar(escrito)
-            setEscrito('')
-          }}
-        >
-          <input value={escrito} onChange={(e) => setEscrito(e.target.value)} placeholder="Escreva: quanto vendi em setembro?" aria-label="Escreva sua pergunta" />
-          <button type="submit" className="mf-continuar">
-            Perguntar
-          </button>
-        </form>
-        <div className="mf-chips">
-          {(maisPerguntas ? PERGUNTAS_PRONTAS : PERGUNTAS_PRONTAS.slice(0, 8)).map((q) => (
-            <button key={q} type="button" onClick={() => enviar(q)}>
-              {q}
-            </button>
-          ))}
-          <button type="button" className="mf-chip-mais" onClick={() => setMaisPerguntas((v) => !v)}>
-            {maisPerguntas ? 'Menos' : `+ ${PERGUNTAS_PRONTAS.length - 8} perguntas`}
-          </button>
-        </div>
-      </section>
+      <BarraComando mostrarAtalhos exemplos="Ex.: “qual o produto mais vendido?”, “quem me deve?”, “vendi duas coxinhas”, “gastei 50 reais de luz”" />
 
       <div className="mf-numeros">
         <div>
@@ -232,6 +108,17 @@ export function Inicio() {
       </div>
 
       <div className="mf-avisos">
+        {baixos.length > 0 && (
+          <button type="button" className="mf-aviso urgente" onClick={() => ir('produtos-facil')}>
+            <span>📦</span>
+            <div>
+              <strong>
+                {baixos.length === 1 ? '1 produto precisa' : `${baixos.length} produtos precisam`} de reposição: {baixos.map((p) => `${p.nome} (${num(saldo.get(p.id) || 0)})`).join(', ')}
+              </strong>
+              <small>Diga “chegaram 24 refrigerantes” para dar entrada.</small>
+            </div>
+          </button>
+        )}
         <button type="button" className={`mf-aviso ${pagos ? 'ok' : prox.dias <= 5 ? 'urgente' : ''}`} onClick={() => ir('mei')}>
           <span>🧾</span>
           <div>
@@ -255,11 +142,6 @@ export function Inicio() {
   )
 }
 
-export function registrarGasto(banco, { valor, descricao, categoria, ref_id = '' }) {
-  const hoje = hojeISO()
-  return banco.salvar('lancamentos', { tipo: 'despesa', descricao: descricao || 'Gasto', valor: round2(valor), vencimento: hoje, pago_em: hoje, forma: 'dinheiro', categoria: categoria || 'outros', ref_id })
-}
-
 /* ---------- Vender ---------- */
 
 const FORMAS = [
@@ -267,28 +149,38 @@ const FORMAS = [
   ['pix', '⚡', 'Pix'],
   ['debito', '💳', 'Débito'],
   ['credito', '💳', 'Crédito'],
+  ['fiado', '📒', 'Fiado'],
 ]
+const NOME_FORMA = Object.fromEntries(FORMAS.map(([id, , r]) => [id, r]))
 
 export function VendaFacil() {
   const { banco, usuario } = useSistema()
   const cfg = useConfig()
   const produtos = useTabela('produtos')
+  const clientes = useTabela('clientes')
+  const saldo = useSaldos()
   const ativos = useMemo(() => produtos.filter((p) => p.ativo !== false).sort((a, b) => a.nome.localeCompare(b.nome)), [produtos])
   const [etapa, setEtapa] = useState('itens')
   const [modo, setModo] = useState('tocar')
   const [carrinho, setCarrinho] = useState(() => {
-    const inicial = (carrinhoPendente || []).map(({ produto, qtd }) => ({ produto_id: produto.id, nome: produto.nome, preco: Number(produto.preco) || 0, qtd }))
-    carrinhoPendente = null
+    const inicial = (pendente.carrinho || []).map(({ produto, qtd }) => ({ produto_id: produto.id, nome: produto.nome, preco: Number(produto.preco) || 0, qtd }))
+    pendente.carrinho = null
     return inicial
   })
+  const [cliente, setCliente] = useState(null)
+  const [desconto, setDesconto] = useState({ valor: 0, porcento: false })
   const [forma, setForma] = useState('')
   const [recebido, setRecebido] = useState('')
   const [venda, setVenda] = useState(null)
   const [nota, setNota] = useState(null)
   const [documento, setDocumento] = useState('')
-  const [fala, setFala] = useState('')
   const [codigoNovo, setCodigoNovo] = useState('')
-  const total = round2(carrinho.reduce((s, i) => s + i.preco * i.qtd, 0))
+  const [janela, setJanela] = useState(null)
+  const [erro, setErro] = useState('')
+
+  const subtotal = round2(carrinho.reduce((s, i) => s + i.preco * i.qtd, 0))
+  const valorDesconto = round2(Math.min(subtotal, desconto.porcento ? (subtotal * desconto.valor) / 100 : desconto.valor))
+  const total = round2(subtotal - valorDesconto)
   const qtd = carrinho.reduce((s, i) => s + i.qtd, 0)
   const servico = carrinho.length > 0 && carrinho.every((i) => produtos.find((p) => p.id === i.produto_id)?.tipo === 'servico')
 
@@ -300,53 +192,146 @@ export function VendaFacil() {
     })
   }, [])
 
-  const responder = (t) => {
-    setFala(t)
-    falar(t)
+  const mudarQtd = (id, qtdNova) => setCarrinho((c) => c.map((x) => (x.produto_id === id ? { ...x, qtd: qtdNova } : x)).filter((x) => x.qtd > 0))
+
+  const avisoEstoque = (p, n) => {
+    if (!p.controla_estoque) return ''
+    const resta = (saldo.get(p.id) || 0) - (carrinho.find((i) => i.produto_id === p.id)?.qtd || 0) - n
+    return resta < 0 ? ` Atenção: o estoque de ${p.nome} não dá (ficaria ${num(resta)}).` : resta <= (Number(p.estoque_minimo) || 0) ? ` Restam só ${num(resta)} de ${p.nome}.` : ''
   }
 
-  const comando = (cmd) => {
-    if (cmd.acao === 'vender') {
-      cmd.itens.forEach(({ produto, qtd: n }) => adicionar(produto, n))
-      responder(`Adicionei ${cmd.itens.map((i) => `${num(i.qtd)} ${i.produto.nome}`).join(' e ')}.`)
-      if (cmd.forma) {
-        setForma(cmd.forma)
-        setEtapa('pagamento')
-      }
-      return
+  const escolherForma = (f) => {
+    setErro('')
+    if (f === 'fiado' && !cliente) {
+      setJanela('cliente')
+      setErro('Para vender fiado, escolha o cliente.')
     }
-    if (cmd.acao === 'pagar') {
-      if (!carrinho.length) return responder('Primeiro diga o que está vendendo.')
-      setForma(cmd.forma)
-      return setEtapa('pagamento')
-    }
-    if (cmd.acao === 'limpar') {
-      setCarrinho([])
-      return responder('Limpei a venda.')
-    }
-    responder('Não achei esse produto. Diga o nome como está cadastrado, por exemplo: duas coxinhas.')
+    setForma(f)
   }
 
   const concluir = () => {
+    if (forma === 'fiado' && !cliente) {
+      setErro('Para vender fiado, escolha o cliente.')
+      return { tela: 'Para vender fiado, escolha o cliente.', fala: 'Para vender fiado, diga o nome do cliente.' }
+    }
     const pago = forma === 'dinheiro' ? Math.max(parseValor(recebido) || total, total) : total
     const v = concluirVenda(banco, {
-      venda: { itens: carrinho, origem: 'pdv', desconto: 0, taxa_entrega: 0 },
+      venda: {
+        itens: carrinho,
+        origem: 'pdv',
+        desconto: valorDesconto,
+        taxa_entrega: 0,
+        cliente_id: cliente?.id || '',
+        cliente_nome: cliente?.nome || '',
+        telefone: cliente?.telefone || '',
+      },
       pagamentos: [{ forma, valor: pago }],
       troco: pago - total,
       operador: usuario,
     })
     setVenda(v)
+    setDocumento(cliente?.documento ? String(cliente.documento).replace(/\D/g, '') : '')
     setEtapa('nota')
-    falar(`Venda de ${reaisFalado(total)} registrada.${pago > total ? ` Troco: ${reaisFalado(pago - total)}.` : ''}`)
+    const troco = pago - total
+    return {
+      tela: `Venda de ${brl(total)} registrada${forma === 'fiado' ? `, no fiado de ${cliente.nome}` : ''}.${troco > 0 ? ` Troco: ${brl(troco)}.` : ''} Precisa de nota?`,
+      fala: `Venda de ${reaisFalado(total)} registrada${forma === 'fiado' ? `, no fiado de ${cliente.nome}` : ''}.${troco > 0 ? ` Troco: ${reaisFalado(troco)}.` : ''}`,
+    }
   }
 
   const novaVenda = () => {
     setCarrinho([])
+    setCliente(null)
+    setDesconto({ valor: 0, porcento: false })
     setForma('')
     setRecebido('')
     setVenda(null)
     setDocumento('')
+    setErro('')
     setEtapa('itens')
+  }
+
+  const resp = (tela, fala = tela) => ({ tela, fala })
+
+  // Ações por voz/escrita que só fazem sentido na venda.
+  const onLocal = (cmd) => {
+    switch (cmd.acao) {
+      case 'vender': {
+        if (etapa === 'nota') novaVenda()
+        cmd.itens.forEach(({ produto, qtd: n }) => adicionar(produto, n))
+        if (etapa === 'pagamento') setEtapa('itens')
+        const avisos = cmd.itens.map(({ produto, qtd: n }) => avisoEstoque(produto, n)).join('')
+        if (cmd.forma) {
+          escolherForma(cmd.forma)
+          setEtapa('pagamento')
+        }
+        return resp(`Adicionei ${cmd.itens.map((i) => `${num(i.qtd, 3)} ${i.produto.nome}`).join(' e ')}.${avisos}`)
+      }
+      case 'remover': {
+        const item = carrinho.find((i) => i.produto_id === cmd.produto.id)
+        if (!item) return resp(`${cmd.produto.nome} não está na venda.`)
+        mudarQtd(item.produto_id, cmd.qtd ? Math.max(0, item.qtd - cmd.qtd) : 0)
+        return resp(cmd.qtd && cmd.qtd < item.qtd ? `Tirei ${cmd.qtd} ${cmd.produto.nome}.` : `Tirei ${cmd.produto.nome} da venda.`)
+      }
+      case 'quantidade': {
+        if (!carrinho.some((i) => i.produto_id === cmd.produto.id)) adicionar(cmd.produto, cmd.qtd)
+        else mudarQtd(cmd.produto.id, cmd.qtd)
+        return resp(`${cmd.produto.nome}: agora são ${cmd.qtd}.`)
+      }
+      case 'desconto': {
+        setDesconto({ valor: cmd.valor, porcento: cmd.porcento })
+        const v = round2(Math.min(subtotal, cmd.porcento ? (subtotal * cmd.valor) / 100 : cmd.valor))
+        return resp(`Desconto de ${cmd.porcento ? `${num(cmd.valor)}%` : brl(cmd.valor)} aplicado. Total: ${brl(subtotal - v)}.`, `Desconto aplicado. Total: ${reaisFalado(subtotal - v)}.`)
+      }
+      case 'cliente':
+        setCliente(cmd.cliente)
+        setErro('')
+        if (cmd.forma) {
+          setForma(cmd.forma)
+          if (carrinho.length) setEtapa('pagamento')
+          return resp(`Venda para ${cmd.cliente.nome}, no ${NOME_FORMA[cmd.forma].toLowerCase()}. Diga “finalizar” para concluir.`)
+        }
+        return resp(`Venda para ${cmd.cliente.nome}.`)
+      case 'total':
+        return carrinho.length ? resp(`Total: ${brl(total)} (${num(qtd)} itens${valorDesconto ? `, com ${brl(valorDesconto)} de desconto` : ''}).`, `O total é ${reaisFalado(total)}.`) : resp('A venda está vazia.')
+      case 'limpar':
+        novaVenda()
+        return resp('Venda cancelada. Pode começar outra.')
+      case 'nova_venda':
+        novaVenda()
+        return resp('Nova venda. O que o cliente vai levar?')
+      case 'pagar': {
+        if (!carrinho.length && !venda) return resp('Primeiro diga o que está vendendo.')
+        escolherForma(cmd.forma)
+        if (cmd.recebido) setRecebido(String(cmd.recebido).replace('.', ','))
+        setEtapa('pagamento')
+        if (cmd.forma === 'fiado' && !cliente) return resp('Fiado precisa do cliente. Diga “cliente” e o nome, ou escolha na lista.')
+        const troco = cmd.recebido ? round2(cmd.recebido - total) : 0
+        return resp(`${NOME_FORMA[cmd.forma]}${troco > 0 ? `: troco de ${brl(troco)}` : ''}. Diga “finalizar” ou toque em Recebi.`, `${NOME_FORMA[cmd.forma]}.${troco > 0 ? ` Troco de ${reaisFalado(troco)}.` : ''} Diga finalizar para concluir.`)
+      }
+      case 'finalizar':
+        if (etapa === 'itens') {
+          if (!carrinho.length) return resp('A venda está vazia.')
+          setEtapa('pagamento')
+          return resp(`Total de ${brl(total)}. Como o cliente pagou?`, `Total de ${reaisFalado(total)}. Como o cliente pagou?`)
+        }
+        if (etapa === 'pagamento') {
+          if (!forma) return resp('Diga como o cliente pagou: dinheiro, Pix, cartão ou fiado.')
+          return concluir()
+        }
+        return undefined
+      case 'nota':
+        if (etapa !== 'nota' || !venda) return undefined
+        if (cmd.documento) setDocumento(cmd.documento)
+        setNota(banco.get('vendas', venda.id) || venda)
+        return resp('Abrindo a nota. Toque em Emitir para confirmar.')
+      case 'sem_nota':
+        if (etapa !== 'nota') return undefined
+        novaVenda()
+        return resp('Sem nota. Nova venda.')
+      default:
+        return undefined
+    }
   }
 
   const passos = [
@@ -354,6 +339,7 @@ export function VendaFacil() {
     ['pagamento', '2. Como pagou'],
     ['nota', '3. Nota fiscal'],
   ]
+  const contexto = etapa === 'itens' ? 'venda' : etapa
 
   return (
     <div className="mf">
@@ -365,14 +351,25 @@ export function VendaFacil() {
         ))}
       </ol>
 
+      <BarraComando
+        contexto={contexto}
+        onLocal={onLocal}
+        exemplos={
+          etapa === 'itens'
+            ? 'Ex.: “duas coxinhas e um café”, “tira o café”, “desconto de 10%”, “cliente Ana”, “finalizar”'
+            : etapa === 'pagamento'
+              ? 'Ex.: “pagou no Pix”, “pagou com 50 em dinheiro”, “fiado”, “finalizar”'
+              : 'Ex.: “com nota, CPF …”, “sem nota”, “nova venda”'
+        }
+      />
+
       {etapa === 'itens' && (
         <>
-          <div className="mf-modos" role="tablist">
+          <div className="mf-modos mf-modos-3" role="tablist">
             {[
               ['tocar', '👆', 'Tocar'],
               ['camera', '📷', 'Câmera'],
               ['codigo', '▦', 'Código / QR'],
-              ['voz', '🎤', 'Falar'],
             ].map(([id, ic, rotulo]) => (
               <button key={id} type="button" role="tab" aria-selected={modo === id} className={modo === id ? 'ativo' : ''} onClick={() => setModo(id)}>
                 <span>{ic}</span>
@@ -383,36 +380,50 @@ export function VendaFacil() {
 
           {modo === 'tocar' && (
             <div className="mf-produtos">
-              {ativos.map((p) => (
-                <button key={p.id} type="button" className="mf-produto" onClick={() => adicionar(p)}>
-                  {p.foto_url ? <img src={p.foto_url} alt="" /> : <span className="mf-letra">{p.nome[0]}</span>}
-                  <strong>{p.nome}</strong>
-                  <span>{brl(p.preco)}</span>
-                </button>
-              ))}
-              {!ativos.length && <p className="muted">Cadastre seus produtos em Meus produtos.</p>}
+              {ativos.map((p) => {
+                const s = p.controla_estoque ? saldo.get(p.id) || 0 : null
+                return (
+                  <button key={p.id} type="button" className="mf-produto" onClick={() => adicionar(p)}>
+                    {p.foto_url ? <img src={p.foto_url} alt="" /> : <span className="mf-letra">{p.nome[0]}</span>}
+                    <strong>{p.nome}</strong>
+                    <span>{brl(p.preco)}</span>
+                    {s !== null && <small className={s <= (Number(p.estoque_minimo) || 0) ? 'mf-pouco' : ''}>{s <= 0 ? 'sem estoque' : `${num(s)} em estoque`}</small>}
+                  </button>
+                )
+              })}
+              {!ativos.length && <p className="muted">Cadastre seus produtos em Meus produtos, ou diga: “cadastrar produto coxinha por 7 reais”.</p>}
             </div>
           )}
           {modo === 'camera' && <Reconhecer produtos={ativos} onProduto={(p) => adicionar(p)} />}
           {modo === 'codigo' && <LerCodigo produtos={ativos} onProduto={(p) => adicionar(p)} onDesconhecido={setCodigoNovo} />}
-          {modo === 'voz' && <BotaoVoz onComando={comando} exemplos="Ex.: “duas coxinhas e um café”, “pagou no pix”, “limpar”" />}
-          {fala && <p className="mf-resposta">{fala}</p>}
           {codigoNovo && modo === 'codigo' && (
             <p className="notice warn">
               O código {codigoNovo} não está em nenhum produto. Cadastre em <b>Meus produtos</b> e coloque esse número em “Código de barras”.
             </p>
           )}
+        </>
+      )}
 
+      {etapa !== 'nota' && (
+        <>
+          <div className="mf-venda-extras">
+            <button type="button" className={cliente ? 'mf-extra ativo' : 'mf-extra'} onClick={() => setJanela('cliente')}>
+              👤 {cliente ? cliente.nome : 'Cliente (opcional)'}
+            </button>
+            <button type="button" className={valorDesconto ? 'mf-extra ativo' : 'mf-extra'} onClick={() => setJanela('desconto')} disabled={!carrinho.length}>
+              🏷️ {valorDesconto ? `Desconto ${brl(valorDesconto)}` : 'Desconto'}
+            </button>
+          </div>
           <ul className="mf-carrinho" aria-label="Itens da venda">
-            {carrinho.map((i, k) => (
+            {carrinho.map((i) => (
               <li key={i.produto_id}>
                 <strong>{i.nome}</strong>
                 <div className="mf-qtd">
-                  <button type="button" aria-label="Menos" onClick={() => setCarrinho((c) => c.map((x, j) => (j === k ? { ...x, qtd: x.qtd - 1 } : x)).filter((x) => x.qtd > 0))}>
+                  <button type="button" aria-label="Menos" onClick={() => mudarQtd(i.produto_id, i.qtd - 1)}>
                     −
                   </button>
                   <span>{num(i.qtd)}</span>
-                  <button type="button" aria-label="Mais" onClick={() => setCarrinho((c) => c.map((x, j) => (j === k ? { ...x, qtd: x.qtd + 1 } : x)))}>
+                  <button type="button" aria-label="Mais" onClick={() => mudarQtd(i.produto_id, i.qtd + 1)}>
                     +
                   </button>
                 </div>
@@ -420,22 +431,25 @@ export function VendaFacil() {
               </li>
             ))}
           </ul>
-          <button type="button" className="mf-continuar" disabled={!carrinho.length} onClick={() => setEtapa('pagamento')}>
-            {carrinho.length ? `Continuar · ${num(qtd)} ${qtd === 1 ? 'item' : 'itens'} · ${brl(total)}` : 'Escolha o que está vendendo'}
-          </button>
         </>
+      )}
+
+      {etapa === 'itens' && (
+        <button type="button" className="mf-continuar" disabled={!carrinho.length} onClick={() => setEtapa('pagamento')}>
+          {carrinho.length ? `Continuar · ${num(qtd)} ${qtd === 1 ? 'item' : 'itens'} · ${brl(total)}` : 'Escolha o que está vendendo'}
+        </button>
       )}
 
       {etapa === 'pagamento' && (
         <>
           <p className="mf-total">
-            <span>Total</span>
+            <span>Total{valorDesconto ? ` (desconto ${brl(valorDesconto)})` : ''}</span>
             <strong>{brl(total)}</strong>
           </p>
           <h2 className="mf-pergunta">Como o cliente pagou?</h2>
-          <div className="mf-acoes">
+          <div className="mf-acoes mf-formas">
             {FORMAS.map(([id, ic, rotulo]) => (
-              <button key={id} type="button" className={forma === id ? 'mf-acao selecionada' : 'mf-acao'} onClick={() => setForma(id)}>
+              <button key={id} type="button" className={forma === id ? 'mf-acao selecionada' : 'mf-acao'} onClick={() => escolherForma(id)}>
                 <span>{ic}</span>
                 {rotulo}
               </button>
@@ -464,12 +478,18 @@ export function VendaFacil() {
             </div>
           )}
           {forma === 'pix' && <QrPix valor={total} tamanho={220} />}
+          {forma === 'fiado' && cliente && (
+            <p className="mf-explica">
+              {cliente.nome} fica devendo {brl(total)} (vence em 30 dias). Já devia {brl(fiadoEmAberto(banco, cliente.id))}.
+            </p>
+          )}
+          {erro && <p className="notice warn">{erro}</p>}
           <div className="mf-rodape">
             <button type="button" className="mf-voltar" onClick={() => setEtapa('itens')}>
               ← Voltar
             </button>
-            <button type="button" className="mf-continuar" disabled={!forma || (forma === 'dinheiro' && recebido !== '' && parseValor(recebido) < total)} onClick={concluir}>
-              ✓ Recebi {brl(total)}
+            <button type="button" className="mf-continuar" disabled={!forma || (forma === 'dinheiro' && recebido !== '' && parseValor(recebido) < total)} onClick={() => falar(concluir().fala)}>
+              ✓ {forma === 'fiado' ? 'Anotar no fiado' : 'Recebi'} {brl(total)}
             </button>
           </div>
         </>
@@ -483,6 +503,7 @@ export function VendaFacil() {
             <p>
               {brl(venda.total)}
               {Number(venda.troco) > 0 && ` · troco ${brl(venda.troco)}`}
+              {venda.cliente_nome && ` · ${venda.cliente_nome}`}
             </p>
             {venda.fiscal && <SeloFiscal fiscal={venda.fiscal} />}
           </div>
@@ -504,19 +525,41 @@ export function VendaFacil() {
               </div>
             </>
           )}
-          {venda.fiscal && (
-            <div className="mf-rodape">
-              <button type="button" className="mf-voltar" onClick={() => imprimir(htmlCupom(venda, cfg), { cupom: true, titulo: 'Recibo' })}>
-                Imprimir recibo
-              </button>
+          <div className="mf-rodape">
+            <button type="button" className="mf-voltar" onClick={() => imprimir(htmlCupom(venda, cfg), { cupom: true, titulo: 'Recibo' })}>
+              🖨️ Imprimir recibo
+            </button>
+            {venda.fiscal && (
               <button type="button" className="mf-continuar" onClick={novaVenda}>
                 Nova venda
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </>
       )}
 
+      {janela === 'cliente' && (
+        <EscolherCliente
+          clientes={clientes}
+          onFechar={() => setJanela(null)}
+          onEscolher={(c) => {
+            setCliente(c)
+            setErro('')
+            setJanela(null)
+          }}
+        />
+      )}
+      {janela === 'desconto' && (
+        <Desconto
+          subtotal={subtotal}
+          inicial={desconto}
+          onFechar={() => setJanela(null)}
+          onAplicar={(d) => {
+            setDesconto(d)
+            setJanela(null)
+          }}
+        />
+      )}
       {nota && (
         <NotaFiscal
           venda={nota}
@@ -528,6 +571,80 @@ export function VendaFacil() {
         />
       )}
     </div>
+  )
+}
+
+function EscolherCliente({ clientes, onEscolher, onFechar }) {
+  const { banco } = useSistema()
+  const [busca, setBusca] = useState('')
+  const [novo, setNovo] = useState(false)
+  const [nome, setNome] = useState('')
+  const [telefone, setTelefone] = useState('')
+  const q = busca.trim().toLowerCase()
+  const lista = clientes.filter((c) => !q || c.nome.toLowerCase().includes(q) || String(c.telefone).replace(/\D/g, '').includes(q.replace(/\D/g, '') || '§')).slice(0, 30)
+  return (
+    <Modal titulo="Quem está comprando?" onFechar={onFechar}>
+      {!novo ? (
+        <>
+          <input className="mf-campo" autoFocus value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Nome ou telefone" aria-label="Buscar cliente" />
+          <div className="mf-opcoes">
+            <button type="button" onClick={() => onEscolher(null)}>
+              Sem cliente
+            </button>
+            {lista.map((c) => (
+              <button key={c.id} type="button" onClick={() => onEscolher(c)}>
+                {c.nome}
+              </button>
+            ))}
+          </div>
+          <button type="button" className="mf-voltar" onClick={() => (setNovo(true), setNome(busca))}>
+            ＋ Cliente novo
+          </button>
+        </>
+      ) : (
+        <div className="mf-form">
+          <input className="mf-campo" autoFocus value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Nome" aria-label="Nome" />
+          <input className="mf-campo" inputMode="tel" value={telefone} onChange={(e) => setTelefone(e.target.value)} placeholder="WhatsApp (opcional)" aria-label="Telefone" />
+          <button type="button" className="mf-continuar" disabled={!nome.trim()} onClick={() => onEscolher(banco.salvar('clientes', { nome: nome.trim(), telefone }))}>
+            ✓ Cadastrar e usar
+          </button>
+        </div>
+      )}
+    </Modal>
+  )
+}
+
+function Desconto({ subtotal, inicial, onAplicar, onFechar }) {
+  const [valor, setValor] = useState(inicial.valor ? String(inicial.valor).replace('.', ',') : '')
+  const [porcento, setPorcento] = useState(inicial.porcento)
+  const v = parseValor(valor)
+  const calc = round2(Math.min(subtotal, porcento ? (subtotal * v) / 100 : v))
+  return (
+    <Modal titulo="Desconto" onFechar={onFechar}>
+      <div className="mf-escolha">
+        <button type="button" className={!porcento ? 'ativo' : ''} onClick={() => setPorcento(false)}>
+          R$ (valor)
+        </button>
+        <button type="button" className={porcento ? 'ativo' : ''} onClick={() => setPorcento(true)}>
+          % (porcentagem)
+        </button>
+      </div>
+      <div className="mf-valor">
+        <span>{porcento ? '%' : 'R$'}</span>
+        <input inputMode="decimal" autoFocus value={valor} onChange={(e) => setValor(e.target.value)} placeholder="0" aria-label="Valor do desconto" />
+      </div>
+      <p className="mf-explica">
+        Subtotal {brl(subtotal)} − desconto {brl(calc)} = <b>{brl(subtotal - calc)}</b>
+      </p>
+      <div className="mf-rodape">
+        <button type="button" className="mf-voltar" onClick={() => onAplicar({ valor: 0, porcento: false })}>
+          Sem desconto
+        </button>
+        <button type="button" className="mf-continuar" onClick={() => onAplicar({ valor: v, porcento })}>
+          ✓ Aplicar
+        </button>
+      </div>
+    </Modal>
   )
 }
 
@@ -544,15 +661,10 @@ const CATEGORIAS = [
 
 export function Gastos() {
   const { banco } = useSistema()
-  const cfg = useConfig()
   const lancamentos = useTabela('lancamentos')
-  const vendas = useTabela('vendas')
-  const produtos = useTabela('produtos')
-  const clientes = useTabela('clientes')
   const [categoria, setCategoria] = useState(null)
   const [valor, setValor] = useState('')
   const [descricao, setDescricao] = useState('')
-  const [fala, setFala] = useState('')
   const mes = hojeISO().slice(0, 7)
   const doMes = lancamentos.filter((l) => l.tipo === 'despesa' && String(l.pago_em).startsWith(mes)).sort((a, b) => String(b.criado_em).localeCompare(String(a.criado_em)))
   const total = doMes.reduce((s, l) => s + Number(l.valor), 0)
@@ -570,6 +682,7 @@ export function Gastos() {
 
   return (
     <div className="mf">
+      <BarraComando exemplos="Ex.: “gastei 80 reais de mercadoria”, “paguei 120 de luz”, “qual meu maior gasto?”, “apagar o último gasto”" />
       <p className="mf-total">
         <span>Gastos deste mês</span>
         <strong>{brl(total)}</strong>
@@ -585,25 +698,6 @@ export function Gastos() {
               </button>
             ))}
           </div>
-          <BotaoVoz
-            exemplos="Ex.: “gastei 80 reais de mercadoria”, “paguei 120 de luz”, “qual meu maior gasto?”"
-            onComando={(cmd, texto) => {
-              if (cmd.acao !== 'gasto' || !cmd.valor) {
-                const res = perguntar(texto, { vendas, lancamentos, produtos, clientes, cfg })
-                if (res) {
-                  setFala(res.tela)
-                  return falar(res.fala)
-                }
-                setFala('Não entendi. Diga, por exemplo: gastei 50 reais de luz, ou pergunte: qual meu maior gasto?')
-                return falar('Não entendi. Diga, por exemplo: gastei 50 reais de luz.')
-              }
-              registrarGasto(banco, cmd)
-              const t = `Anotado: ${reaisFalado(cmd.valor)}, ${cmd.descricao}.`
-              setFala(t)
-              falar(t)
-            }}
-          />
-          {fala && <p className="mf-resposta">{fala}</p>}
         </>
       ) : (
         <div className="mf-form">
@@ -650,6 +744,7 @@ export function ProdutosFacil() {
   const { banco } = useSistema()
   const cfg = useConfig()
   const produtos = useTabela('produtos')
+  const saldo = useSaldos()
   const [editar, setEditar] = useState(null)
   const lista = [...produtos].sort((a, b) => a.nome.localeCompare(b.nome))
 
@@ -669,6 +764,7 @@ export function ProdutosFacil() {
 
   return (
     <div className="mf">
+      <BarraComando exemplos="Ex.: “cadastrar produto pão de queijo por 5 reais”, “mudar o preço da coxinha para 8”, “chegaram 24 refrigerantes”, “o que está acabando?”" />
       <div className="mf-rodape topo">
         <button type="button" className="mf-continuar" onClick={() => setEditar({ tipo: 'produto', ativo: true, publicado: true })}>
           ＋ Novo produto
@@ -683,6 +779,11 @@ export function ProdutosFacil() {
             {p.foto_url ? <img src={p.foto_url} alt="" /> : <span className="mf-letra">{p.nome[0]}</span>}
             <strong>{p.nome}</strong>
             <span>{brl(p.preco)}</span>
+            {p.controla_estoque && (
+              <small className={(saldo.get(p.id) || 0) <= (Number(p.estoque_minimo) || 0) ? 'mf-pouco' : ''}>
+                📦 {num(saldo.get(p.id) || 0)} em estoque
+              </small>
+            )}
             <small>{Array.isArray(p.visual) && p.visual.length ? `📷 câmera conhece (${p.visual.length} fotos)` : '📷 ensinar a câmera'}</small>
           </button>
         ))}
@@ -694,7 +795,10 @@ export function ProdutosFacil() {
 
 function EditarProduto({ inicial, onFechar }) {
   const { banco } = useSistema()
+  const saldo = useSaldos()
+  const saldoAtual = inicial.id ? saldo.get(inicial.id) || 0 : 0
   const [p, setP] = useState(() => ({ ...inicial, preco: inicial.preco !== undefined ? String(inicial.preco).replace('.', ',') : '' }))
+  const [estoque, setEstoque] = useState(() => String(saldoAtual))
   const [tela, setTela] = useState('dados')
   const [erro, setErro] = useState('')
   const set = (k, v) => setP((s) => ({ ...s, [k]: v }))
@@ -702,7 +806,12 @@ function EditarProduto({ inicial, onFechar }) {
   const salvar = (extra = {}) => {
     if (!String(p.nome || '').trim()) return setErro('Dê um nome ao produto.')
     if (!(parseValor(p.preco) > 0)) return setErro('Informe o preço.')
-    const salvo = banco.salvar('produtos', { ...p, ...extra, nome: p.nome.trim(), preco: parseValor(p.preco) })
+    const salvo = banco.salvar('produtos', { ...p, ...extra, nome: p.nome.trim(), preco: parseValor(p.preco), estoque_minimo: p.estoque_minimo === '' ? '' : parseValor(p.estoque_minimo) })
+    // Estoque contado agora: grava só a diferença como ajuste (o histórico fica nos movimentos).
+    const contado = parseValor(estoque)
+    if (salvo.controla_estoque && estoque !== '' && Math.abs(contado - (saldo.get(salvo.id) || 0)) > 0.0001) {
+      banco.salvar('estoque_mov', { produto_id: salvo.id, qtd: round2(contado - (saldo.get(salvo.id) || 0)), motivo: 'ajuste' })
+    }
     setP({ ...salvo, preco: String(salvo.preco).replace('.', ',') })
     return salvo
   }
@@ -731,6 +840,24 @@ function EditarProduto({ inicial, onFechar }) {
                 {r}
               </button>
             ))}
+          </div>
+          <div className="mf-estoque">
+            <label className="sx-switch">
+              <input type="checkbox" checked={Boolean(p.controla_estoque)} onChange={(e) => set('controla_estoque', e.target.checked)} />
+              <span>📦 Controlar estoque deste produto</span>
+            </label>
+            {p.controla_estoque && (
+              <div className="mf-linha">
+                <label className="mf-doc">
+                  Quantos tem agora
+                  <input inputMode="decimal" value={estoque} onChange={(e) => setEstoque(e.target.value)} />
+                </label>
+                <label className="mf-doc">
+                  Avisar quando tiver menos de
+                  <input inputMode="decimal" value={p.estoque_minimo ?? ''} onChange={(e) => set('estoque_minimo', e.target.value)} placeholder="Ex.: 10" />
+                </label>
+              </div>
+            )}
           </div>
           <label className="mf-doc">
             Código de barras (se tiver)
@@ -860,27 +987,14 @@ export function CentralMei() {
     return t
   }, [vendas, produtos, anoAnterior])
 
-  const imprimirRelatorio = () => {
-    const [a, m] = mes.split('-')
-    const linha = (rot, v) => `<tr><td>${rot}</td><td class="n">${brl(v)}</td></tr>`
-    imprimir(
-      `<h1>Relatório Mensal das Receitas Brutas</h1><p class="muted">Período de apuração: ${m}/${a}</p>
-      <div class="grade"><div>CNPJ: <b>${(cfg.documento || '').replace(/</g, '&lt;') || '________________'}</b></div><div>Empreendedor: <b>${(cfg.empresa_nome || '').replace(/</g, '&lt;')}</b></div></div>
-      <h2>Receita bruta mensal: revenda de mercadorias (comércio)</h2><table>${linha('I - Revenda de mercadorias com dispensa de emissão de documento fiscal', rec.comercioSemNota)}${linha('II - Revenda de mercadorias com documento fiscal emitido', rec.comercioComNota)}${linha('III - Total das receitas com revenda de mercadorias (I + II)', rec.comercio)}</table>
-      <h2>Receita bruta mensal: venda de produtos industrializados (indústria)</h2><table>${linha('IV - Venda de produtos industrializados com dispensa de emissão de documento fiscal', 0)}${linha('V - Venda de produtos industrializados com documento fiscal emitido', 0)}${linha('VI - Total das receitas com venda de produtos industrializados (IV + V)', 0)}</table>
-      <h2>Receita bruta mensal: prestação de serviços</h2><table>${linha('VII - Receita com prestação de serviços com dispensa de emissão de documento fiscal', rec.servicoSemNota)}${linha('VIII - Receita com prestação de serviços com documento fiscal emitido', rec.servicoComNota)}${linha('IX - Total das receitas com prestação de serviços (VII + VIII)', rec.servico)}</table>
-      <table><tr><td class="total">X - Total geral das receitas brutas no mês (III + VI + IX)</td><td class="n total">${brl(rec.total)}</td></tr></table>
-      <p class="muted">Anexe a este relatório os documentos fiscais de compras de mercadorias e insumos e as notas fiscais emitidas no período. Gerado pelo MEI na Mão a partir das vendas registradas; confira antes de assinar.</p>
-      <div class="ass"><div>Local e data</div><div>Assinatura do empreendedor</div></div>`,
-      { titulo: `Relatório mensal ${m}-${a}` },
-    )
-  }
+  const imprimirRelatorio = () => imprimirRelatorioMensal(cfg, vendas, produtos, mes)
 
   const notaResposta = empresa === null ? null : precisaNota({ documento: empresa ? '00000000000000' : '', servico: Boolean(servicoQ) })
 
   return (
     <div className="mf">
       <h1 className="mf-titulo">Central MEI</h1>
+      <BarraComando exemplos="Ex.: “quanto falta para o limite?”, “paguei o DAS”, “imprimir relatório do mês passado”, “o que é a declaração anual?”" />
       <p className="muted small">
         Valores de {MEI.atualizado}. Confira sempre no{' '}
         <a href={MEI.links.portal} target="_blank" rel="noopener noreferrer">

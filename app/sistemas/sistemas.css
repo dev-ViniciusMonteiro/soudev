@@ -3485,3 +3485,98 @@ html.sx-tela-cheia .site-footer {
   color: var(--cyan);
   border-style: dashed;
 }
+
+/* MEI na Mão: barra de comando, venda completa e estoque */
+
+.mf-barra-cmd {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mf-escrever .mf-voltar {
+  min-height: 52px;
+  font-size: 0.98rem;
+}
+
+.mf-resposta-acoes {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.mf-catalogo-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mf-catalogo-grupo h3 {
+  font-size: 1.05rem;
+}
+
+.mf-chips button.acao {
+  border-color: color-mix(in srgb, var(--sx-aviso) 55%, transparent);
+}
+
+.mf-modos-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.mf-formas {
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+}
+
+.mf-formas .mf-acao {
+  min-height: 96px;
+}
+
+.mf-venda-extras {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.mf-extra {
+  flex: 1 1 180px;
+  min-height: 52px;
+  padding: 10px 14px;
+  border-radius: 16px;
+  border: 2px dashed var(--line-strong);
+  background: var(--panel);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: left;
+}
+
+.mf-extra.ativo {
+  border-style: solid;
+  border-color: var(--sx-cor);
+  background: color-mix(in srgb, var(--sx-cor) 16%, var(--panel));
+}
+
+.mf-extra:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.mf-produto small.mf-pouco,
+.mf-pouco {
+  color: var(--sx-erro) !important;
+  font-weight: 700;
+}
+
+.mf-estoque {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: var(--bg-2);
+}
+
+.mf-estoque .mf-linha > label {
+  flex: 1 1 180px;
+}
