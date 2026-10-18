@@ -9,7 +9,8 @@
     "build:game": "vite build games/cidade-neon --logLevel warn && vite build games/escritorio-ia --logLevel warn && vite build games/pesca-no-gelo --logLevel warn && vite build games/monkepo --logLevel warn",
     "typecheck:game": "tsc -p games/cidade-neon --noEmit && tsc -p games/escritorio-ia --noEmit && tsc -p games/pesca-no-gelo --noEmit && tsc -p games/monkepo --noEmit",
     "build:monkepo-script": "node games/monkepo/scripts/build-apps-script.mjs",
-    "build:sistemas-script": "node lib/sistemas/apps-script/build.mjs"
+    "build:sistemas-script": "node lib/sistemas/apps-script/build.mjs",
+    "build:treino-exercicios": "node lib/treino/gerar-exercicios.mjs"
   },
   "dependencies": {
     "docx": "^9.11.0",

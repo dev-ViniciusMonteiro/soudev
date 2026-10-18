@@ -4,6 +4,7 @@ import { SITE_URL, jsonLd, site } from '@/lib/site'
 import { categories, tools } from '@/lib/tools'
 import { nichos } from '@/lib/sistemas/nichos'
 import { games } from '@/lib/games'
+import { apps } from '@/lib/apps'
 
 export const metadata = {
   alternates: { canonical: '/' },
@@ -69,6 +70,14 @@ const vitrine = [
     descricao: 'PDV, cardápio online, agenda, ordem de serviço, academia e CRM para usar sem limite. Precisa de algo do jeito do seu negócio? Faço sob medida.',
     verTodos: '/sistemas',
     itens: nichos.map((n) => ({ href: `/sistemas/${n.slug}`, badge: n.badge, nome: n.nome, texto: n.curto, emoji: true })),
+  },
+  {
+    id: 'apps',
+    icone: '📱',
+    nome: 'Apps',
+    descricao: 'Apps completos que abrem no navegador, funcionam no celular e guardam seus dados no seu aparelho.',
+    verTodos: '/apps',
+    itens: apps.map((a) => ({ href: `/apps/${a.slug}`, badge: a.icone, nome: a.nome, texto: a.curto, emoji: true })),
   },
   {
     id: 'jogos',

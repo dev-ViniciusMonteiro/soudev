@@ -43,6 +43,7 @@ export const viewport = {
 const menu = [
   ['/ferramentas', 'Ferramentas'],
   ['/sistemas', 'Sistemas'],
+  ['/apps', 'Apps'],
   ['/jogos', 'Jogos'],
   ['/#sobre', 'Sobre'],
   ['/#contato', 'Contato'],
@@ -67,6 +68,7 @@ export default function RootLayout({ children }) {
             <nav className="nav">
               <Link href="/ferramentas">Ferramentas</Link>
               <Link href="/sistemas">Sistemas</Link>
+              <Link href="/apps">Apps</Link>
               <Link href="/jogos" className="nav-games">Jogos</Link>
               <Link href="/#sobre">Sobre</Link>
               <Link href="/#contato" className="nav-cta">Contato</Link>
