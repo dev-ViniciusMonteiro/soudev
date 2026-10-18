@@ -91,6 +91,7 @@ export default function RootLayout({ children }) {
               <Link href="/ferramentas">Todas as ferramentas</Link>
               <Link href="/sistemas">Sistemas de gestão</Link>
               <Link href="/jogos">Jogos grátis</Link>
+              <Link href="/curriculo">Currículo</Link>
               <a href={site.instagram} target="_blank" rel="noopener noreferrer">Instagram {site.instagramHandle}</a>
               <Link href="/#contato">Fale comigo</Link>
               <Link href="/privacidade">Privacidade</Link>

@@ -217,6 +217,10 @@ export default function Home() {
             Criei este espaço para deixar gratuitas as ferramentas que mais facilitam o dia a dia. Elas são rápidas, simples e respeitam
             sua privacidade. Se precisar de algo sob medida para o seu negócio, fale comigo.
           </p>
+          <p>
+            <Link href="/curriculo">Veja meu currículo completo</Link>: Tech Lead na Compass UOL, com projetos para Natura, Qualicorp e
+            Cidade Center Norte.
+          </p>
         </div>
         <div className="services">
           {servicos.map(([title, text]) => (

@@ -1,0 +1,221 @@
+/* Currículo: folha clara na tela e A4 limpo na impressão (o "Baixar PDF" usa a impressão do navegador). */
+.cv-page {
+  padding-top: 24px;
+  padding-bottom: 64px;
+}
+
+.cv-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 16px 0 20px;
+}
+
+.cv {
+  --cv-texto: #1f2937;
+  --cv-suave: #4b5563;
+  --cv-linha: #d1d5db;
+  --cv-destaque: #1d4ed8;
+  max-width: 860px;
+  background: #fff;
+  color: var(--cv-texto);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 48px 56px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.cv a {
+  color: var(--cv-destaque);
+}
+
+.cv h1 {
+  font-size: 2rem;
+  line-height: 1.15;
+  margin: 0;
+  color: #111827;
+}
+
+.cv-titulo {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--cv-destaque);
+  margin: 4px 0 10px;
+}
+
+.cv-contato {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  color: var(--cv-suave);
+  font-size: 0.88rem;
+  margin: 0;
+}
+
+.cv section {
+  margin-top: 24px;
+}
+
+.cv h2 {
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #111827;
+  border-bottom: 2px solid var(--cv-linha);
+  padding-bottom: 4px;
+  margin: 0 0 10px;
+}
+
+.cv h3,
+.cv h4 {
+  font-size: 1rem;
+  margin: 0;
+  color: #111827;
+}
+
+.cv h4 {
+  font-size: 0.95rem;
+}
+
+.cv p {
+  margin: 0 0 8px;
+}
+
+.cv ul {
+  margin: 4px 0 0;
+  padding-left: 20px;
+}
+
+.cv li {
+  margin-bottom: 3px;
+}
+
+.cv-empresa {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.cv-data {
+  color: var(--cv-suave);
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.cv-nota {
+  color: var(--cv-suave);
+  font-size: 0.88rem;
+  margin-top: 2px;
+}
+
+.cv-alocacao {
+  margin: 12px 0 0;
+  padding-left: 12px;
+  border-left: 3px solid var(--cv-linha);
+}
+
+.cv-empresa,
+.cv li {
+  break-inside: avoid;
+  break-after: avoid;
+}
+
+.cv li {
+  break-after: auto;
+}
+
+.cv-stack {
+  color: var(--cv-suave);
+  font-size: 0.82rem;
+  margin: 4px 0 0;
+}
+
+.cv-competencias {
+  margin: 0;
+}
+
+.cv-competencias div {
+  display: grid;
+  grid-template-columns: 190px 1fr;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.cv-competencias dt {
+  font-weight: 600;
+}
+
+.cv-competencias dd {
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .cv {
+    padding: 28px 20px;
+    border-radius: 10px;
+  }
+  .cv h1 {
+    font-size: 1.6rem;
+  }
+  .cv-empresa {
+    flex-direction: column;
+    gap: 0;
+  }
+  .cv-competencias div {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm 14mm;
+  }
+  body:has(.cv) {
+    background: #fff !important;
+  }
+  body:has(.cv) .site-header,
+  body:has(.cv) .site-footer,
+  body:has(.cv) .cv-sem-impressao,
+  body:has(.cv) ins.adsbygoogle,
+  body:has(.cv) [role='dialog'] {
+    display: none !important;
+  }
+  .cv-page {
+    padding: 0;
+    max-width: none;
+  }
+  .cv {
+    max-width: none;
+    box-shadow: none;
+    border-radius: 0;
+    padding: 0;
+    font-size: 9.5pt;
+    line-height: 1.38;
+  }
+  .cv h1 {
+    font-size: 19pt;
+  }
+  .cv section {
+    margin-top: 14px;
+  }
+  .cv-alocacao {
+    margin-top: 8px;
+  }
+  .cv li {
+    margin-bottom: 1px;
+  }
+  .cv-stack {
+    font-size: 8pt;
+  }
+  .cv a {
+    color: var(--cv-texto);
+    text-decoration: none;
+  }
+  .cv h2 {
+    break-after: avoid;
+  }
+}
