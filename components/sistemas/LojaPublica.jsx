@@ -437,18 +437,44 @@ function PedidoFeito({ pedido, cfg }) {
 
 /* ---------- Agendamento ---------- */
 
+function esquecerDia(mapa, dia) {
+  const novo = new Map(mapa)
+  novo.delete(dia)
+  return novo
+}
+
+// A agenda das próximas semanas vem numa chamada só (todos os profissionais). Os horários livres e os dias
+// lotados são calculados aqui; ao marcar, a resposta já traz a agenda atualizada, sem buscar de novo.
 function AgendarCliente({ api, loja }) {
   const cfg = loja.config
   const servicos = loja.produtos.filter((p) => p.tipo === 'servico')
+  const profs = loja.profissionais
   const [servico, setServico] = useState(null)
-  const [prof, setProf] = useState(null)
+  const [prof, setProf] = useState(null) // { id: '' } = sem preferência
   const [dia, setDia] = useState(null)
   const [hora, setHora] = useState(null)
-  const [livres, setLivres] = useState(null)
+  const [agenda, setAgenda] = useState(null)
+  const [legado, setLegado] = useState(null) // Code.gs antigo: Map dia -> ocupados, buscado dia a dia
   const [dados, setDados] = useState(() => guardado('lp.cliente', { nome: '', telefone: '', email: '' }))
   const [erro, setErro] = useState('')
-  const [feito, setFeito] = useState(false)
+  const [aviso, setAviso] = useState('')
+  const [feito, setFeito] = useState(null)
   const [enviando, setEnviando] = useState(false)
+
+  useEffect(() => {
+    api
+      .agenda()
+      .then((a) => (a ? setAgenda(a) : setLegado(new Map())))
+      .catch((e) => setErro(e.message))
+  }, [api])
+
+  // Só para planilhas com o Code.gs antigo: busca o dia escolhido de todos os profissionais.
+  useEffect(() => {
+    if (!legado || !dia || legado.has(dia)) return
+    Promise.all(profs.map((p) => api.ocupados(dia, p.id)))
+      .then((listas) => setLegado((m) => new Map(m).set(dia, listas.flat())))
+      .catch((e) => setErro(e.message))
+  }, [api, legado, dia, profs])
 
   const dias = useMemo(() => {
     const abertos = String(cfg.dias ?? '1,2,3,4,5,6').split(',').map(Number)
@@ -460,66 +486,105 @@ function AgendarCliente({ api, loja }) {
     return out
   }, [cfg.dias])
 
-  const carregar = useCallback(async () => {
-    if (!servico || !prof || !dia) return
-    setLivres(null)
-    const ocupados = await api.ocupados(dia, prof.id)
-    setLivres(horariosLivres({ data: dia, duracao: servico.duracao_min, profissionalId: prof.id, agendamentos: ocupados, config: cfg }))
-  }, [api, servico, prof, dia, cfg])
+  const conhecido = (d) => (agenda ? d <= agenda.ate : legado?.has(d))
+  const ocupadosDe = (d) => (agenda ? agenda.ocupados : legado?.get(d) ?? [])
 
-  useEffect(() => {
-    carregar().catch((e) => setErro(e.message))
-  }, [carregar])
+  /** Horários livres no dia; com "sem preferência", junta todos e guarda quem atende cada horário. */
+  const livresNoDia = (d) => {
+    if (!servico || !prof || !conhecido(d)) return null
+    const candidatos = prof.id ? [prof] : profs
+    const quem = new Map()
+    for (const p of candidatos) {
+      for (const h of horariosLivres({ data: d, duracao: servico.duracao_min, profissionalId: p.id, agendamentos: ocupadosDe(d), config: cfg })) if (!quem.has(h)) quem.set(h, p)
+    }
+    return new Map([...quem].sort(([a], [b]) => a.localeCompare(b)))
+  }
+
+  const livres = dia ? livresNoDia(dia) : null
+
+  const escolher = (fn) => {
+    fn()
+    setHora(null)
+    setAviso('')
+  }
 
   const confirmar = async (e) => {
     e.preventDefault()
     setErro('')
+    setAviso('')
     setEnviando(true)
     guardar('lp.cliente', { ...guardado('lp.cliente', {}), ...dados })
+    const atende = livres?.get(hora) ?? prof
     try {
-      await api.agendar({ servico_id: servico.id, profissional_id: prof.id, inicio: `${dia}T${hora}`, cliente: dados })
+      const r = await api.agendar({ servico_id: servico.id, profissional_id: atende.id, inicio: `${dia}T${hora}`, cliente: dados })
       track('sistema_agendamento_online', { modo: api.demo ? 'demo' : 'planilha' })
-      setFeito(true)
+      if (r.agenda) setAgenda(r.agenda)
+      else if (legado) setLegado((m) => esquecerDia(m, dia))
+      setFeito({ codigo: r.codigo, prof: atende, dia, hora, servico })
     } catch (e2) {
-      setErro(e2.message)
+      // Horário tomado: a resposta já vem com a agenda nova e a tela mostra o que sobrou.
+      if (e2.dados?.agenda) setAgenda(e2.dados.agenda)
+      else if (legado) setLegado((m) => esquecerDia(m, dia))
+      setAviso(e2.message)
       setHora(null)
-      carregar()
     } finally {
       setEnviando(false)
     }
   }
 
   if (feito) {
+    const fonte = new URLSearchParams(window.location.search).get('s') || ''
     return (
       <div className="lp-feito">
-        <span className="lp-feito-ok" aria-hidden="true">
-          ✓
+        <span className="lp-feito-ok lp-feito-espera" aria-hidden="true">
+          ⏳
         </span>
-        <h1>Horário marcado!</h1>
+        <h1>Pedido enviado!</h1>
         <p>
-          {servico.nome} com {prof.nome}
+          {feito.servico.nome} com {feito.prof.nome}
           <br />
           <strong>
-            {SEMANA[new Date(`${dia}T12:00`).getDay()]}, {dataBR(dia)} às {hora}
+            {SEMANA[new Date(`${feito.dia}T12:00`).getDay()]}, {dataBR(feito.dia)} às {feito.hora}
           </strong>
         </p>
+        <p className="muted">O horário fica reservado para você. Agora é só esperar a confirmação da {cfg.empresa_nome || 'loja'}.</p>
+        {feito.codigo && (
+          <>
+            <p>
+              Código para acompanhar: <strong className="lp-codigo">{feito.codigo}</strong>
+            </p>
+            <a className="btn btn-primary" href={`/loja/acompanhar?s=${encodeURIComponent(fonte)}&c=${feito.codigo}`}>
+              Acompanhar a confirmação
+            </a>
+          </>
+        )}
         {cfg.whatsapp && (
-          <a className="btn btn-ghost" href={linkWhats(cfg.whatsapp, `Olá! Agendei ${servico.nome} com ${prof.nome} em ${dataBR(dia)} às ${hora}. Nome: ${dados.nome}.`)} target="_blank" rel="noopener noreferrer">
-            Avisar a loja no WhatsApp
+          <a className="btn btn-ghost" href={linkWhats(cfg.whatsapp, `Olá! Pedi ${feito.servico.nome} com ${feito.prof.nome} em ${dataBR(feito.dia)} às ${feito.hora}. Nome: ${dados.nome}.${feito.codigo ? ` Código: ${feito.codigo}.` : ''}`)} target="_blank" rel="noopener noreferrer">
+            Avisar no WhatsApp
           </a>
         )}
+        <button
+          type="button"
+          className="btn btn-ghost"
+          onClick={() => {
+            setFeito(null)
+            setHora(null)
+          }}
+        >
+          Marcar outro horário
+        </button>
       </div>
     )
   }
 
   return (
     <>
-      <Cabecalho cfg={cfg} sub={<p className="lp-info">Agende online em poucos toques</p>} />
+      <Cabecalho cfg={cfg} sub={<p className="lp-info">Escolha o horário e espere a confirmação</p>} />
       <section className="lp-secao">
         <h2>1. Serviço</h2>
         <div className="lp-opcoes">
           {servicos.map((s) => (
-            <button key={s.id} type="button" className={servico?.id === s.id ? 'lp-opcao ativo' : 'lp-opcao'} onClick={() => (setServico(s), setHora(null))}>
+            <button key={s.id} type="button" className={servico?.id === s.id ? 'lp-opcao ativo' : 'lp-opcao'} onClick={() => escolher(() => setServico(s))}>
               <strong>{s.nome}</strong>
               <span>
                 {brl(s.preco)} · {s.duracao_min || 30} min
@@ -533,8 +598,14 @@ function AgendarCliente({ api, loja }) {
         <section className="lp-secao">
           <h2>2. Profissional</h2>
           <div className="lp-opcoes">
-            {loja.profissionais.map((p) => (
-              <button key={p.id} type="button" className={prof?.id === p.id ? 'lp-opcao ativo' : 'lp-opcao'} onClick={() => (setProf(p), setHora(null))}>
+            {profs.length > 1 && (
+              <button type="button" className={prof?.id === '' ? 'lp-opcao ativo' : 'lp-opcao'} onClick={() => escolher(() => setProf({ id: '', nome: 'Sem preferência' }))}>
+                <strong>Sem preferência</strong>
+                <span>Quem estiver livre</span>
+              </button>
+            )}
+            {profs.map((p) => (
+              <button key={p.id} type="button" className={prof?.id === p.id ? 'lp-opcao ativo' : 'lp-opcao'} onClick={() => escolher(() => setProf(p))}>
                 <strong>{p.nome}</strong>
                 {p.funcao && <span>{p.funcao}</span>}
               </button>
@@ -545,28 +616,39 @@ function AgendarCliente({ api, loja }) {
       {servico && prof && (
         <section className="lp-secao">
           <h2>3. Dia</h2>
-          <div className="lp-dias">
-            {dias.map((d) => (
-              <button key={d} type="button" className={dia === d ? 'lp-dia ativo' : 'lp-dia'} onClick={() => (setDia(d), setHora(null))}>
-                <small>{d === hojeISO() ? 'hoje' : SEMANA[new Date(`${d}T12:00`).getDay()]}</small>
-                <strong>{d.slice(8, 10)}</strong>
-              </button>
-            ))}
-          </div>
+          {!agenda && !legado ? (
+            <p className="muted">
+              <span className="spinner" aria-hidden="true" /> Carregando a agenda…
+            </p>
+          ) : (
+            <div className="lp-dias">
+              {dias.map((d) => {
+                const lotado = livresNoDia(d)?.size === 0
+                return (
+                  <button key={d} type="button" className={`lp-dia${dia === d ? ' ativo' : ''}${lotado ? ' lotado' : ''}`} disabled={lotado} aria-label={lotado ? `${dataBR(d)}: lotado` : dataBR(d)} onClick={() => escolher(() => setDia(d))}>
+                    <small>{d === hojeISO() ? 'hoje' : SEMANA[new Date(`${d}T12:00`).getDay()]}</small>
+                    <strong>{d.slice(8, 10)}</strong>
+                    {lotado && <em>lotado</em>}
+                  </button>
+                )
+              })}
+            </div>
+          )}
         </section>
       )}
       {servico && prof && dia && (
         <section className="lp-secao">
           <h2>4. Horário</h2>
+          {aviso && <p className="notice warn">{aviso} A agenda já foi atualizada.</p>}
           {livres === null ? (
             <p className="muted">
               <span className="spinner" aria-hidden="true" /> Buscando horários…
             </p>
-          ) : livres.length === 0 ? (
-            <p className="muted">Sem horários livres neste dia. Escolha outro dia ou profissional.</p>
+          ) : livres.size === 0 ? (
+            <p className="muted">Este dia lotou. Escolha outro dia ou profissional.</p>
           ) : (
             <div className="lp-horas">
-              {livres.map((h) => (
+              {[...livres.keys()].map((h) => (
                 <button key={h} type="button" className={hora === h ? 'chip active' : 'chip'} onClick={() => setHora(h)}>
                   {h}
                 </button>
@@ -578,6 +660,7 @@ function AgendarCliente({ api, loja }) {
       {hora && (
         <form className="lp-secao sx-form" onSubmit={confirmar}>
           <h2>5. Seus dados</h2>
+          {!prof.id && livres?.get(hora) && <p className="muted small">Você será atendido por {livres.get(hora).nome}.</p>}
           <div className="sx-form-grid">
             <label className="field">
               <span className="field-label">Nome</span>
@@ -588,13 +671,13 @@ function AgendarCliente({ api, loja }) {
               <input required type="tel" value={dados.telefone || ''} onChange={(e) => setDados((d) => ({ ...d, telefone: e.target.value }))} autoComplete="tel" />
             </label>
             <label className="field">
-              <span className="field-label">E-mail (para receber a confirmação)</span>
+              <span className="field-label">E-mail (para receber o código)</span>
               <input type="email" value={dados.email || ''} onChange={(e) => setDados((d) => ({ ...d, email: e.target.value }))} autoComplete="email" />
             </label>
           </div>
           {erro && <p className="notice error">{erro}</p>}
           <button type="submit" className="btn btn-primary btn-lg sx-largo" disabled={enviando}>
-            {enviando ? 'Marcando…' : `Confirmar ${dataBR(dia)} às ${hora}`}
+            {enviando ? 'Enviando…' : `Pedir ${dataBR(dia)} às ${hora}`}
           </button>
         </form>
       )}
@@ -604,6 +687,14 @@ function AgendarCliente({ api, loja }) {
 }
 
 /* ---------- Acompanhamento ---------- */
+
+const ETAPAS_HORARIO = [
+  ['pendente', 'Pedido enviado'],
+  ['confirmado', 'Confirmado'],
+  ['concluido', 'Atendido'],
+]
+
+const etapaHorario = (status) => (status === 'pendente' ? 'pendente' : status === 'concluido' ? 'concluido' : 'confirmado')
 
 function Acompanhar({ api }) {
   const [codigo, setCodigo] = useState(() => lerParam('c'))
@@ -632,12 +723,12 @@ function Acompanhar({ api }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const etapas = res?.tipo === 'pedido' ? ETAPAS_PEDIDO.filter(([e]) => res.entrega === 'entrega' || e !== 'saiu') : STATUS_OS.filter(([s]) => s !== 'cancelada')
-  const atual = res ? etapas.findIndex(([e]) => e === (res.tipo === 'pedido' ? (res.status === 'concluida' ? 'entregue' : res.etapa) : res.status)) : -1
+  const etapas = res?.tipo === 'pedido' ? ETAPAS_PEDIDO.filter(([e]) => res.entrega === 'entrega' || e !== 'saiu') : res?.tipo === 'agendamento' ? ETAPAS_HORARIO : STATUS_OS.filter(([s]) => s !== 'cancelada')
+  const atual = res ? etapas.findIndex(([e]) => e === (res.tipo === 'pedido' ? (res.status === 'concluida' ? 'entregue' : res.etapa) : res.tipo === 'agendamento' ? etapaHorario(res.status) : res.status)) : -1
 
   return (
     <div className="lp-acomp">
-      <h1>Acompanhe seu pedido ou ordem de serviço</h1>
+      <h1>Acompanhe seu pedido, horário ou ordem de serviço</h1>
       <form
         className="sx-linha"
         onSubmit={(e) => {
@@ -653,11 +744,33 @@ function Acompanhar({ api }) {
       {erro && <p className="notice error">{erro}</p>}
       {res && (
         <div className="lp-resultado">
-          <h2>
-            {res.tipo === 'pedido' ? 'Pedido' : 'Ordem de serviço'} #{res.numero || '—'}
-          </h2>
-          {res.equipamento && <p>{res.equipamento}</p>}
-          {res.status === 'cancelada' ? (
+          {res.tipo === 'agendamento' ? (
+            <>
+              <h2>Seu horário</h2>
+              <p>
+                {res.servico}
+                {res.profissional && ` com ${res.profissional}`}
+                <br />
+                <strong>
+                  {SEMANA[new Date(`${String(res.inicio).slice(0, 10)}T12:00`).getDay()]}, {dataBR(String(res.inicio).slice(0, 10))} às {String(res.inicio).slice(11, 16)}
+                </strong>
+              </p>
+              {res.status === 'pendente' && <p className="notice warn">Aguardando a confirmação. O horário já está reservado para você.</p>}
+              {['confirmado', 'agendado'].includes(res.status) && <p className="notice ok">Horário confirmado. Até lá!</p>}
+            </>
+          ) : (
+            <>
+              <h2>
+                {res.tipo === 'pedido' ? 'Pedido' : 'Ordem de serviço'} #{res.numero || '—'}
+              </h2>
+              {res.equipamento && <p>{res.equipamento}</p>}
+            </>
+          )}
+          {res.status === 'recusado' ? (
+            <p className="notice error">Infelizmente este horário não pôde ser aceito. Faça um novo pedido em outro horário.</p>
+          ) : res.status === 'faltou' ? (
+            <p className="notice error">Marcado como falta.</p>
+          ) : ['cancelada', 'cancelado'].includes(res.status) ? (
             <p className="notice error">Cancelado.</p>
           ) : (
             <ol className="lp-linha-tempo">

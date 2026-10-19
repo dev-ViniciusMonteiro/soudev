@@ -72,7 +72,8 @@ export default function Painel() {
     }
   }, [vendas, movs, produtos, lancamentos, hoje])
 
-  const agendaHoje = agendamentos.filter((a) => String(a.inicio).startsWith(hoje) && a.status !== 'cancelado').sort((a, b) => a.inicio.localeCompare(b.inicio))
+  const agendaHoje = agendamentos.filter((a) => String(a.inicio).startsWith(hoje) && !['cancelado', 'recusado', 'bloqueio'].includes(a.status)).sort((a, b) => a.inicio.localeCompare(b.inicio))
+  const pedidosHorario = agendamentos.filter((a) => a.status === 'pendente' && String(a.inicio) >= hoje).length
   const pedidosAbertos = vendas.filter((v) => v.origem === 'cardapio' && v.status === 'aberta')
   const mesasAbertas = vendas.filter((v) => v.origem === 'mesa' && v.status === 'aberta')
   const osAbertas = ordens.filter((o) => !['entregue', 'cancelada'].includes(o.status))
@@ -89,6 +90,7 @@ export default function Painel() {
     ['Ticket médio', brl(n.ticket), 'no mês'],
     tem('pedidos') && ['Pedidos em andamento', pedidosAbertos.length, `${mesasAbertas.length} mesas abertas`, pedidosAbertos.some((p) => p.etapa === 'novo') ? 'aviso' : null],
     tem('agenda') && ['Agenda de hoje', agendaHoje.length, `${agendaHoje.filter((a) => a.status === 'concluido').length} atendidos`],
+    tem('agenda') && ['Pedidos de horário', pedidosHorario, pedidosHorario ? 'esperando você aceitar' : 'nenhum esperando', pedidosHorario ? 'aviso' : null],
     tem('ordens') && ['OS em aberto', osAbertas.length, `${osProntas.length} prontas para entregar`, osProntas.length ? 'aviso' : null],
     tem('mensalidades') && ['Alunos ativos', ativosAlunos, `${checkinsHoje} check-ins hoje`],
     tem('mensalidades') && [
@@ -191,7 +193,7 @@ export default function Painel() {
                 <li key={a.id}>
                   <strong>{horaBR(a.inicio)}</strong> {a.cliente_nome}
                   {a.pet_id && pets.get(a.pet_id) ? ` · ${pets.get(a.pet_id).nome}` : ''} · {servicos.get(a.servico_id)?.nome}
-                  <Selo tom={a.status === 'concluido' ? 'ok' : a.status === 'faltou' ? 'erro' : 'neutro'}>{STATUS_AGENDA.find(([s]) => s === a.status)?.[1]}</Selo>
+                  <Selo tom={a.status === 'concluido' ? 'ok' : a.status === 'faltou' ? 'erro' : a.status === 'pendente' ? 'aviso' : 'neutro'}>{STATUS_AGENDA.find(([s]) => s === a.status)?.[1]}</Selo>
                 </li>
               ))}
             </ul>

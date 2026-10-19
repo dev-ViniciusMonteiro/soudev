@@ -1483,6 +1483,83 @@ html.sx-tela-cheia .site-footer {
   text-decoration: line-through;
 }
 
+.sx-evento.st-pendente {
+  border-style: dashed;
+  background: color-mix(in srgb, var(--sx-aviso) 14%, var(--panel));
+}
+
+.sx-evento.st-bloqueio {
+  border: 1px dashed var(--line);
+  border-left: 4px solid var(--muted);
+  background: repeating-linear-gradient(135deg, var(--panel-2), var(--panel-2) 6px, var(--panel) 6px, var(--panel) 12px);
+  color: var(--muted);
+  z-index: 1;
+}
+
+/* Pedidos do agendamento online esperando o profissional aceitar */
+.sx-pendentes {
+  border-color: color-mix(in srgb, var(--sx-aviso) 55%, var(--line));
+}
+
+.sx-pendentes ul {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sx-pendentes li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.sx-pendente-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sx-pendente-info span {
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.sx-pendente-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.sx-marcar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  align-self: end;
+  min-height: 40px;
+}
+
+.sx-subtitulo {
+  margin-top: 10px;
+  font-size: 1.15rem;
+}
+
 .sx-agora {
   position: absolute;
   left: var(--hora);
@@ -2100,6 +2177,28 @@ html.sx-tela-cheia .site-footer {
 
 .lp-dia strong {
   font-size: 1.2rem;
+}
+
+.lp-dia.lotado {
+  opacity: 0.55;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+.lp-dia em {
+  font-style: normal;
+  font-size: 0.66rem;
+  color: var(--sx-erro);
+}
+
+.lp-feito-espera {
+  background: var(--sx-aviso);
+}
+
+.lp-codigo {
+  font-family: ui-monospace, monospace;
+  font-size: 1.2rem;
+  letter-spacing: 0.12em;
 }
 
 .lp-horas {

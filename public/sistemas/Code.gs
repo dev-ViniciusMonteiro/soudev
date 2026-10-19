@@ -12,7 +12,7 @@
 // Quem pode entrar: o dono da planilha (a conta que rodou "configurar") e os e-mails da aba "usuarios".
 
 /* ---------- Gerado a partir de lib/sistemas/schema.js ---------- */
-const COLUNAS = {"clientes":["nome","telefone","email","documento","nascimento","endereco","bairro","objetivo","restricoes","limite_fiado","empresa","obs"],"categorias":["nome","ordem"],"produtos":["nome","tipo","categoria_id","preco","custo","codigo_barras","ncm","cfop","unidade","controla_estoque","estoque_minimo","duracao_min","comissao_pct","descricao","foto_url","visual","adicionais","publicado","ativo"],"estoque_mov":["produto_id","qtd","motivo","custo_unit","fornecedor_id","ref_id","obs"],"fornecedores":["nome","cnpj","contato","telefone","email","obs"],"vendas":["numero","codigo_publico","cliente_id","cliente_nome","itens","subtotal","desconto","taxa_entrega","acrescimo","total","pagamentos","fiscal","troco","status","etapa","origem","entrega","endereco","telefone","pagamento_previsto","mesa","caixa_id","profissional_id","ref_id","concluida_em","operador","obs"],"caixas":["aberto_em","fechado_em","valor_inicial","valor_contado","valor_esperado","resumo","status","operador"],"caixa_mov":["caixa_id","tipo","valor","motivo"],"lancamentos":["tipo","descricao","valor","vencimento","pago_em","categoria","cliente_id","fornecedor_id","forma","ref_id","obs"],"profissionais":["nome","telefone","funcao","comissao_pct","cor","publicado","ativo"],"agendamentos":["inicio","fim","profissional_id","servico_id","cliente_id","cliente_nome","telefone","pet_id","valor","status","origem","venda_id","obs"],"ordens":["numero","codigo_publico","cliente_id","equipamento","marca_modelo","serie","acessorios","defeito","laudo","checklist","itens","total","status","previsao","tecnico","garantia_dias","venda_id"],"planos":["nome","valor","meses","aulas_semana","descricao","ativo"],"matriculas":["cliente_id","plano_id","inicio","dia_vencimento","desconto","status","obs"],"presencas":["cliente_id"],"pets":["nome","cliente_id","especie","raca","porte","nascimento","peso","alergias","obs"],"vacinas":["pet_id","vacina","aplicada_em","proxima_em","obs"],"leads":["nome","empresa","telefone","email","interesse","valor","etapa","origem","responsavel","proximo_contato","motivo_perda","cliente_id","obs"],"atividades":["lead_id","tipo","descricao","data","feita"],"usuarios":["email","nome","papel","ativo"],"config":["valor"]}
+const COLUNAS = {"clientes":["nome","telefone","email","documento","nascimento","endereco","bairro","objetivo","restricoes","limite_fiado","empresa","obs"],"categorias":["nome","ordem"],"produtos":["nome","tipo","categoria_id","preco","custo","codigo_barras","ncm","cfop","unidade","controla_estoque","estoque_minimo","duracao_min","comissao_pct","descricao","foto_url","visual","adicionais","publicado","ativo"],"estoque_mov":["produto_id","qtd","motivo","custo_unit","fornecedor_id","ref_id","obs"],"fornecedores":["nome","cnpj","contato","telefone","email","obs"],"vendas":["numero","codigo_publico","cliente_id","cliente_nome","itens","subtotal","desconto","taxa_entrega","acrescimo","total","pagamentos","fiscal","troco","status","etapa","origem","entrega","endereco","telefone","pagamento_previsto","mesa","caixa_id","profissional_id","ref_id","concluida_em","operador","obs"],"caixas":["aberto_em","fechado_em","valor_inicial","valor_contado","valor_esperado","resumo","status","operador"],"caixa_mov":["caixa_id","tipo","valor","motivo"],"lancamentos":["tipo","descricao","valor","vencimento","pago_em","categoria","cliente_id","fornecedor_id","forma","ref_id","obs"],"profissionais":["nome","telefone","funcao","comissao_pct","cor","publicado","ativo"],"agendamentos":["codigo_publico","inicio","fim","profissional_id","servico_id","cliente_id","cliente_nome","telefone","pet_id","valor","status","origem","venda_id","obs"],"ordens":["numero","codigo_publico","cliente_id","equipamento","marca_modelo","serie","acessorios","defeito","laudo","checklist","itens","total","status","previsao","tecnico","garantia_dias","venda_id"],"planos":["nome","valor","meses","aulas_semana","descricao","ativo"],"matriculas":["cliente_id","plano_id","inicio","dia_vencimento","desconto","status","obs"],"presencas":["cliente_id"],"pets":["nome","cliente_id","especie","raca","porte","nascimento","peso","alergias","obs"],"vacinas":["pet_id","vacina","aplicada_em","proxima_em","obs"],"leads":["nome","empresa","telefone","email","interesse","valor","etapa","origem","responsavel","proximo_contato","motivo_perda","cliente_id","obs"],"atividades":["lead_id","tipo","descricao","data","feita"],"usuarios":["email","nome","papel","ativo"],"config":["valor"]}
 const CONFIG_PUBLICA = ["empresa_nome","empresa_telefone","whatsapp","endereco","cidade","pix_chave","pix_nome","abre","fecha","dias","intervalo_agenda","loja_aberta","taxa_entrega","pedido_minimo","tempo_entrega"]
 
 /* ---------- Gerado a partir de lib/sistemas/regras.js ---------- */
@@ -73,6 +73,12 @@ const hhmm = (min) => `${pad(Math.floor(min / 60))}:${pad(min % 60)}`
 
 const hojeISO = (d = new Date()) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
 
+function ocupaHorario(a, profissionalId) {
+  // Na planilha "excluido" chega como texto ("0" ou "1").
+  if (a.excluido === true || a.excluido === '1' || a.status === 'cancelado' || a.status === 'faltou' || a.status === 'recusado') return false
+  return a.profissional_id === profissionalId || (a.status === 'bloqueio' && !a.profissional_id)
+}
+
 function horariosLivres({ data, duracao, profissionalId, agendamentos, config, agora = new Date() }) {
   const dia = new Date(`${data}T12:00`).getDay()
   const dias = String(config.dias ?? '1,2,3,4,5,6').split(',').map((d) => Number(d.trim()))
@@ -82,7 +88,7 @@ function horariosLivres({ data, duracao, profissionalId, agendamentos, config, a
   const passo = Math.max(10, Number(config.intervalo_agenda) || 30)
   const dur = Math.max(10, Number(duracao) || passo)
   const ocupados = agendamentos
-    .filter((a) => !a.excluido && a.profissional_id === profissionalId && !['cancelado', 'faltou'].includes(a.status) && String(a.inicio).startsWith(data))
+    .filter((a) => ocupaHorario(a, profissionalId) && String(a.inicio).startsWith(data))
     .map((a) => [minutos(String(a.inicio).slice(11, 16)), minutos(String(a.fim || a.inicio).slice(11, 16))])
   const livres = []
   const hoje = hojeISO(agora) === data
@@ -104,14 +110,16 @@ const MAX_CORPO = 600000
 const MAX_LOTE = 300
 const MAX_DESCIDA = 1500
 const TOKEN_DIAS = 30
+const DIAS_AGENDA = 31
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 const ID_RE = /^[A-Za-z0-9_.:-]{1,80}$/
 const CAMPO_RE = /^[a-z_][a-z0-9_]{0,40}$/
 
 class ErroApi extends Error {
-  constructor(codigo, mensagem) {
+  constructor(codigo, mensagem, extra) {
     super(mensagem)
     this.codigo = codigo
+    this.extra = extra || {}
   }
 }
 
@@ -304,6 +312,7 @@ function gravar(nome, registros, rev) {
   }
   props().setProperty(`REV_${nome}`, String(rev))
   if (['config', 'produtos', 'categorias', 'profissionais'].indexOf(nome) >= 0) cache().remove('loja')
+  if (nome === 'agendamentos') cache().remove('agenda')
   return feitos
 }
 
@@ -655,10 +664,13 @@ function publicoPedido(corpo) {
   return { ok: true, numero: Number(venda.numero), codigo: venda.codigo_publico, total: Number(venda.total) }
 }
 
+/** Só o necessário para calcular horário livre: nada de nome ou telefone de outros clientes. */
+const paraOcupado = (a) => ({ inicio: a.inicio, fim: a.fim, profissional_id: a.profissional_id, status: a.status === 'bloqueio' ? 'bloqueio' : 'ocupado' })
+
 function ocupadosDoDia(data, profissionalId) {
   return registrosAtivos('agendamentos')
-    .filter((a) => a.profissional_id === profissionalId && String(a.inicio).indexOf(data) === 0 && a.status !== 'cancelado' && a.status !== 'faltou')
-    .map((a) => ({ inicio: a.inicio, fim: a.fim, status: a.status, profissional_id: a.profissional_id }))
+    .filter((a) => String(a.inicio).indexOf(data) === 0 && ocupaHorario(a, profissionalId))
+    .map(paraOcupado)
 }
 
 function publicoOcupados(corpo) {
@@ -666,6 +678,30 @@ function publicoOcupados(corpo) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(data)) throw new ErroApi('invalido', 'Data inválida.')
   limite('ocup', 120, 60)
   return { ok: true, ocupados: ocupadosDoDia(data, String(corpo.profissional_id || '')) }
+}
+
+/**
+ * Horários ocupados de todos os profissionais nos próximos DIAS_AGENDA dias, numa chamada só.
+ * O navegador calcula os horários livres e os dias lotados com isso, sem voltar à planilha a cada clique.
+ */
+function agendaPublica() {
+  const salvo = cache().get('agenda')
+  if (salvo) return JSON.parse(salvo)
+  const hoje = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd')
+  const ate = Utilities.formatDate(new Date(Date.now() + DIAS_AGENDA * 86400000), Session.getScriptTimeZone(), 'yyyy-MM-dd')
+  const agenda = {
+    desde: hoje,
+    ate,
+    ocupados: registrosAtivos('agendamentos')
+      .filter((a) => {
+        const d = String(a.inicio).slice(0, 10)
+        return d >= hoje && d <= ate && ['cancelado', 'faltou', 'recusado'].indexOf(a.status) < 0
+      })
+      .map(paraOcupado),
+  }
+  const texto = JSON.stringify(agenda)
+  if (texto.length < 90000) cache().put('agenda', texto, 60)
+  return agenda
 }
 
 function publicoAgendar(corpo) {
@@ -682,12 +718,17 @@ function publicoAgendar(corpo) {
   const data = inicio.slice(0, 10)
   const hora = inicio.slice(11, 16)
   const registro = comTrava(() => {
+    // Confere de novo dentro da trava: dois clientes no mesmo horário, só o primeiro leva.
     const livres = horariosLivres({ data, duracao: servico.duracao_min, profissionalId: prof.id, agendamentos: ocupadosDoDia(data, prof.id), config: cfg })
-    if (livres.indexOf(hora) < 0) throw new ErroApi('ocupado', 'Esse horário acabou de ser ocupado. Escolha outro.')
+    if (livres.indexOf(hora) < 0) {
+      cache().remove('agenda')
+      throw new ErroApi('ocupado', 'Esse horário acabou de ser ocupado. Escolha outro.', { agenda: agendaPublica() })
+    }
     const rev = novaRev()
     const cliente = clientePorTelefone(c, rev)
     const ag = {
       id: Utilities.getUuid(),
+      codigo_publico: codigoCurto(),
       inicio,
       fim: `${data}T${hhmm(minutos(hora) + (servico.duracao_min || 30))}`,
       profissional_id: prof.id,
@@ -696,7 +737,7 @@ function publicoAgendar(corpo) {
       cliente_nome: c.nome,
       telefone: c.telefone,
       valor: servico.preco,
-      status: 'agendado',
+      status: 'pendente',
       origem: 'online',
       obs: String(a.obs || '').slice(0, 300),
       atualizado_em: agora(),
@@ -706,9 +747,10 @@ function publicoAgendar(corpo) {
   })
   const nome = cfg.empresa_nome || 'Sistema de gestão'
   const quando = `${data.split('-').reverse().join('/')} às ${hora}`
-  enviar(destinatarios(cfg).join(','), `Novo agendamento: ${c.nome} - ${quando}`, `<p><b>${esc(c.nome)}</b> (${esc(c.telefone)}) agendou <b>${esc(servico.nome)}</b> com ${esc(prof.nome)} em ${quando}.</p>`, nome)
-  if (c.email) enviar(c.email, `Agendamento confirmado - ${nome}`, `<p>Olá, ${esc(c.nome)}! Seu horário de <b>${esc(servico.nome)}</b> com ${esc(prof.nome)} está marcado para <b>${quando}</b>.</p>`, nome)
-  return { ok: true, id: registro.id }
+  enviar(destinatarios(cfg).join(','), `Pedido de horário: ${c.nome} - ${quando}`, `<p><b>${esc(c.nome)}</b> (${esc(c.telefone)}) pediu <b>${esc(servico.nome)}</b> com ${esc(prof.nome)} em ${quando}.</p><p>Abra a agenda do sistema para aceitar ou recusar.</p>`, nome)
+  if (c.email) enviar(c.email, `Pedido de horário recebido - ${nome}`, `<p>Olá, ${esc(c.nome)}! Recebemos seu pedido de <b>${esc(servico.nome)}</b> com ${esc(prof.nome)} para <b>${quando}</b>.</p><p>O horário fica reservado para você até a confirmação. Código para acompanhar: <b>${registro.codigo_publico}</b>.</p>`, nome)
+  // Volta a agenda já com o horário novo: a tela do cliente não precisa buscar de novo.
+  return { ok: true, id: registro.id, codigo: registro.codigo_publico, status: 'pendente', agenda: agendaPublica() }
 }
 
 function publicoAcompanhar(corpo) {
@@ -732,6 +774,12 @@ function publicoAcompanhar(corpo) {
       ok: true,
       resultado: { tipo: 'os', numero: num(o.numero), status: o.status, statusNome: status[o.status] || '', equipamento: [o.equipamento, o.marca_modelo].filter(Boolean).join(' '), previsao: o.previsao || '', total: num(o.total), laudo: mostraLaudo ? o.laudo || '' : '', criado_em: o.criado_em },
     }
+  }
+  const ag = registrosAtivos('agendamentos').find((x) => x.codigo_publico === codigo && x.status !== 'bloqueio')
+  if (ag) {
+    const servico = registrosAtivos('produtos').find((p) => p.id === ag.servico_id)
+    const prof = registrosAtivos('profissionais').find((p) => p.id === ag.profissional_id)
+    return { ok: true, resultado: { tipo: 'agendamento', status: ag.status, inicio: ag.inicio, servico: servico ? servico.nome : '', profissional: prof ? prof.nome : '', total: num(ag.valor), criado_em: ag.criado_em } }
   }
   throw new ErroApi('nao_encontrado', 'Código não encontrado.')
 }
@@ -757,6 +805,9 @@ function tratar(texto) {
       case 'publico_loja':
         limite('loja', 300, 60)
         return { ok: true, loja: lojaPublica() }
+      case 'publico_agenda':
+        limite('agenda', 300, 60)
+        return { ok: true, agenda: agendaPublica() }
       case 'publico_ocupados':
         return publicoOcupados(corpo)
       case 'publico_pedido':
@@ -769,7 +820,7 @@ function tratar(texto) {
         throw new ErroApi('invalido', 'Ação desconhecida.')
     }
   } catch (e) {
-    if (e instanceof ErroApi) return { ok: false, codigo: e.codigo, erro: e.message }
+    if (e instanceof ErroApi) return Object.assign({ ok: false, codigo: e.codigo, erro: e.message }, e.extra)
     console.error(e && e.stack ? e.stack : e)
     return { ok: false, codigo: 'interno', erro: 'Erro na planilha. Tente de novo em instantes.' }
   }
@@ -781,7 +832,7 @@ function doPost(e) {
 }
 
 function doGet() {
-  return ContentService.createTextOutput(JSON.stringify({ ok: true, sistema: 'gestao-soudev', versao: 1 })).setMimeType(ContentService.MimeType.JSON)
+  return ContentService.createTextOutput(JSON.stringify({ ok: true, sistema: 'gestao-soudev', versao: 2 })).setMimeType(ContentService.MimeType.JSON)
 }
 
 /** Rode uma vez no editor: cria as abas, a chave secreta e registra você como dono. */

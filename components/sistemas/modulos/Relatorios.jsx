@@ -152,6 +152,7 @@ export default function Relatorios() {
           {r.origens.length ? <BarrasH dados={r.origens} /> : <Vazio>Sem vendas no período.</Vazio>}
         </section>
       </div>
+      {ativos.includes('agenda') && <RelatorioAgenda ini={ini} fim={fim} />}
       {r.comissoes.length > 0 && (
         <section className="sx-cartao">
           <h2>Comissões por profissional</h2>
@@ -219,5 +220,91 @@ export default function Relatorios() {
         </section>
       )}
     </div>
+  )
+}
+
+const SEMANA = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
+const contagem = (v) => num(v)
+
+/** Agenda no período: quantos horários, faltas, quanto veio pelo site, horários e dias de pico, serviços e profissionais. */
+function RelatorioAgenda({ ini, fim }) {
+  const agendamentos = useTabela('agendamentos')
+  const servicos = useMapa('produtos')
+  const profissionais = useMapa('profissionais')
+
+  const a = useMemo(() => {
+    const doPeriodo = agendamentos.filter((x) => {
+      const d = String(x.inicio).slice(0, 10)
+      return x.status !== 'bloqueio' && d >= ini && d <= fim
+    })
+    const validos = doPeriodo.filter((x) => !['cancelado', 'recusado'].includes(x.status))
+    const conta = (lista, chave) => {
+      const m = new Map()
+      for (const x of lista) {
+        const k = chave(x)
+        if (k !== null) m.set(k, (m.get(k) || 0) + 1)
+      }
+      return m
+    }
+    const porDia = conta(validos, (x) => String(x.inicio).slice(0, 10))
+    const dias = []
+    for (let d = ini; d <= fim; d = addDias(d, 1)) dias.push({ rotulo: dataBR(d), curto: dataBR(d).slice(0, 5), valor: porDia.get(d) || 0 })
+    const ordenar = (m, rotulo) => [...m].map(([k, v]) => ({ rotulo: rotulo(k), valor: v })).sort((x, y) => y.valor - x.valor)
+    const online = doPeriodo.filter((x) => x.origem === 'online')
+    const passados = validos.filter((x) => ['concluido', 'faltou'].includes(x.status))
+    return {
+      total: validos.length,
+      concluidos: validos.filter((x) => x.status === 'concluido').length,
+      faltas: validos.filter((x) => x.status === 'faltou').length,
+      passados: passados.length,
+      online: online.length,
+      recusados: online.filter((x) => x.status === 'recusado').length,
+      pendentes: doPeriodo.filter((x) => x.status === 'pendente').length,
+      dias,
+      horas: [...conta(validos, (x) => String(x.inicio).slice(11, 13))].sort(([x], [y]) => x.localeCompare(y)).map(([h, v]) => ({ rotulo: `${h}h`, valor: v })),
+      semana: [...conta(validos, (x) => new Date(`${String(x.inicio).slice(0, 10)}T12:00`).getDay())].sort(([x], [y]) => x - y).map(([d, v]) => ({ rotulo: SEMANA[d], valor: v })),
+      servicos: ordenar(conta(validos, (x) => x.servico_id || null), (id) => servicos.get(id)?.nome ?? 'Serviço removido').slice(0, 8),
+      profs: ordenar(conta(validos, (x) => x.profissional_id || null), (id) => profissionais.get(id)?.nome ?? '—'),
+    }
+  }, [agendamentos, servicos, profissionais, ini, fim])
+
+  const pct = (parte, todo) => (todo ? `${num((parte / todo) * 100, 0)}%` : '—')
+
+  return (
+    <>
+      <h2 className="sx-subtitulo">Agenda</h2>
+      <Kpis
+        itens={[
+          ['Horários no período', num(a.total), `${a.concluidos} atendidos`],
+          ['Faltas', pct(a.faltas, a.passados), `${a.faltas} de ${a.passados} que já passaram`, a.passados && a.faltas / a.passados > 0.1 ? 'erro' : 'ok'],
+          ['Pelo agendamento online', pct(a.online, a.total + a.recusados), `${a.online} pedidos · ${a.recusados} recusados`],
+          ['Esperando aprovação', num(a.pendentes), a.pendentes ? 'abra a agenda para responder' : 'tudo respondido', a.pendentes ? 'aviso' : null],
+        ]}
+      />
+      {a.dias.length > 1 && (
+        <section className="sx-cartao">
+          <h2>Horários por dia</h2>
+          <Barras dados={a.dias} formato={contagem} rotulo="Horários" />
+        </section>
+      )}
+      <div className="sx-grade-2">
+        <section className="sx-cartao">
+          <h2>Horários mais procurados</h2>
+          {a.horas.length ? <Barras dados={a.horas} formato={contagem} rotulo="Horários" altura={150} /> : <Vazio>Sem horários no período.</Vazio>}
+        </section>
+        <section className="sx-cartao">
+          <h2>Dias da semana</h2>
+          {a.semana.length ? <BarrasH dados={a.semana} formato={contagem} /> : <Vazio>Sem horários no período.</Vazio>}
+        </section>
+        <section className="sx-cartao">
+          <h2>Serviços mais agendados</h2>
+          {a.servicos.length ? <BarrasH dados={a.servicos} formato={contagem} /> : <Vazio>Sem horários no período.</Vazio>}
+        </section>
+        <section className="sx-cartao">
+          <h2>Por profissional</h2>
+          {a.profs.length ? <BarrasH dados={a.profs} formato={contagem} /> : <Vazio>Sem horários no período.</Vazio>}
+        </section>
+      </div>
+    </>
   )
 }
