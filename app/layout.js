@@ -83,25 +83,40 @@ export default function RootLayout({ children }) {
         {children}
 
         <footer className="site-footer">
-          <div className="container footer-inner">
-            <div>
-              <strong>{site.name}</strong>
-              <p className="muted small">
-                {site.role}. Ferramentas gratuitas que rodam no seu navegador: seus arquivos não são enviados para servidores.
-              </p>
+          <div className="container footer-grid">
+            <div className="footer-marca">
+              <Link href="/" className="logo">
+                Vinicius Monteiro
+              </Link>
+              <p>{site.role} em Mogi Guaçu/SP. Ferramentas gratuitas que rodam no seu navegador, sem enviar os seus arquivos.</p>
             </div>
-            <div className="footer-links">
-              <Link href="/ferramentas">Todas as ferramentas</Link>
+            <nav className="footer-col" aria-label="Conteúdo do site">
+              <p className="rotulo">No site</p>
+              <Link href="/ferramentas">Ferramentas</Link>
               <Link href="/sistemas">Sistemas de gestão</Link>
-              <Link href="/jogos">Jogos grátis</Link>
+              <Link href="/apps">Apps</Link>
+              <Link href="/jogos">Jogos</Link>
+            </nav>
+            <nav className="footer-col" aria-label="Sobre mim">
+              <p className="rotulo">Sobre mim</p>
               <Link href="/curriculo">Currículo</Link>
-              <a href={site.instagram} target="_blank" rel="noopener noreferrer">Instagram {site.instagramHandle}</a>
               <Link href="/#contato">Fale comigo</Link>
-              <Link href="/privacidade">Privacidade</Link>
-              <CookiePreferencesButton />
+              <a href={site.instagram} target="_blank" rel="noopener noreferrer">
+                Instagram {site.instagramHandle}
+              </a>
+            </nav>
+          </div>
+          <div className="container">
+            <div className="footer-base">
+              <span>
+                © {year} {site.name}. Os resultados das calculadoras são estimativas.
+              </span>
+              <span className="footer-legal">
+                <Link href="/privacidade">Privacidade</Link>
+                <CookiePreferencesButton />
+              </span>
             </div>
           </div>
-          <div className="container muted small footer-copy">© {year} {site.name}. Os resultados das calculadoras são estimativas.</div>
         </footer>
 
         {/* Carrega depois da página ficar interativa: não atrasa a renderização nem os Core Web Vitals. */}
