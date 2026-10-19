@@ -35,6 +35,7 @@ export default function Curriculo() {
       alumniOf: cv.formacao.map(([curso, escola]) => ({ '@type': 'CollegeOrUniversity', name: escola.split(',')[0], description: curso })),
       hasCredential: cv.certificacoes.map((c) => ({ '@type': 'EducationalOccupationalCredential', name: c })),
       knowsAbout: cv.competencias.flatMap(([, itens]) => itens.split(', ')),
+      knowsLanguage: cv.idiomas.map(([idioma]) => idioma),
       address: { '@type': 'PostalAddress', addressRegion: 'SP', addressCountry: 'BR' },
     },
   }
@@ -103,6 +104,25 @@ export default function Curriculo() {
         </section>
 
         <section>
+          <h2>Experiência anterior</h2>
+          {cv.anteriores.map((a) => (
+            <div key={a.empresa}>
+              <div className="cv-empresa">
+                <h3>
+                  {a.empresa}: {a.papel}
+                </h3>
+                <span className="cv-data">{periodo(a)}</span>
+              </div>
+              <ul>
+                {a.itens.map((i) => (
+                  <li key={i}>{i}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </section>
+
+        <section>
           <h2>Competências</h2>
           <dl className="cv-competencias">
             {cv.competencias.map(([grupo, itens]) => (
@@ -124,7 +144,7 @@ export default function Curriculo() {
         </section>
 
         <section>
-          <h2>Formação</h2>
+          <h2>Formação e idiomas</h2>
           {cv.formacao.map(([curso, escola, ano]) => (
             <div key={curso} className="cv-empresa">
               <h3>
@@ -133,6 +153,7 @@ export default function Curriculo() {
               <span className="cv-data">{ano}</span>
             </div>
           ))}
+          <p>{cv.idiomas.map(([idioma, nivel]) => `${idioma}: ${nivel}`).join(' · ')}</p>
         </section>
       </article>
     </main>

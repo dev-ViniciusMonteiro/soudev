@@ -172,7 +172,7 @@
 @media print {
   @page {
     size: A4;
-    margin: 14mm 14mm;
+    margin: 12mm 13mm;
   }
   body:has(.cv) {
     background: #fff !important;
@@ -193,8 +193,8 @@
     box-shadow: none;
     border-radius: 0;
     padding: 0;
-    font-size: 9.5pt;
-    line-height: 1.38;
+    font-size: 9.2pt;
+    line-height: 1.34;
   }
   .cv h1 {
     font-size: 19pt;
