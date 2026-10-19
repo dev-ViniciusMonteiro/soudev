@@ -210,7 +210,7 @@ export default function Home() {
           <p className="eyebrow">Quem faz</p>
           <h2>Olá, eu sou o Vinicius.</h2>
           <p>
-            Sou <strong>{site.name}</strong>, desenvolvedor full stack com mais de 8 anos de experiência construindo produtos digitais,
+            Sou <strong>{site.name}</strong>, desenvolvedor full stack que programa desde 2018 e atua profissionalmente desde 2021, construindo produtos digitais,
             e-commerce e soluções com IA, inclusive para grandes players do mercado.
           </p>
           <p>
