@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { BaixarCurriculo } from '@/components/BaixarCurriculo'
+import ContactForm from '@/components/ContactForm'
 import { curriculo as cv, periodo } from '@/lib/curriculo'
 import { SITE_URL, jsonLd } from '@/lib/site'
 import './curriculo.css'
@@ -156,6 +157,22 @@ export default function Curriculo() {
           <p>{cv.idiomas.map(([idioma, nivel]) => `${idioma}: ${nivel}`).join(' · ')}</p>
         </section>
       </article>
+
+      <section id="contato" className="section contact cv-contato-form cv-sem-impressao">
+        <div>
+          <p className="eyebrow">Contato</p>
+          <h2>Tem uma vaga ou projeto? Fale comigo.</h2>
+          <p className="muted">
+            Mande uma mensagem rápida pelo formulário com seu e-mail ou WhatsApp que eu retorno. Se preferir, escreva para{' '}
+            <a href={`mailto:${cv.email}`}>{cv.email}</a> ou chame no{' '}
+            <a href={cv.links[0][1]} target="_blank" rel="noopener noreferrer">
+              LinkedIn
+            </a>
+            .
+          </p>
+        </div>
+        <ContactForm origem="curriculo" hint="Conte sobre a vaga ou o projeto e deixe seu e-mail ou WhatsApp para retorno." />
+      </section>
     </main>
   )
 }

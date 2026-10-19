@@ -151,6 +151,12 @@
   margin: 0;
 }
 
+.cv-contato-form {
+  max-width: 860px;
+  padding-top: 48px;
+  scroll-margin-top: 90px;
+}
+
 @media (max-width: 640px) {
   .cv {
     padding: 28px 20px;
