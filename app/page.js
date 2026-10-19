@@ -84,25 +84,24 @@ export default function Home() {
   return (
     <main>
       <section className="container intro">
-        <div className="intro-texto">
-          <p className="rotulo">{site.name}</p>
-          <h1>Oi, eu sou o Vinicius. Faço ferramentas que resolvem as partes chatas do dia a dia, de graça.</h1>
-          <p className="lead">
-            São {tools.length} ferramentas, {nichos.length} sistemas de gestão, {apps.length} apps e {games.length} jogos. Tudo roda no seu navegador,
-            sem cadastro e sem limite, e os seus arquivos não saem do seu computador.
-          </p>
-          <p className="intro-acoes">
-            <Link href="/ferramentas" className="btn btn-primary">
-              Ver as ferramentas
-            </Link>
-            <Link href="/curriculo">Meu currículo</Link>
-            <Link href="#contato">Fale comigo</Link>
-          </p>
-        </div>
-        <figure className="intro-foto">
-          <Image src="/vinicius.jpg" alt="Vinicius Monteiro Orlandi" width={640} height={705} priority sizes="(max-width: 860px) 60vw, 340px" />
-          <figcaption>Tech Lead na Compass UOL. Programando desde 2018, de Mogi Guaçu/SP.</figcaption>
-        </figure>
+        <Link href="/curriculo" className="intro-banner" aria-label="Ver o currículo de Vinicius Monteiro Orlandi">
+          <Image
+            src="/banner-vinicius.jpg"
+            alt="Vinicius Monteiro Orlandi: “Nós só podemos ver um pouco do futuro, mas o suficiente para perceber que há muito a fazer.”"
+            width={1983}
+            height={793}
+            priority
+            sizes="(max-width: 1192px) 100vw, 1160px"
+          />
+        </Link>
+        <h1>Oi, eu sou o Vinicius. Faço ferramentas que resolvem as partes chatas do dia a dia, de graça.</h1>
+        <p className="intro-acoes">
+          <Link href="/ferramentas" className="btn btn-primary">
+            Ver as ferramentas
+          </Link>
+          <Link href="/curriculo">Meu currículo</Link>
+          <Link href="#contato">Fale comigo</Link>
+        </p>
       </section>
 
       <section className="container secao">
