@@ -34,7 +34,15 @@ const structured = [
   },
 ]
 
-const destaques = ['calculadora-rescisao', 'juntar-pdf', 'gerador-qr-code', 'calculadora-salario-liquido', 'verificar-site-confiavel']
+// Destaques: os projetos maiores (apps e sistemas). As ferramentas menores ficam no índice logo abaixo.
+const sistemasEmDestaque = ['mei-na-mao', 'restaurante-delivery', 'mercadinho-pdv']
+const destaques = [
+  ...apps.map((a) => ({ href: `/apps/${a.slug}`, nome: a.nome, texto: a.curto, tag: 'App' })),
+  ...sistemasEmDestaque
+    .map((slug) => nichos.find((n) => n.slug === slug))
+    .filter(Boolean)
+    .map((n) => ({ href: `/sistemas/${n.slug}`, nome: n.nome, texto: n.curto, tag: 'Sistema de gestão' })),
+]
 
 const servicos = [
   ['Sites e aplicações web', 'Rápidos, responsivos e feitos para vender.'],
@@ -75,10 +83,7 @@ const indice = [
   },
 ]
 
-const nomeCategoria = Object.fromEntries(categories.map((c) => [c.id, c.name]))
-
 export default function Home() {
-  const maisUsadas = destaques.map((slug) => tools.find((tool) => tool.slug === slug)).filter(Boolean)
   const total = indice.reduce((s, c) => s + c.itens.length, 0)
 
   return (
@@ -105,14 +110,14 @@ export default function Home() {
       </section>
 
       <section className="container secao">
-        <h2 className="rotulo">Mais usadas</h2>
+        <h2 className="rotulo">Destaques</h2>
         <ul className="lista">
-          {maisUsadas.map((tool) => (
-            <li key={tool.slug}>
-              <Link href={`/ferramentas/${tool.slug}`}>
-                <span className="lista-nome">{tool.name}</span>
-                <span className="lista-texto">{tool.short}</span>
-                <span className="lista-tag">{nomeCategoria[tool.category]}</span>
+          {destaques.map((item) => (
+            <li key={item.href}>
+              <Link href={item.href}>
+                <span className="lista-nome">{item.nome}</span>
+                <span className="lista-texto">{item.texto}</span>
+                <span className="lista-tag">{item.tag}</span>
               </Link>
             </li>
           ))}
