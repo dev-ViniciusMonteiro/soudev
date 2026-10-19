@@ -1,7 +1,7 @@
 /* ---------- Apps (/apps): páginas de apresentação ---------- */
 
 :root {
-  --ap-cor: var(--cyan);
+  --ap-cor: var(--accent);
 }
 
 html.ap-tela-cheia .site-header,
@@ -31,7 +31,7 @@ html.ap-tela-cheia .cookie-banner {
   padding: 20px;
   border-radius: var(--radius-lg);
   border: 1px solid var(--line);
-  background: linear-gradient(160deg, color-mix(in srgb, var(--ap-cor) 14%, transparent), transparent 60%), var(--panel);
+  background: var(--panel);
   color: var(--text);
   transition: border-color 0.15s ease, transform 0.15s ease;
 }
@@ -39,7 +39,6 @@ html.ap-tela-cheia .cookie-banner {
 .ap-card:hover {
   text-decoration: none;
   border-color: color-mix(in srgb, var(--ap-cor) 60%, transparent);
-  transform: translateY(-2px);
 }
 
 .ap-card span {
@@ -69,7 +68,7 @@ html.ap-tela-cheia .cookie-banner {
   margin-bottom: 28px;
   border-radius: var(--radius-lg);
   border: 1px solid color-mix(in srgb, var(--ap-cor) 40%, transparent);
-  background: radial-gradient(700px 260px at 0% 0%, color-mix(in srgb, var(--ap-cor) 16%, transparent), transparent 70%), var(--panel);
+  background: var(--panel);
 }
 
 .ap-hero h1 {
@@ -117,7 +116,7 @@ html.ap-tela-cheia .cookie-banner {
   padding: 24px 28px;
   border-radius: var(--radius-lg);
   border: 1px solid color-mix(in srgb, var(--ap-cor) 45%, transparent);
-  background: radial-gradient(600px 220px at 100% 0%, color-mix(in srgb, var(--ap-cor) 14%, transparent), transparent 70%), var(--panel);
+  background: var(--panel);
 }
 
 .ap-proposta > div {
@@ -392,7 +391,7 @@ html.ap-tela-cheia .cookie-banner {
   background: none;
   border: 0;
   padding: 0;
-  color: var(--cyan);
+  color: var(--accent);
   font: inherit;
   cursor: pointer;
   text-decoration: underline;
@@ -628,7 +627,7 @@ textarea.tr-input {
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  background: rgba(2, 6, 16, 0.72);
+  background: rgba(255, 253, 248, 0.72);
 }
 
 .tr-modal {
@@ -700,7 +699,7 @@ textarea.tr-input {
   max-width: calc(100vw - 32px);
   padding: 12px 16px;
   border-radius: 12px;
-  background: #e8f1ff;
+  background: var(--text);
   color: #0a1426;
   font-weight: 600;
   font-size: 0.92rem;
@@ -1044,7 +1043,7 @@ textarea.tr-input {
 
 .tr-hoje {
   padding: 20px;
-  background: radial-gradient(500px 200px at 100% 0%, color-mix(in srgb, var(--tr-ok) 12%, transparent), transparent 70%), var(--panel);
+  background: var(--panel);
 }
 
 .tr-hoje h2 {
@@ -1086,7 +1085,7 @@ textarea.tr-input {
   padding: 0 18px;
   font-weight: 700;
   font-size: 0.88rem;
-  background: linear-gradient(90deg, color-mix(in srgb, var(--cyan) 30%, var(--panel)) 50%, color-mix(in srgb, var(--tr-erro) 35%, var(--panel)) 50%);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 30%, var(--panel)) 50%, color-mix(in srgb, var(--tr-erro) 35%, var(--panel)) 50%);
 }
 
 .tr-desliza-frente {
@@ -1168,7 +1167,7 @@ div.tr-item-nome {
 
 .tr-item-super > .tr-cartao,
 .tr-exercicio.tr-item-super {
-  border-left: 3px solid var(--purple);
+  border-left: 3px solid var(--accent-2);
 }
 
 .tr-super-link {
@@ -1184,13 +1183,13 @@ div.tr-item-nome {
 }
 
 .tr-super-link.ativo {
-  border-color: var(--purple);
-  color: var(--purple);
+  border-color: var(--accent-2);
+  color: var(--accent-2);
 }
 
 .tr-super-rotulo {
   font-size: 0.8rem;
-  color: var(--purple);
+  color: var(--accent-2);
   font-weight: 600;
 }
 
@@ -1369,7 +1368,7 @@ div.tr-item-nome {
 
 .tr-serie-drop .tr-serie-tipo,
 .tr-serie-restpause .tr-serie-tipo {
-  color: var(--purple);
+  color: var(--accent-2);
 }
 
 .tr-serie-falha .tr-serie-tipo {

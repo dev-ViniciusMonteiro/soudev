@@ -53,7 +53,7 @@ export default function SistemasIndex() {
       <section className="tool-info">
         <div className="sx-nichos">
           {nichos.map((n) => (
-            <Link key={n.slug} href={`/sistemas/${n.slug}`} className="sx-nicho-card" style={{ '--sx-cor': n.cor }}>
+            <Link key={n.slug} href={`/sistemas/${n.slug}`} className="sx-nicho-card">
               <span className="sx-nicho-icone" aria-hidden="true">
                 {n.badge}
               </span>

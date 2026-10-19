@@ -116,7 +116,7 @@ function Geral({ concluidas }) {
               const col = Math.floor((i + desloc) / 7)
               const lin = (i + desloc) % 7
               return (
-                <rect key={d} x={col * 13 + 2} y={lin * 13 + 14} width="11" height="11" rx="2" className="tr-calor-dia" style={n ? { fill: `color-mix(in srgb, var(--cyan) ${Math.round(30 + (n / maxSeries) * 70)}%, var(--panel-2))` } : undefined}>
+                <rect key={d} x={col * 13 + 2} y={lin * 13 + 14} width="11" height="11" rx="2" className="tr-calor-dia" style={n ? { fill: `color-mix(in srgb, var(--accent) ${Math.round(30 + (n / maxSeries) * 70)}%, var(--panel-2))` } : undefined}>
                   <title>{`${fmtData(d)}: ${n ? `${n} séries` : 'sem treino'}`}</title>
                 </rect>
               )
@@ -165,7 +165,7 @@ function Musculos({ sessoes, bib }) {
       dicas[m] = x.diasSem === null ? 'nunca treinado' : `há ${x.diasSem} dias`
     }
   }
-  const cor = modo === 'volume' ? 'var(--cyan)' : modo === 'recuperacao' ? '#fb923c' : '#fbbf24'
+  const cor = modo === 'volume' ? 'var(--accent)' : modo === 'recuperacao' ? '#fb923c' : '#fbbf24'
   const lista = Object.entries(est).sort((a, b) => b[1].series - a[1].series)
   return (
     <>

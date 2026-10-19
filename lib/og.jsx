@@ -14,31 +14,13 @@ export function renderOg({ badge, title, subtitle }) {
           flexDirection: 'column',
           justifyContent: 'space-between',
           padding: '64px 72px',
-          background: 'linear-gradient(135deg, #050b18 0%, #0e1a2f 60%, #1b1640 100%)',
-          color: '#e8f1ff',
+          background: '#f7f5f0',
+          color: '#1a1a1a',
           fontFamily: 'sans-serif',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 64,
-              height: 64,
-              borderRadius: 16,
-              background: 'linear-gradient(135deg, #67e8f9, #a78bfa)',
-              color: '#06101f',
-              fontSize: 38,
-              fontWeight: 800,
-            }}
-          >
-            V
-          </div>
-          <div style={{ display: 'flex', fontSize: 32, fontWeight: 700 }}>
-            vinicius<span style={{ color: '#67e8f9' }}>.dev</span>
-          </div>
+        <div style={{ display: 'flex', fontSize: 32, fontWeight: 600, paddingBottom: 18, borderBottom: '2px solid #1a1a1a' }}>
+          Vinicius Monteiro
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 36 }}>
@@ -51,26 +33,23 @@ export function renderOg({ badge, title, subtitle }) {
                 minWidth: 150,
                 height: 150,
                 padding: '0 20px',
-                borderRadius: 32,
-                border: '3px solid rgba(103, 232, 249, 0.5)',
-                background: 'rgba(103, 232, 249, 0.12)',
-                color: '#67e8f9',
-                fontSize: 54,
-                fontWeight: 800,
+                borderRadius: 8,
+                border: '3px solid #cbc4b4',
+                color: '#1f5c45',
+                fontSize: 48,
+                fontWeight: 600,
               }}
             >
               {badge}
             </div>
           )}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14, flex: 1 }}>
-            <div style={{ display: 'flex', fontSize: 64, fontWeight: 800, lineHeight: 1.08, letterSpacing: -1.5 }}>{title}</div>
-            {subtitle && <div style={{ display: 'flex', fontSize: 30, color: '#94a3b8', lineHeight: 1.35 }}>{subtitle}</div>}
+            <div style={{ display: 'flex', fontSize: 64, fontWeight: 600, lineHeight: 1.08, letterSpacing: -1 }}>{title}</div>
+            {subtitle && <div style={{ display: 'flex', fontSize: 30, color: '#5e5a52', lineHeight: 1.35 }}>{subtitle}</div>}
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: 14, fontSize: 26, color: '#cbd5e1' }}>
-          <span style={{ color: '#4ade80' }}>●</span> Grátis · Sem cadastro · Roda no seu navegador
-        </div>
+        <div style={{ display: 'flex', fontSize: 26, color: '#5e5a52' }}>Grátis · Sem cadastro · Roda no seu navegador</div>
       </div>
     ),
     ogSize,

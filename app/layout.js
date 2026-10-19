@@ -1,3 +1,4 @@
+import { IBM_Plex_Mono, IBM_Plex_Sans, Newsreader } from 'next/font/google'
 import Link from 'next/link'
 import Script from 'next/script'
 import Analytics from '@/components/Analytics'
@@ -6,6 +7,11 @@ import MenuMobile from '@/components/MenuMobile'
 import { GA_ID, gaInitScript } from '@/lib/analytics'
 import { SITE_URL, site } from '@/lib/site'
 import './globals.css'
+
+// Títulos em serifa (Newsreader) e texto em IBM Plex: fogem do Inter que todo site gerado por IA usa.
+const serif = Newsreader({ subsets: ['latin'], weight: ['400', '500'], style: ['normal', 'italic'], variable: '--font-newsreader', display: 'swap' })
+const sans = IBM_Plex_Sans({ subsets: ['latin'], weight: ['400', '500', '600', '700'], variable: '--font-plex', display: 'swap' })
+const mono = IBM_Plex_Mono({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-plex-mono', display: 'swap' })
 
 const adsenseClient = process.env.NEXT_PUBLIC_ADSENSE_CLIENT
 
@@ -35,7 +41,7 @@ export const metadata = {
 }
 
 export const viewport = {
-  themeColor: '#050b18',
+  themeColor: '#f7f5f0',
   width: 'device-width',
   initialScale: 1,
 }
@@ -45,14 +51,14 @@ const menu = [
   ['/sistemas', 'Sistemas'],
   ['/apps', 'Apps'],
   ['/jogos', 'Jogos'],
-  ['/#sobre', 'Sobre'],
+  ['/curriculo', 'Currículo'],
   ['/#contato', 'Contato'],
 ]
 
 export default function RootLayout({ children }) {
   const year = new Date().getFullYear()
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" className={`${serif.variable} ${sans.variable} ${mono.variable}`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: gaInitScript }} />
       </head>
@@ -60,17 +66,14 @@ export default function RootLayout({ children }) {
         <header className="site-header">
           <div className="container header-inner">
             <Link href="/" className="logo">
-              <span className="logo-mark">V</span>
-              <span className="logo-text">
-                vinicius<span>.dev</span>
-              </span>
+              Vinicius Monteiro
             </Link>
             <nav className="nav">
               <Link href="/ferramentas">Ferramentas</Link>
               <Link href="/sistemas">Sistemas</Link>
               <Link href="/apps">Apps</Link>
-              <Link href="/jogos" className="nav-games">Jogos</Link>
-              <Link href="/#sobre">Sobre</Link>
+              <Link href="/jogos">Jogos</Link>
+              <Link href="/curriculo">Currículo</Link>
               <Link href="/#contato" className="nav-cta">Contato</Link>
             </nav>
             <MenuMobile links={menu} />

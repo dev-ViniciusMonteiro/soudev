@@ -48,7 +48,7 @@ function Silhueta() {
  * valores: { musculo: 0..1 } define a intensidade da cor. destaque: lista de músculos com contorno.
  * dicas: { musculo: texto } aparece ao passar o mouse.
  */
-export default function Corpo({ valores = {}, selecionado = null, onEscolher = null, destaque = [], dicas = {}, cor = 'var(--cyan)' }) {
+export default function Corpo({ valores = {}, selecionado = null, onEscolher = null, destaque = [], dicas = {}, cor = 'var(--accent)' }) {
   const desenhar = (mapa, lado) =>
     Object.entries(mapa).flatMap(([m, formas]) =>
       formas.map((f, i) => {

@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import { BaixarCurriculo } from '@/components/BaixarCurriculo'
 import ContactForm from '@/components/ContactForm'
@@ -54,17 +55,21 @@ export default function Curriculo() {
 
       <article className="cv print-area">
         <header className="cv-topo">
-          <h1>{cv.nome}</h1>
-          <p className="cv-titulo">{cv.titulo}</p>
-          <p className="cv-contato">
-            <span>{cv.local}</span>
-            <a href={`mailto:${cv.email}`}>{cv.email}</a>
-            {cv.links.map(([nome, url]) => (
-              <a key={url} href={url} target="_blank" rel="noopener noreferrer" aria-label={nome}>
-                {host(url)}
-              </a>
-            ))}
-          </p>
+          <div>
+            <h1>{cv.nome}</h1>
+            <p className="cv-titulo">{cv.titulo}</p>
+            <p className="cv-contato">
+              <span>{cv.local}</span>
+              <a href={`mailto:${cv.email}`}>{cv.email}</a>
+              {cv.links.map(([nome, url]) => (
+                <a key={url} href={url} target="_blank" rel="noopener noreferrer" aria-label={nome}>
+                  {host(url)}
+                </a>
+              ))}
+            </p>
+          </div>
+          {/* Só na tela: no PDF a foto fica de fora, como preferem os processos seletivos. */}
+          <Image src="/vinicius-rosto.jpg" alt="" width={192} height={192} className="cv-foto cv-sem-impressao" />
         </header>
 
         <section>

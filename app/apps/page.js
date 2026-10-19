@@ -40,7 +40,7 @@ export default function AppsIndex() {
       <section className="tool-info">
         <div className="ap-cards">
           {apps.map((a) => (
-            <Link key={a.slug} href={`/apps/${a.slug}`} className="ap-card" style={{ '--ap-cor': a.cor }}>
+            <Link key={a.slug} href={`/apps/${a.slug}`} className="ap-card">
               <span className="ap-card-icone" aria-hidden="true">
                 {a.icone}
               </span>
