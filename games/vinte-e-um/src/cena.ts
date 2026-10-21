@@ -11,7 +11,7 @@ const RAIO = 4.6;
 const ANGULOS = [-0.62, 0, 0.62]; // assentos da esquerda para a direita
 const R_CARTAS = 2.75;
 const R_FICHAS = 3.75;
-const CARTA = { w: 0.6, h: 0.86, e: 0.012 };
+const CARTA = { w: 0.66, h: 0.94, e: 0.012 };
 const SAPATO = new THREE.Vector3(2.85, 0.32, ZC + 0.75);
 const DESCARTE = new THREE.Vector3(-2.85, 0.1, ZC + 0.75);
 const DURACAO = 0.45;
@@ -297,7 +297,8 @@ export class Cena {
     const madeira = new THREE.MeshStandardMaterial({ color: '#5a2e17', roughness: 0.6 });
     const base = new THREE.Mesh(new THREE.ExtrudeGeometry(forma(RAIO + 0.35, 0.35), { depth: 0.5, bevelEnabled: true, bevelSize: 0.06, bevelThickness: 0.06, bevelSegments: 2 }), madeira);
     base.rotation.x = Math.PI / 2;
-    base.position.set(0, -0.01, ZC);
+    // O chanfro sobe 0,06 acima da forma: com o topo em -0,12 a madeira fica logo abaixo do feltro, sem cobrir as cartas.
+    base.position.set(0, -0.18, ZC);
     base.castShadow = true;
     base.receiveShadow = true;
     this.scene.add(base);
@@ -432,7 +433,7 @@ export class Cena {
 
     // Banca: cartas lado a lado, centralizadas.
     e.banca.forEach((c, j) => {
-      const x = (j - (e.banca.length - 1) / 2) * 0.66;
+      const x = (j - (e.banca.length - 1) / 2) * 0.74;
       colocar(c, { pos: new THREE.Vector3(x, 0.012 + j * 0.002, ZC + 1.05), rotY: 0, aberta: c.aberta });
     });
 
@@ -445,7 +446,7 @@ export class Cena {
       const tang = new THREE.Vector3(Math.cos(s.a), 0, -Math.sin(s.a));
       const radial = new THREE.Vector3(Math.sin(s.a), 0, Math.cos(s.a));
       a.maos.forEach((m, k) => {
-        const desloc = (k - (n - 1) / 2) * (n > 2 ? 0.78 : 0.9);
+        const desloc = (k - (n - 1) / 2) * (n > 2 ? 0.86 : 1);
         const base = new THREE.Vector3(s.x, 0.012, s.z).addScaledVector(tang, desloc);
         m.cartas.forEach((c, j) => {
           const dobra = m.dobrada && j === m.cartas.length - 1 && j === 2;
