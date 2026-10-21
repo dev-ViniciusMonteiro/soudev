@@ -7,6 +7,7 @@ import { APOSTA_MIN, type Estado, Mesa, type Tipo, opcoesDe } from './mesa';
 import { connect, newRoomCode, type Net } from './rede';
 import { type Jogada, NOME_JOGADA, estrategia, textoTotal, total } from './regras';
 import { alternarSom, estaMudo, tocar } from './som';
+import { Gestos, ICONE, type Sinal } from './gestos';
 
 type Acao =
   | { t: 'apostar'; i: number; valor: number }
@@ -75,6 +76,64 @@ let vezAnterior = -1;
 let faseAnterior = '';
 let avisoAnterior = '';
 let distribuirTimer: ReturnType<typeof setTimeout> | null = null;
+let lugarVisto: number | null = null; // lugar em que a câmera 3D está sentada (null = vista geral)
+
+/* ---------- Gestos pela câmera ---------- */
+
+const minhasPessoas = (e: Estado): number[] => meus.filter((i) => e.assentos[i].tipo === 'pessoa');
+
+/** O que os gestos podem fazer agora: apostar na hora das apostas, ou as jogadas da sua vez. */
+function sinaisPermitidos(): Sinal[] {
+  const e = estado;
+  if (!e) return [];
+  if (e.fase === 'apostas' || e.fase === 'fim') return minhasPessoas(e).some((i) => !e.assentos[i].pronto && e.assentos[i].saldo >= APOSTA_MIN) ? ['apostar'] : [];
+  if (e.fase === 'jogadas' && meus.includes(e.vez) && e.assentos[e.vez].tipo === 'pessoa') return opcoesDe(e, e.vez);
+  return [];
+}
+
+function aoSinal(s: Sinal): void {
+  const e = estado;
+  if (!e) return;
+  if (s === 'apostar') {
+    const i = minhasPessoas(e).find((k) => !e.assentos[k].pronto && e.assentos[k].saldo >= APOSTA_MIN);
+    if (i === undefined) return;
+    const a = e.assentos[i];
+    const valor = a.aposta >= APOSTA_MIN ? a.aposta : Math.min(25, a.saldo);
+    if (valor !== a.aposta) enviar({ t: 'apostar', i, valor });
+    enviar({ t: 'pronto', i, pronto: true });
+    tocar('ficha');
+    mostrarAviso(`${ICONE.apostar} ${a.nome} apostou ${reais(valor)}`);
+    return;
+  }
+  // Cartas ainda voando: espera a animação acabar e joga.
+  if (cena.ocupado()) {
+    setTimeout(() => aoSinal(s), 300);
+    return;
+  }
+  jogar(s);
+}
+
+const gestos = new Gestos(aoSinal, sinaisPermitidos);
+
+async function alternarGestos(): Promise<void> {
+  if (gestos.ligado) gestos.desligar();
+  else {
+    try {
+      await gestos.ligar();
+      mostrarAviso('Gestos ligados: 👆 pedir · ✋ parar · 🤟 dobrar · ✌️ dividir · 👍 apostar');
+    } catch (e) {
+      gestos.desligar();
+      mostrarAviso((e as Error)?.message || 'Não foi possível ligar a câmera.');
+    }
+  }
+  desenharTopo();
+}
+
+function alternarVisao(): void {
+  lugarVisto = lugarVisto !== null || !estado ? null : (minhasPessoas(estado)[0] ?? meus[0] ?? null);
+  cena.sentar(lugarVisto);
+  desenharTopo();
+}
 
 function enviar(acao: Acao): void {
   if (mesa) aplicar(acao, '');
@@ -117,6 +176,8 @@ function receber(e: Estado): void {
   if (e.fase === 'fim' && faseAnterior !== 'fim') somDoResultado(e);
   vezAnterior = e.vez;
   faseAnterior = e.fase;
+  // Nas apostas o indicador vira cursor para escolher as fichas; nas jogadas, cada gesto é uma ação.
+  gestos.modo = e.fase === 'apostas' || e.fase === 'fim' ? 'cursor' : 'jogada';
   cena.atualizar(e);
   desenharRotulos();
   desenharPainel();
@@ -342,6 +403,8 @@ function desenharTopo(): void {
     el('strong', { cls: 'marca', textContent: '21 contra a Banca' }),
     sala,
     el('span', { cls: 'espaco' }),
+    el('button', { cls: `icone${lugarVisto !== null ? ' ligado' : ''}`, title: lugarVisto !== null ? 'Ver a mesa de cima' : 'Sentar: ver do meu lugar', textContent: '👁', onclick: () => alternarVisao() }),
+    el('button', { cls: `icone${gestos.ligado ? ' ligado' : ''}`, title: gestos.ligado ? 'Desligar os gestos' : 'Jogar por gestos (câmera)', textContent: '🖐', onclick: () => void alternarGestos() }),
     el('button', { cls: 'icone', title: 'Regras', textContent: '?', onclick: () => abrirRegras() }),
     somBtn,
     el('button', { cls: 'icone', title: 'Sair para o menu', textContent: '✕', onclick: () => voltarAoMenu() }),
@@ -365,6 +428,7 @@ function abrirRegras(): void {
         'Dividir: com duas cartas de mesmo valor, separa em duas mãos (até 4). Ases divididos recebem uma carta cada.',
         'Empate devolve a aposta. Seis baralhos, reembaralhados quando 75% já saiu.',
         'Atalhos: 1 ou Espaço pede, 2 ou Enter para, 3 dobra, 4 divide, H mostra a dica.',
+        'Por gestos (🖐 no topo): 👆 pedir, ✋ parar, 🤟 três dedos dobrar, ✌️ dividir e 👍 apostar. Segure o gesto até o anel completar. Nas apostas, aponte o indicador para uma ficha e segure para escolher.',
       ].map((t) => el('li', { textContent: t })),
     ),
     el('p', { cls: 'nota', textContent: 'Jogo de entretenimento com fichas de mentira, sem dinheiro de verdade.' }),
@@ -378,6 +442,7 @@ function abrirRegras(): void {
 interface ConfigLocal {
   lugares: { tipo: Tipo; nome: string }[];
   nomeOnline: string;
+  gesto?: { lugar: number; nome: string; bots: boolean };
 }
 
 const configPadrao: ConfigLocal = {
@@ -413,11 +478,50 @@ function desenharMenu(erro = ''): void {
   const codigo = el('input', { value: new URLSearchParams(location.search).get('sala') ?? '', maxLength: 6, placeholder: 'CÓDIGO', ariaLabel: 'Código da sala' });
   codigo.oninput = () => (codigo.value = codigo.value.toUpperCase().replace(/[^A-Z0-9]/g, ''));
 
+  // Sentar por gestos: escolhe o lugar na mesa (esquerda, meio ou direita).
+  const gesto = { lugar: 1, nome: '', bots: true, ...cfg.gesto };
+  const nomeGesto = el('input', { value: gesto.nome, maxLength: 16, placeholder: 'Seu nome', ariaLabel: 'Seu nome na mesa' });
+  const comBots = el('input', { type: 'checkbox', checked: gesto.bots });
+  const botoesLugar = ['Esquerda', 'Meio', 'Direita'].map((rotulo, i) =>
+    el('button', {
+      cls: i === gesto.lugar ? 'lugar-btn ativo' : 'lugar-btn',
+      textContent: `🪑 ${rotulo}`,
+      onclick: () => {
+        gesto.lugar = i;
+        botoesLugar.forEach((b, k) => b.classList.toggle('ativo', k === i));
+      },
+    }),
+  );
+
   const salvarCfg = (): ConfigLocal => {
-    const novo: ConfigLocal = { lugares: lugares.map((l) => ({ tipo: l.tipo.value as Tipo, nome: l.nome.value.trim() })), nomeOnline: nomeOnline.value.trim() };
+    const novo: ConfigLocal = {
+      lugares: lugares.map((l) => ({ tipo: l.tipo.value as Tipo, nome: l.nome.value.trim() })),
+      nomeOnline: nomeOnline.value.trim(),
+      gesto: { lugar: gesto.lugar, nome: nomeGesto.value.trim(), bots: comBots.checked },
+    };
     guardar('vinteum.config', novo);
     return novo;
   };
+
+  const secaoGestos = el(
+    'section',
+    { cls: 'destaque-gestos' },
+    el('h2', { textContent: '🖐 Sentar à mesa e jogar por gestos' }),
+    el('p', { cls: 'nota', textContent: 'A câmera vê sua mão: 👆 pedir · ✋ parar · 🤟 dobrar · ✌️ dividir · 👍 apostar. A visão 3D fica no seu lugar, olhando para a banca.' }),
+    el('div', { cls: 'lugares-mesa' }, ...botoesLugar),
+    el('div', { cls: 'lugar' }, nomeGesto),
+    el('label', { cls: 'lugar marcar' }, comBots, 'Computador nos outros lugares'),
+    el('button', {
+      cls: 'btn forte grande',
+      textContent: 'Sentar e jogar por gestos',
+      onclick: () => {
+        const c = salvarCfg();
+        const g = c.gesto!;
+        const nome = g.nome || 'Você';
+        void iniciarPorGestos({ ...c, lugares: [0, 1, 2].map((i) => (i === g.lugar ? { tipo: 'pessoa' as Tipo, nome } : { tipo: (g.bots ? 'bot' : 'vazio') as Tipo, nome: '' })) }, g.lugar);
+      },
+    }),
+  );
 
   menu.replaceChildren(
     el(
@@ -426,6 +530,7 @@ function desenharMenu(erro = ''): void {
       el('h1', { textContent: '21 contra a Banca' }),
       el('p', { cls: 'sub', textContent: 'Blackjack em 3D: até 3 jogadores contra a banca, no mesmo aparelho ou online com amigos.' }),
       erro ? el('p', { cls: 'erro', textContent: erro }) : '',
+      secaoGestos,
       el(
         'section',
         {},
@@ -491,6 +596,9 @@ function limparPartida(): void {
 
 function voltarAoMenu(erro = ''): void {
   limparPartida();
+  gestos.desligar();
+  lugarVisto = null;
+  cena.sentar(null);
   modo = 'menu';
   history.replaceState(null, '', location.pathname);
   painel.replaceChildren();
@@ -517,6 +625,15 @@ function iniciarLocal(cfg: ConfigLocal): void {
   meus = [0, 1, 2];
   desenharTopo();
   aoMudarMesa(m.estado);
+}
+
+/** Jogo local com você sentado num lugar: a câmera 3D vai para o lugar e os gestos ligam. */
+async function iniciarPorGestos(cfg: ConfigLocal, lugar: number): Promise<void> {
+  iniciarLocal(cfg);
+  lugarVisto = lugar;
+  cena.sentar(lugar);
+  desenharTopo();
+  if (!gestos.ligado) await alternarGestos();
 }
 
 function iniciarHospede(nome: string): void {

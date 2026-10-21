@@ -233,6 +233,10 @@ export class Cena {
   private proximaSaida = 0;
   private quadro: (() => void) | null = null;
   private olhar = new THREE.Vector3(0, 0, -0.35);
+  private retrato = false;
+  /** null = vista geral da mesa; número = sentado naquele lugar, olhando para a banca. */
+  private lugar: number | null = null;
+  private ultimoQuadro = 0;
 
   constructor(private alvo: HTMLElement) {
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -367,12 +371,32 @@ export class Cena {
     const h = this.alvo.clientHeight || innerHeight;
     this.renderer.setSize(w, h);
     this.camera.aspect = w / h;
-    // Tela em pé (celular): câmera mais alta e mais longe para a mesa inteira caber.
-    const retrato = w / h < 1;
-    this.camera.fov = retrato ? 62 : 42;
-    this.camera.position.set(0, retrato ? 9.2 : 6.4, retrato ? 6.2 : 6.1);
+    this.retrato = w / h < 1;
+    const [pos, olhar, fov] = this.enquadramento(0);
+    this.camera.position.copy(pos);
+    this.olhar.copy(olhar);
+    this.camera.fov = fov;
     this.camera.lookAt(this.olhar);
     this.camera.updateProjectionMatrix();
+  }
+
+  /** Senta a câmera num lugar da mesa (primeira pessoa) ou volta para a vista geral. */
+  sentar(lugar: number | null): void {
+    this.lugar = lugar;
+  }
+
+  /** Posição, ponto para onde olha e campo de visão da câmera agora. */
+  private enquadramento(agora: number): [THREE.Vector3, THREE.Vector3, number] {
+    const r = this.retrato;
+    if (this.lugar === null) {
+      // Tela em pé (celular): câmera mais alta e mais longe para a mesa inteira caber. Leve balanço para não ficar parada.
+      return [new THREE.Vector3(Math.sin(agora * 0.15) * 0.25, r ? 9.2 : 6.4, r ? 6.2 : 6.1), new THREE.Vector3(0, 0, -0.35), r ? 62 : 42];
+    }
+    // Sentado: um pouco acima e atrás da borda do seu lugar, olhando para as suas cartas e a banca.
+    const a = ANGULOS[this.lugar];
+    const d = RAIO + 1.7;
+    const respira = Math.sin(agora * 0.6) * 0.03;
+    return [new THREE.Vector3(Math.sin(a) * d, (r ? 3.6 : 2.55) + respira, ZC + Math.cos(a) * d), new THREE.Vector3(Math.sin(a) * 2, 0, ZC + Math.cos(a) * 2), r ? 74 : 52];
   }
 
   /* ---------- Posições ---------- */
@@ -392,6 +416,7 @@ export class Cena {
             return new THREE.Vector3(s.x, 0.1, s.z);
           })();
     p.project(this.camera);
+    if (p.z > 1) return { x: -9999, y: -9999 }; // atrás da câmera (vista do lugar): esconde o rótulo
     return { x: ((p.x + 1) / 2) * this.renderer.domElement.clientWidth, y: ((1 - p.y) / 2) * this.renderer.domElement.clientHeight };
   }
 
@@ -553,8 +578,17 @@ export class Cena {
       return !fim;
     });
     if (this.destaque.visible) (this.destaque.material as THREE.MeshBasicMaterial).opacity = 0.55 + Math.sin(agora * 4) * 0.35;
-    // Leve balanço da câmera para a cena não ficar parada.
-    this.camera.position.x = Math.sin(agora * 0.15) * 0.25;
+    // A câmera desliza até o enquadramento (vista geral ou o seu lugar).
+    const dt = Math.min(0.05, agora - this.ultimoQuadro);
+    this.ultimoQuadro = agora;
+    const [pos, olhar, fov] = this.enquadramento(agora);
+    const k = 1 - Math.exp(-dt * 3.5);
+    this.camera.position.lerp(pos, k);
+    this.olhar.lerp(olhar, k);
+    if (Math.abs(this.camera.fov - fov) > 0.05) {
+      this.camera.fov += (fov - this.camera.fov) * k;
+      this.camera.updateProjectionMatrix();
+    }
     this.camera.lookAt(this.olhar);
     this.renderer.render(this.scene, this.camera);
     this.quadro?.();

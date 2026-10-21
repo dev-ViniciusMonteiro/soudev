@@ -444,3 +444,161 @@ select option {
     flex: 1 1 40%;
   }
 }
+
+/* ---------- Gestos pela câmera ---------- */
+
+.icone.ligado {
+  border-color: var(--ouro);
+  background: rgba(243, 210, 138, 0.22);
+}
+
+.gestos {
+  position: fixed;
+  top: 58px;
+  right: 12px;
+  width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  border-radius: 12px;
+  border: 1px solid var(--linha);
+  background: var(--fundo);
+  z-index: 6;
+}
+
+.gestos canvas {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: 8px;
+  background: #000;
+}
+
+/* Anel que enche enquanto o gesto é segurado (--p de 0 a 1). */
+.gestos-anel {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  background:
+    radial-gradient(circle, rgba(12, 14, 20, 0.85) 58%, transparent 60%),
+    conic-gradient(var(--ouro) calc(var(--p, 0) * 360deg), rgba(255, 255, 255, 0.15) 0);
+}
+
+.gestos-estado {
+  min-height: 2.4em;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.gestos-legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.gestos-legenda span {
+  padding: 2px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--linha);
+  font-size: 0.7rem;
+  opacity: 0.4;
+}
+
+.gestos-legenda span.ativo {
+  opacity: 1;
+  border-color: var(--ouro);
+  color: var(--ouro);
+}
+
+/* Cursor do dedo nas apostas: o anel enche e o botão é apertado. */
+.cursor-mao {
+  position: fixed;
+  top: -23px;
+  left: -23px;
+  width: 46px;
+  height: 46px;
+  pointer-events: none;
+  z-index: 50;
+}
+
+/* Anel que enche (--p de 0 a 1) e ponto no meio: o anel usa máscara, o ponto não. */
+.cursor-mao::before,
+.cursor-mao::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+}
+
+.cursor-mao::before {
+  inset: 0;
+  background: conic-gradient(var(--ouro) calc(var(--p, 0) * 360deg), rgba(255, 255, 255, 0.35) 0);
+  -webkit-mask: radial-gradient(circle, transparent 60%, #000 62%);
+  mask: radial-gradient(circle, transparent 60%, #000 62%);
+}
+
+.cursor-mao::after {
+  inset: 17px;
+  background: var(--ouro);
+  box-shadow: 0 0 8px var(--ouro);
+}
+
+button.mira {
+  outline: 3px solid var(--ouro);
+  outline-offset: 3px;
+}
+
+/* Menu: escolher o lugar na mesa */
+.destaque-gestos {
+  border: 1px solid rgba(243, 210, 138, 0.45) !important;
+  border-radius: 12px;
+  padding: 12px !important;
+  background: rgba(243, 210, 138, 0.06);
+}
+
+.lugares-mesa {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.lugar-btn {
+  padding: 10px 6px;
+  border-radius: 10px;
+  border: 1px solid var(--linha);
+  background: rgba(255, 255, 255, 0.05);
+  font-weight: 600;
+}
+
+.lugar-btn.ativo {
+  border-color: var(--ouro);
+  background: rgba(243, 210, 138, 0.2);
+  color: var(--ouro);
+}
+
+.marcar {
+  font-size: 0.88rem;
+}
+
+@media (max-width: 640px) {
+  .gestos {
+    width: 130px;
+    top: 52px;
+    right: 8px;
+  }
+
+  .gestos-legenda {
+    display: none;
+  }
+
+  .gestos-anel {
+    width: 40px;
+    height: 40px;
+    font-size: 1.1rem;
+  }
+}
