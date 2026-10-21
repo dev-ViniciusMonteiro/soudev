@@ -1,0 +1,122 @@
+:root {
+  --cor1: #f87171;
+  --cor2: #60a5fa;
+}
+
+/* Câmera: pequena no canto durante a luta, tela cheia na calibração. */
+.previa {
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+  width: min(220px, 28vw);
+  aspect-ratio: 4 / 3;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: #000;
+  z-index: 3;
+}
+
+.previa.grande {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  border: 0;
+  aspect-ratio: auto;
+  object-fit: cover;
+}
+
+.nomes {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nomes input {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--linha);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--texto);
+  font: inherit;
+}
+
+.painel-calib {
+  width: min(560px, calc(100% - 24px));
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 8px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid var(--linha);
+  background: var(--fundo);
+}
+
+.calib-jogador {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.checklist {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+}
+
+.checklist li {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(242, 245, 255, 0.6);
+  font-size: 0.85rem;
+}
+
+.checklist li::before {
+  content: '○ ';
+}
+
+.checklist li.ok {
+  border-color: #4ade80;
+  color: #b7f7cf;
+}
+
+.checklist li.ok::before {
+  content: '✓ ';
+}
+
+.dica-calib {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.barra-calib {
+  height: 8px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.barra-calib span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, #f87171, #60a5fa);
+}
+
+.resumo {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: rgba(242, 245, 255, 0.85);
+}
+
+.nota {
+  font-size: 0.82rem;
+  color: rgba(242, 245, 255, 0.65);
+}

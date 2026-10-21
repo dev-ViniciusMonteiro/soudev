@@ -80,6 +80,7 @@ export class Camera {
   private filtros = new Map<string, UmEuro>();
   private ultimoQuadro = -1;
   private tipo: Detector = 'pose';
+  private chave = '';
   private filtro: [number, number] = [1.2, 2];
   leitura: Leitura = { grupos: [], expressoes: [] };
   vistoEm = 0;
@@ -97,8 +98,11 @@ export class Camera {
   }
 
   async iniciar(tipo: Detector, aoProgresso: (texto: string) => void, opcoes: Opcoes = {}): Promise<void> {
-    if (this.pronta && this.tipo === tipo) return;
+    // Recria o detector se mudar o tipo ou quantas pessoas/mãos ele procura (ex.: 1 jogador → 2 jogadores).
+    const chave = `${tipo}:${opcoes.maxPessoas ?? 1}:${opcoes.maxMaos ?? 1}`;
+    if (this.pronta && this.chave === chave) return;
     if (!navigator.mediaDevices?.getUserMedia) throw new Error('Este navegador não permite usar a câmera. Use o Chrome, o Edge ou o Safari atualizados.');
+    this.chave = chave;
     this.tipo = tipo;
     this.filtro = opcoes.filtro ?? this.filtro;
     const celular = ehCelular();
@@ -168,7 +172,10 @@ export class Camera {
       return false;
     }
     this.contarFps(agora);
-    const brutos: { x: number; y: number; z?: number; visibility?: number }[][] = this.tipo === 'maos' ? r.landmarks : this.tipo === 'rosto' ? r.faceLandmarks : r.landmarks;
+    const brutos: { x: number; y: number; z?: number; visibility?: number }[][] = [...((this.tipo === 'rosto' ? r.faceLandmarks : r.landmarks) ?? [])];
+    // Várias pessoas: ordena da esquerda para a direita da tela (espelhada), para cada uma manter o mesmo
+    // índice entre quadros. Sem isso o filtro misturaria duas pessoas quando o detector troca a ordem.
+    if (this.tipo === 'pose' && brutos.length > 1) brutos.sort((a, b) => b[0].x - a[0].x);
     const t = agora / 1000;
     const [corte, beta] = this.filtro;
     this.leitura = {
@@ -177,11 +184,14 @@ export class Camera {
           const chave = `${g}:${i}`;
           let fx = this.filtros.get(`${chave}x`);
           let fy = this.filtros.get(`${chave}y`);
-          if (!fx || !fy) {
+          let fz = this.filtros.get(`${chave}z`);
+          if (!fx || !fy || !fz) {
             this.filtros.set(`${chave}x`, (fx = new UmEuro(corte, beta)));
             this.filtros.set(`${chave}y`, (fy = new UmEuro(corte, beta)));
+            this.filtros.set(`${chave}z`, (fz = new UmEuro(corte, beta)));
           }
-          return { x: fx.filtrar(1 - p.x, t), y: fy.filtrar(p.y, t), z: p.z ?? 0, vis: p.visibility ?? 1 };
+          // z (profundidade) é bem mais ruidoso que x e y: também passa pelo filtro.
+          return { x: fx.filtrar(1 - p.x, t), y: fy.filtrar(p.y, t), z: fz.filtrar(p.z ?? 0, t), vis: p.visibility ?? 1 };
         }),
       ),
       expressoes: (r.faceBlendshapes ?? []).map((b: { categories: { categoryName: string; score: number }[] }) => Object.fromEntries(b.categories.map((c) => [c.categoryName, c.score]))),
