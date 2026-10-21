@@ -73,6 +73,52 @@ export class ControleCorpo {
   }
 }
 
+/* ---------- Só com a cabeça (detector de rosto) ---------- */
+
+export interface CalibracaoCabeca {
+  x: number; // ponta do nariz parada (pixels)
+  y: number;
+  rosto: number; // distância entre os cantos de fora dos olhos (pixels): a unidade de medida
+}
+
+const NARIZ_ROSTO = 1;
+const OLHO_E = 33;
+const OLHO_D = 263;
+
+/** Cabeça: inclinar ou virar para o lado troca de pista, levantar o queixo pula, abaixar a cabeça abaixa. */
+export class ControleCabeca {
+  private faixa: Faixa = 0;
+  private armado = true; // o pulo só vale de novo depois de a cabeça voltar ao meio
+  medidas = { dx: 0, dy: 0 };
+
+  constructor(public calib: CalibracaoCabeca) {}
+
+  static medir(pts: Ponto[], w: number, h: number): CalibracaoCabeca {
+    const e = pts[OLHO_E];
+    const d = pts[OLHO_D];
+    return { x: pts[NARIZ_ROSTO].x * w, y: pts[NARIZ_ROSTO].y * h, rosto: Math.hypot((e.x - d.x) * w, (e.y - d.y) * h) };
+  }
+
+  ler(pts: Ponto[] | undefined, w: number, h: number): Comando | null {
+    if (!pts || pts.length < 300) return null;
+    const { rosto } = this.calib;
+    const dx = (pts[NARIZ_ROSTO].x * w - this.calib.x) / rosto;
+    const dy = (this.calib.y - pts[NARIZ_ROSTO].y * h) / rosto; // positivo = cabeça para cima
+    this.medidas = { dx, dy };
+    // Pista com folga: sai do meio passando de 0,32 e volta abaixo de 0,15.
+    if (dx < -0.32) this.faixa = -1;
+    else if (dx > 0.32) this.faixa = 1;
+    else if (Math.abs(dx) < 0.15) this.faixa = 0;
+    // Pulo ao levantar a cabeça (uma vez por movimento); abaixado enquanto a cabeça estiver baixa.
+    let pulo = false;
+    if (dy > 0.24 && this.armado) {
+      pulo = true;
+      this.armado = false;
+    } else if (dy < 0.1) this.armado = true;
+    return { faixa: this.faixa, pulo, abaixado: dy < -0.26 };
+  }
+}
+
 /** Teclado (setas/WASD/espaço) e toque (deslizar o dedo), para jogar sem câmera ou testar. */
 export class ControleTeclado {
   private faixa: Faixa = 0;

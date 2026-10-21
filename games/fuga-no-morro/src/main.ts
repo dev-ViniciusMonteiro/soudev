@@ -5,12 +5,12 @@ import '../../comum/base.css';
 import './estilo.css';
 import { Camera, type Ponto, mensagemDeErro } from '../../comum/camera';
 import { el, guardar, ler } from '../../comum/ui';
-import { type Calibracao, type Comando, ControleCorpo, ControleTeclado } from './controle';
+import { type Calibracao, type CalibracaoCabeca, type Comando, ControleCabeca, ControleCorpo, ControleTeclado } from './controle';
 import { Jogo } from './jogo';
 import { Mundo } from './mundo';
 import { alternarSom, andamento, destravar, efeito, estaMudo, heliceVolume, pararMusica, silenciarPerseguicao, sireneVolume, tocarMusica } from './som';
 
-type ModoControle = 'camera' | 'teclado';
+type ModoControle = 'camera' | 'cabeca' | 'teclado';
 
 const app = document.querySelector('#app') as HTMLElement;
 const palco = el('div', { cls: 'palco' });
@@ -41,6 +41,7 @@ const mundo = new Mundo(palco);
 const camera = new Camera();
 const teclado = new ControleTeclado();
 let corpo: ControleCorpo | null = null;
+let cabeca: ControleCabeca | null = null;
 let modo: ModoControle = ler('fuga.controle', 'camera' as ModoControle);
 let jogo: Jogo | null = null;
 let rodando = false;
@@ -69,9 +70,15 @@ function menu(erro = ''): void {
       el('h1', { textContent: 'Fuga no Morro' }),
       el('p', { cls: 'sub', textContent: 'Corra pelas vielas da favela com a viatura atrás de você. Quanto mais tempo, mais procurado ★ e mais rápido fica.' }),
       erro ? el('p', { cls: 'erro', textContent: erro }) : null,
-      el('div', { cls: 'opcoes' }, opcao('camera', '🏃 Com o corpo', 'Câmera: passo para o lado, pule e agache'), opcao('teclado', '⌨️ Teclado ou toque', 'Setas/WASD ou deslize o dedo')),
+      el(
+        'div',
+        { cls: 'opcoes' },
+        opcao('camera', '🏃 Com o corpo', 'Câmera: passo para o lado, pule e agache'),
+        opcao('cabeca', '🙂 Só com a cabeça', 'Câmera: incline a cabeça, levante e abaixe (dá para jogar sentado)'),
+        opcao('teclado', '⌨️ Teclado ou toque', 'Setas/WASD ou deslize o dedo'),
+      ),
       el('p', { cls: 'recorde', textContent: r.pontos ? `Recorde: ${r.pontos} pontos · ${r.metros} m · ${'★'.repeat(r.estrelas)}` : 'Sem recorde ainda. Bora!' }),
-      el('button', { cls: 'btn forte grande', textContent: modo === 'camera' ? 'Ligar a câmera e correr' : 'Correr', onclick: () => void comecar() }),
+      el('button', { cls: 'btn forte grande', textContent: modo === 'teclado' ? 'Correr' : 'Ligar a câmera e correr', onclick: () => void comecar() }),
       el(
         'details',
         { cls: 'dicas' },
@@ -85,6 +92,7 @@ function menu(erro = ''): void {
             'Bateu? Você tropeça e a viatura encosta. Bater de novo com ela colada é ser pego.',
             'A cada 30 s sobe uma estrela de procurado: fica mais rápido e, com 4 ★, chega o helicóptero.',
             'Com o corpo: fique a uns 2–3 m da câmera. Um passo para o lado troca de pista; pular ou levantar os dois braços pula; agachar abaixa.',
+            'Só com a cabeça: de frente para a câmera, perto (pode ser sentado). Incline ou vire a cabeça para trocar de pista, levante o queixo para pular e abaixe a cabeça para abaixar.',
             'Teclado: ← → trocam de pista, ↑ ou espaço pula, ↓ abaixa. No celular, deslize o dedo.',
           ].map((t) => el('li', { textContent: t })),
         ),
@@ -103,14 +111,15 @@ async function comecar(): Promise<void> {
   const msg = el('p', { textContent: 'Preparando…' });
   tela.replaceChildren(el('div', { cls: 'caixa centro' }, el('div', { cls: 'girando' }), msg));
   try {
-    await camera.iniciar('pose', (t) => (msg.textContent = t), { filtro: [1.4, 2.5] });
+    await camera.iniciar(modo === 'cabeca' ? 'rosto' : 'pose', (t) => (msg.textContent = t), { filtro: [1.4, 2.5] });
   } catch (e) {
     console.error(e);
     camera.parar();
     menu(mensagemDeErro(e));
     return;
   }
-  calibrar();
+  if (modo === 'cabeca') calibrarCabeca();
+  else calibrar();
 }
 
 let laco = 0;
@@ -236,6 +245,131 @@ function calibrar(): void {
   laco = requestAnimationFrame(passo);
 }
 
+/* ---------- Só com a cabeça ---------- */
+
+/** Prévia do modo cabeça: o nariz como ponto e as linhas de pista, pulo e abaixar em volta da posição calibrada. */
+function desenharPreviaCabeca(pts: Ponto[] | undefined): void {
+  const c = previaCanvas.getContext('2d')!;
+  const w = previaCanvas.width;
+  const h = previaCanvas.height;
+  c.save();
+  c.translate(w, 0);
+  c.scale(-1, 1);
+  if (camera.video.readyState >= 2) c.drawImage(camera.video, 0, 0, w, h);
+  c.restore();
+  c.fillStyle = 'rgba(0,0,0,0.3)';
+  c.fillRect(0, 0, w, h);
+  const k = w / (camera.video.videoWidth || 640);
+  if (cabeca) {
+    const { x, y, rosto } = cabeca.calib;
+    c.setLineDash([6, 6]);
+    c.lineWidth = 2;
+    c.strokeStyle = 'rgba(255,210,63,0.75)';
+    for (const lim of [-0.32, 0.32]) {
+      c.beginPath();
+      c.moveTo((x + rosto * lim) * k, 0);
+      c.lineTo((x + rosto * lim) * k, h);
+      c.stroke();
+    }
+    const linha = (yy: number, cor: string, texto: string, abaixo: boolean): void => {
+      c.strokeStyle = cor;
+      c.beginPath();
+      c.moveTo(0, yy * k);
+      c.lineTo(w, yy * k);
+      c.stroke();
+      c.fillStyle = cor;
+      c.font = 'bold 13px system-ui, sans-serif';
+      c.fillText(texto, 6, yy * k + (abaixo ? 15 : -5));
+    };
+    linha(y - rosto * 0.24, 'rgba(74,222,128,0.9)', 'pula ↑', false);
+    linha(y + rosto * 0.26, 'rgba(96,165,250,0.9)', 'abaixa ↓', true);
+    c.setLineDash([]);
+  }
+  if (!pts || pts.length < 300) return;
+  c.fillStyle = '#ffffff';
+  for (const i of [33, 263]) {
+    c.beginPath();
+    c.arc(pts[i].x * w, pts[i].y * h, 3, 0, Math.PI * 2);
+    c.fill();
+  }
+  c.fillStyle = '#ffd23f';
+  c.beginPath();
+  c.arc(pts[1].x * w, pts[1].y * h, 7, 0, Math.PI * 2);
+  c.fill();
+}
+
+function calibrarCabeca(): void {
+  previa.hidden = false;
+  previa.className = 'previa grande';
+  cabeca = null;
+  const itens = {
+    rosto: el('li', { textContent: 'Rosto' }),
+    distancia: el('li', { textContent: 'Distância' }),
+    parado: el('li', { textContent: 'Cabeça parada' }),
+  };
+  const dica = el('p', { cls: 'dica-calib', textContent: 'Olhe para a tela com a cabeça reta, no meio da imagem.' });
+  const barra = el('div', { cls: 'barra-calib' }, el('span'));
+  tela.replaceChildren(
+    el(
+      'div',
+      { cls: 'painel-calib' },
+      el('h2', { textContent: 'Cabeça reta, olhando para a tela' }),
+      el('ul', { cls: 'checklist' }, ...Object.values(itens)),
+      dica,
+      barra,
+      el('p', { cls: 'nota', textContent: 'Depois: incline ou vire a cabeça para trocar de pista · queixo para cima pula · cabeça para baixo abaixa.' }),
+      el('button', { cls: 'btn', textContent: 'Voltar', onclick: () => (cancelAnimationFrame(laco), menu()) }),
+    ),
+  );
+  tela.className = 'tela transparente';
+  let firme = 0;
+  const amostras: CalibracaoCabeca[] = [];
+  cancelAnimationFrame(laco);
+  const passo = (agora: number): void => {
+    laco = requestAnimationFrame(passo);
+    camera.atualizar(agora);
+    const pts = camera.leitura.grupos[0];
+    desenharPreviaCabeca(pts);
+    const W = camera.video.videoWidth || 640;
+    const H = camera.video.videoHeight || 480;
+    const m = pts && pts.length >= 300 ? ControleCabeca.medir(pts, W, H) : null;
+    const tamanho = m ? m.rosto / W : 0;
+    const distancia = tamanho > 0.07 && tamanho < 0.4;
+    // Parado: o nariz quase não se mexeu desde a última amostra.
+    const ultima = amostras[amostras.length - 1];
+    const parado = Boolean(m && (!ultima || Math.hypot(m.x - ultima.x, m.y - ultima.y) < m.rosto * 0.04));
+    dica.textContent = !m
+      ? 'Não estou vendo seu rosto: fique de frente, com luz.'
+      : tamanho >= 0.4
+        ? 'Afaste um pouco o rosto da câmera.'
+        : tamanho <= 0.07
+          ? 'Chegue mais perto da câmera.'
+          : parado
+            ? 'Ótimo! Fique assim um instante…'
+            : 'Segure a cabeça parada um instante.';
+    itens.rosto.className = m ? 'ok' : '';
+    itens.distancia.className = distancia ? 'ok' : '';
+    itens.parado.className = parado && distancia ? 'ok' : '';
+    if (m && distancia && parado) {
+      firme ||= agora;
+      amostras.push(m);
+      if (amostras.length > 30) amostras.shift();
+    } else {
+      firme = 0;
+      amostras.length = 0;
+    }
+    const prog = firme ? Math.min(1, (agora - firme) / 1100) : 0;
+    (barra.firstElementChild as HTMLElement).style.width = `${prog * 100}%`;
+    if (prog >= 1) {
+      const media = (k: keyof CalibracaoCabeca): number => amostras.reduce((s, a) => s + a[k], 0) / amostras.length;
+      cabeca = new ControleCabeca({ x: media('x'), y: media('y'), rosto: media('rosto') });
+      tela.className = 'tela';
+      correr();
+    }
+  };
+  laco = requestAnimationFrame(passo);
+}
+
 /* ---------- Corrida ---------- */
 
 function mostrarPopup(texto: string, cor = '#ffd23f'): void {
@@ -251,7 +385,7 @@ function correr(): void {
   tela.hidden = true;
   pausa.hidden = true;
   hud.hidden = false;
-  previa.hidden = modo !== 'camera';
+  previa.hidden = modo === 'teclado';
   previa.className = 'previa';
   mundo.reiniciar();
   teclado.zerar();
@@ -293,11 +427,14 @@ function quadro(agora: number, dt: number): void {
   if (!jogo) return;
   // Comando: corpo pela câmera ou teclado/toque.
   let perdido = false;
-  if (modo === 'camera') {
+  if (modo !== 'teclado') {
     camera.atualizar(agora);
     const pts = camera.leitura.grupos[0];
-    desenharPrevia(pts, true);
-    const c = corpo?.ler(pts, camera.video.videoWidth || 640, camera.video.videoHeight || 480, agora);
+    const w = camera.video.videoWidth || 640;
+    const h = camera.video.videoHeight || 480;
+    if (modo === 'cabeca') desenharPreviaCabeca(pts);
+    else desenharPrevia(pts, true);
+    const c = modo === 'cabeca' ? cabeca?.ler(pts, w, h) : corpo?.ler(pts, w, h, agora);
     perdido = agora - camera.vistoEm > 1200 || !c;
     if (c) ultimoComando = c;
   } else ultimoComando = teclado.ler(agora);
@@ -307,8 +444,8 @@ function quadro(agora: number, dt: number): void {
   const contando = desde < 3;
   contagem.textContent = contando ? String(3 - Math.floor(desde)) : desde < 3.7 ? 'CORRE!' : '';
 
-  const parado = contando || pausado || (modo === 'camera' && perdido && !jogo.preso);
-  if (modo === 'camera' && perdido && !contando && !pausado && rodando) mostrarPausa('Não estou te vendo! Volte para a frente da câmera.');
+  const parado = contando || pausado || (modo !== 'teclado' && perdido && !jogo.preso);
+  if (modo !== 'teclado' && perdido && !contando && !pausado && rodando) mostrarPausa('Não estou te vendo! Volte para a frente da câmera.');
   else if (!pausado) pausa.hidden = true;
   if (!parado) jogo.passo(dt, ultimoComando);
 
@@ -342,7 +479,7 @@ function mostrarPausa(texto: string): void {
       { cls: 'caixa centro' },
       el('h2', { textContent: texto }),
       pausado ? el('button', { cls: 'btn forte grande', textContent: 'Continuar', onclick: () => alternarPausa() }) : el('p', { cls: 'nota', textContent: 'O jogo continua sozinho quando te enxergar.' }),
-      modo === 'camera' ? el('button', { cls: 'btn', textContent: 'Calibrar de novo', onclick: () => (rodando = false, pararMusica(), silenciarPerseguicao(), (pausa.hidden = true), (hud.hidden = true), calibrar()) }) : null,
+      modo !== 'teclado' ? el('button', { cls: 'btn', textContent: 'Calibrar de novo', onclick: () => (rodando = false, pararMusica(), silenciarPerseguicao(), (pausa.hidden = true), (hud.hidden = true), modo === 'cabeca' ? calibrarCabeca() : calibrar()) }) : null,
       el('button', { cls: 'btn', textContent: 'Sair para o menu', onclick: () => (cancelAnimationFrame(laco), menu()) }),
     ),
   );
