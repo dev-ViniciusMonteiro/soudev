@@ -1,0 +1,213 @@
+:root {
+  --cor1: #ffd23f;
+  --cor2: #ff5c5c;
+}
+
+.palco {
+  position: fixed;
+  inset: 0;
+}
+
+.palco canvas {
+  display: block;
+}
+
+/* Giroflex: as bordas da tela piscam vermelho e azul, mais forte quando a viatura chega perto. */
+.giroflex {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 1;
+  box-shadow: inset 0 0 120px 40px rgba(255, 30, 45, 0.85);
+  transition: box-shadow 0.08s;
+}
+
+.giroflex[data-fase='1'] {
+  box-shadow: inset 0 0 120px 40px rgba(30, 107, 255, 0.85);
+}
+
+.hud .placar {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hud .metros {
+  font-size: 1.9rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.hud .moedas {
+  font-weight: 700;
+  color: #ffd23f;
+}
+
+.hud .estrelas {
+  font-size: 1.6rem;
+  letter-spacing: 2px;
+  color: #ffd23f;
+  text-shadow: 0 0 10px rgba(255, 210, 63, 0.7), 0 2px 6px #000;
+}
+
+.popup {
+  position: fixed;
+  top: 22%;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: calc(100% - 24px);
+  font-size: 1.7rem;
+  font-weight: 900;
+  text-align: center;
+  text-shadow: 0 0 16px rgba(0, 0, 0, 0.9), 0 2px 4px #000;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.popup.ativo {
+  animation: aparecer 1.6s ease-out;
+}
+
+@keyframes aparecer {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 12px) scale(0.9);
+  }
+  12% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1.05);
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -12px) scale(1);
+  }
+}
+
+.contagem {
+  position: fixed;
+  top: 38%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 6rem;
+  font-weight: 900;
+  color: #ffd23f;
+  text-shadow: 0 0 30px rgba(255, 92, 92, 0.8), 0 4px 10px #000;
+  pointer-events: none;
+  z-index: 4;
+}
+
+/* Câmera: pequena no canto durante a fuga, tela cheia na calibração. */
+.previa {
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+  width: min(220px, 30vw);
+  aspect-ratio: 4 / 3;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  z-index: 3;
+  background: #000;
+}
+
+.previa canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.previa.grande {
+  inset: 0;
+  width: auto;
+  border-radius: 0;
+  border: 0;
+  aspect-ratio: auto;
+}
+
+.painel-calib {
+  width: min(520px, calc(100% - 24px));
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 8px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid var(--linha);
+  background: var(--fundo);
+}
+
+.checklist {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+}
+
+.checklist li {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(242, 245, 255, 0.6);
+  font-size: 0.85rem;
+}
+
+.checklist li::before {
+  content: '○ ';
+}
+
+.checklist li.ok {
+  border-color: #4ade80;
+  color: #b7f7cf;
+}
+
+.checklist li.ok::before {
+  content: '✓ ';
+}
+
+.dica-calib {
+  font-weight: 700;
+}
+
+.barra-calib {
+  height: 8px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.barra-calib span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, #4ade80, #ffd23f);
+}
+
+.nota {
+  font-size: 0.82rem;
+  color: rgba(242, 245, 255, 0.65);
+}
+
+.resumo {
+  list-style: none;
+  color: rgba(242, 245, 255, 0.85);
+}
+
+@media (max-width: 560px) {
+  .hud .metros {
+    font-size: 1.3rem;
+  }
+
+  .hud .estrelas {
+    font-size: 1.1rem;
+  }
+
+  .popup {
+    font-size: 1.2rem;
+  }
+}
