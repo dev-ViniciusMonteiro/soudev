@@ -1,0 +1,446 @@
+:root {
+  color-scheme: dark;
+  --ouro: #f3d28a;
+  --texto: #f4f1ea;
+  --fundo: rgba(12, 14, 20, 0.86);
+  --linha: rgba(255, 255, 255, 0.14);
+  --verde: #4ade80;
+  --vermelho: #f87171;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #0b0d12;
+  color: var(--texto);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#app,
+.palco {
+  position: fixed;
+  inset: 0;
+}
+
+canvas {
+  display: block;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+input,
+select {
+  font: inherit;
+  color: var(--texto);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--linha);
+  border-radius: 8px;
+  padding: 9px 10px;
+  min-width: 0;
+}
+
+select option {
+  color: #111;
+}
+
+/* Botões */
+.btn {
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--linha);
+  background: rgba(255, 255, 255, 0.08);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.btn.forte {
+  background: var(--ouro);
+  border-color: var(--ouro);
+  color: #2a1a05;
+}
+
+.btn.forte:hover:not(:disabled) {
+  background: #ffe2a3;
+}
+
+.btn.leve {
+  background: transparent;
+}
+
+.btn.grande {
+  width: 100%;
+  padding: 13px;
+  font-size: 1.05rem;
+}
+
+.mini {
+  margin-left: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--linha);
+  background: rgba(0, 0, 0, 0.4);
+  font-size: 0.72rem;
+}
+
+.icone {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--linha);
+  background: var(--fundo);
+  font-size: 0.95rem;
+}
+
+/* Topo */
+.topo {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  pointer-events: none;
+}
+
+.topo > * {
+  pointer-events: auto;
+}
+
+.marca {
+  color: var(--ouro);
+  font-family: Georgia, serif;
+  font-size: 1.15rem;
+  text-shadow: 0 2px 8px #000;
+}
+
+.sala {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--ouro);
+  background: var(--fundo);
+  font-size: 0.82rem;
+}
+
+.espaco {
+  flex: 1;
+}
+
+/* Rótulos que acompanham os lugares na mesa */
+.rotulos {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+.rotulo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  min-width: 120px;
+  max-width: 200px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--linha);
+  background: var(--fundo);
+  font-size: 0.8rem;
+  text-align: center;
+  pointer-events: auto;
+}
+
+.rotulo.banca {
+  transform-origin: top center;
+}
+
+.rotulo.vez {
+  border-color: var(--ouro);
+  box-shadow: 0 0 0 2px rgba(243, 210, 138, 0.35);
+}
+
+.rotulo.meu .nome strong {
+  color: var(--ouro);
+}
+
+.rotulo .saldo {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.74rem;
+}
+
+.rotulo .vazio {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.rotulo .total {
+  display: inline-block;
+  margin-left: 6px;
+  font-weight: 700;
+}
+
+.rotulo .mao {
+  margin-top: 3px;
+  padding-top: 3px;
+  border-top: 1px solid var(--linha);
+}
+
+.rotulo .mao.atual .total {
+  color: var(--ouro);
+}
+
+.res {
+  display: block;
+  font-weight: 700;
+}
+
+.res.ganho {
+  color: var(--verde);
+}
+
+.res.perda {
+  color: var(--vermelho);
+}
+
+.res.empate {
+  color: #cbd5e1;
+}
+
+/* Painel de baixo */
+.painel {
+  position: fixed;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  width: min(760px, calc(100% - 20px));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid var(--linha);
+  background: var(--fundo);
+  backdrop-filter: blur(6px);
+}
+
+.painel:empty {
+  display: none;
+}
+
+.painel.animando .acoes button {
+  pointer-events: none;
+}
+
+.linha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.linha .quem {
+  min-width: 90px;
+}
+
+.linha .valor {
+  min-width: 70px;
+  font-weight: 700;
+  color: var(--ouro);
+}
+
+.fichas {
+  display: flex;
+  gap: 6px;
+}
+
+.ficha {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 4px dashed rgba(255, 255, 255, 0.85);
+  background: var(--cor);
+  box-shadow: 0 0 0 2px var(--cor), 0 3px 6px rgba(0, 0, 0, 0.5);
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-shadow: 0 1px 2px #000;
+}
+
+.status {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+}
+
+.status.forte {
+  color: var(--ouro);
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.dica {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(243, 210, 138, 0.12);
+  font-size: 0.9rem;
+}
+
+/* Aviso que aparece e some */
+.aviso {
+  position: fixed;
+  top: 58px;
+  left: 50%;
+  transform: translate(-50%, -10px);
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: var(--ouro);
+  color: #2a1a05;
+  font-weight: 700;
+  font-size: 0.9rem;
+  opacity: 0;
+  transition: opacity 0.25s, transform 0.25s;
+  pointer-events: none;
+  max-width: calc(100% - 24px);
+  text-align: center;
+}
+
+.aviso.visivel {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* Menu e caixas */
+.menu,
+.fundo {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  overflow-y: auto;
+  background: radial-gradient(ellipse at center, rgba(13, 74, 47, 0.55), rgba(5, 6, 10, 0.92));
+}
+
+.menu[hidden] {
+  display: none;
+}
+
+.caixa {
+  width: min(520px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 22px;
+  border-radius: 16px;
+  border: 1px solid rgba(243, 210, 138, 0.4);
+  background: rgba(12, 14, 20, 0.94);
+}
+
+.caixa h1 {
+  color: var(--ouro);
+  font-family: Georgia, serif;
+  font-size: 2rem;
+}
+
+.caixa h2 {
+  font-size: 1rem;
+  color: var(--ouro);
+}
+
+.caixa section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--linha);
+}
+
+.sub {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.lugar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lugar > span {
+  min-width: 56px;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.lugar input {
+  flex: 1;
+}
+
+.nota {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.erro {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(243, 210, 138, 0.14);
+  color: var(--ouro);
+}
+
+.regras ul {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 18px;
+  font-size: 0.92rem;
+}
+
+/* Celular */
+@media (max-width: 640px) {
+  .marca {
+    font-size: 0.95rem;
+  }
+
+  .rotulo {
+    min-width: 0;
+    max-width: 120px;
+    padding: 4px 6px;
+    font-size: 0.68rem;
+  }
+
+  .rotulo .saldo {
+    font-size: 0.62rem;
+  }
+
+  .ficha {
+    width: 38px;
+    height: 38px;
+    font-size: 0.72rem;
+  }
+
+  .btn {
+    padding: 9px 12px;
+  }
+
+  .linha.acoes .btn {
+    flex: 1 1 40%;
+  }
+}
