@@ -42,7 +42,7 @@ export default function GamePlayer({ name, playUrl }) {
             ref={frameRef}
             src={playUrl}
             title={`Jogo ${name}`}
-            allow="fullscreen; autoplay; gamepad"
+            allow="fullscreen; autoplay; gamepad; camera"
             allowFullScreen
           />
         ) : (
