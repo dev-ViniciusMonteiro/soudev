@@ -4,6 +4,7 @@ import './globo.css'
 import './documentador.css'
 import 'leaflet/dist/leaflet.css'
 import './imoveis.css'
+import './ppfd.css'
 
 export default function AppsLayout({ children }) {
   return children

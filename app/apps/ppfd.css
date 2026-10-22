@@ -1,0 +1,301 @@
+/* ---------- Medidor PPFD (/apps/ppfd/app) ---------- */
+
+.pf-app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+}
+
+.pf-topo {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.pf-voltar {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  color: var(--text);
+}
+
+.pf-voltar:hover {
+  text-decoration: none;
+}
+
+.pf-abas {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  margin-left: auto;
+}
+
+.pf-abas .chip {
+  white-space: nowrap;
+}
+
+.pf-corpo {
+  width: min(720px, 100%);
+  margin: 0 auto;
+  padding: 14px;
+}
+
+.pf-medir,
+.pf-mapa,
+.pf-estimar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pf-cartao {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.pf-cartao h2 {
+  font-size: 1.02rem;
+}
+
+.pf-linha {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.pf-linha input,
+.pf-linha select {
+  flex: 1;
+  min-width: 120px;
+}
+
+/* Leitura grande */
+.pf-leitura {
+  align-items: stretch;
+}
+
+.pf-numero {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+}
+
+.pf-numero strong {
+  font-size: clamp(3rem, 16vw, 5.5rem);
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.pf-numero span {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.pf-congelado {
+  text-align: center;
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.pf-barra {
+  position: relative;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--panel-2);
+  overflow: visible;
+}
+
+.pf-barra span {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  opacity: 0.35;
+}
+
+.pf-barra span.atual {
+  opacity: 0.95;
+}
+
+.pf-barra i {
+  position: absolute;
+  top: -5px;
+  width: 4px;
+  height: 26px;
+  margin-left: -2px;
+  border-radius: 2px;
+  background: var(--text);
+  transition: left 0.2s;
+}
+
+.pf-escala {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.pf-avaliacao {
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.pf-avaliacao.ok {
+  background: color-mix(in srgb, #22c55e 15%, transparent);
+}
+
+.pf-avaliacao.baixo {
+  background: color-mix(in srgb, #3b82f6 15%, transparent);
+}
+
+.pf-avaliacao.alto {
+  background: color-mix(in srgb, #ef4444 15%, transparent);
+}
+
+.pf-dados {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 14px;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.pf-dados dt {
+  color: var(--muted);
+}
+
+.pf-dados dd {
+  margin: 0;
+}
+
+.pf-calibrar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-radius: var(--radius);
+  background: var(--panel-2);
+}
+
+.pf-calibrar ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.pf-fases {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+}
+
+.pf-fase {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--cor);
+  background: var(--bg);
+  color: var(--text);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.pf-fase.ativa {
+  border-color: var(--cor);
+  background: color-mix(in srgb, var(--cor) 14%, transparent);
+}
+
+.pf-fase small {
+  color: var(--muted);
+}
+
+/* Mapa */
+.pf-grade {
+  display: grid;
+  gap: 4px;
+  aspect-ratio: 1;
+  width: min(100%, 420px);
+  margin: 0 auto;
+}
+
+.pf-celula {
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  color: #fff;
+  font-weight: 800;
+  font-size: 1rem;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+  cursor: pointer;
+}
+
+.pf-celula:hover {
+  outline: 2px solid var(--accent);
+}
+
+.pf-salvos {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pf-salvos button {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--text);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.pf-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.pf-guia ol,
+.pf-guia ul {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-left: 20px;
+}
+
+@media (max-width: 520px) {
+  .pf-form {
+    grid-template-columns: 1fr;
+  }
+}
