@@ -329,9 +329,10 @@ export function passo(j: Jogador, segurando: boolean, idx: Indice, eventos: Even
       case 'portalGravidade':
       case 'portalVelocidade':
       case 'portalTamanho': {
+        // O portal vale para a coluna inteira, em qualquer altura: passar por cima ou por baixo do desenho
+        // não escapa dele (senão daria para continuar voando de nave por cima de uma parte de cubo).
         if (j.usados.has(o.id!)) break;
-        if (eu.r < o.x + 0.3 || eu.l > o.x + 1) break;
-        if (eu.t < o.y || eu.b > o.y + 3) break;
+        if (eu.r < o.x + 0.3) break;
         j.usados.add(o.id!);
         aplicarPortal(j, o);
         eventos.push({ tipo: 'portal', obj: o });

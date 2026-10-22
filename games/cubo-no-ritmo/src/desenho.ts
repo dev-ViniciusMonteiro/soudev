@@ -258,6 +258,16 @@ export class Desenho {
         }
         const topo = this.sy(o.y + 3);
         const alt = e * 3;
+        // Feixe de altura inteira: o portal vale em qualquer altura, não só dentro do oval.
+        const feixe = c.createLinearGradient(x, 0, x + e, 0);
+        feixe.addColorStop(0, 'transparent');
+        feixe.addColorStop(0.5, cor);
+        feixe.addColorStop(1, 'transparent');
+        c.save();
+        c.globalAlpha = usados.has(o.id ?? -1) ? 0.06 : 0.22;
+        c.fillStyle = feixe;
+        c.fillRect(x, 0, e, this.h);
+        c.restore();
         c.save();
         c.globalAlpha = usados.has(o.id ?? -1) ? 0.5 : 0.95;
         c.lineWidth = e * 0.16;
