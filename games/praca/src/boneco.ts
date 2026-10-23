@@ -170,6 +170,11 @@ export class Boneco {
     }
   }
 
+  /** Esconde a placa do nome (ex.: quem procura no esconde-esconde não vê nomes de longe). */
+  mostrarNome(v: boolean): void {
+    if (this.placa) this.placa.visible = v;
+  }
+
   emote(e: Emote): void {
     this.emoteAtual = { e, t: 0 };
   }

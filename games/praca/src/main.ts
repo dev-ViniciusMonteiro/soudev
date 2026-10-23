@@ -6,7 +6,8 @@ import * as THREE from 'three';
 import { APARENCIA_PADRAO, type Aparencia, Boneco, CABELOS, CHAPEUS, CORES, PELES, escreverSkin, lerSkin } from './boneco';
 import { Controles } from './controles';
 import { criarMundo, resolverColisao } from './mundo';
-import { Anim, CONQUISTAS, EMOTES, type Emote, ENVIOS_POR_SEGUNDO, ITENS, type InfoSala, type Jogador, type MotivoErro, type MsgServidor, type Perfil, type Pose, itensBloqueados, xpDoNivel } from './protocolo';
+import { COR_JOGO, ICONE_JOGO, Portais, marca } from './portais';
+import { Anim, CONQUISTAS, EMOTES, type Emote, ENVIOS_POR_SEGUNDO, type EstadoPartida, ITENS, type IdJogo, type InfoSala, JOGOS, type Jogador, type LinhaResultado, type MotivoErro, type MsgServidor, type Perfil, type Pose, RAIO_PORTAL, VISAO_BUSCADOR, itensBloqueados, xpDoNivel } from './protocolo';
 import { Rede, atualizarPerfil, criarPerfil, meuPerfil, online, pedirRanking, pedirSala } from './rede';
 import { Telao } from './telao';
 
@@ -48,7 +49,11 @@ const canvas = el('canvas', { cls: 'tela-jogo' });
 const tela = el('div', { cls: 'tela' });
 const hud = el('div', { cls: 'hud', hidden: true });
 const aviso = el('div', { cls: 'aviso', hidden: true });
-app.append(canvas, hud, aviso, tela);
+const faixa = el('div', { cls: 'faixa-partida', hidden: true }); // jogo, fase e tempo da partida
+const painelFila = el('div', { cls: 'painel-fila', hidden: true }); // aparece ao pisar num portal
+const breu = el('div', { cls: 'breu', hidden: true }); // quem procura no esconde-esconde, enquanto os outros escondem
+const resultadoEl = el('div', { cls: 'resultado', hidden: true });
+app.append(canvas, breu, hud, faixa, painelFila, aviso, resultadoEl, tela);
 
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
@@ -81,6 +86,7 @@ interface Remoto {
   anim: Anim;
   vel: number;
   antes: THREE.Vector3;
+  visto: number; // última posição recebida (quem procura não recebe quem está longe)
 }
 
 let mundo: Awaited<ReturnType<typeof criarMundo>> | null = null;
@@ -93,6 +99,11 @@ const eu = { pos: new THREE.Vector3(0, 0, 9), vy: 0, rot: Math.PI, anim: Anim.Pa
 let ultimoEnvio = 0;
 let ultimaPoseEnviada = '';
 const telao = new Telao();
+const portais = new Portais();
+let filas: Partial<Record<IdJogo, string[]>> = {};
+let partida: EstadoPartida | null = null;
+let partidaRecebidaEm = 0;
+const marcas = new Map<string, THREE.Sprite>();
 
 /* ---------- Mundo ---------- */
 
@@ -102,6 +113,7 @@ const carregando = criarMundo().then((m) => {
   telao.grupo.position.set(0, 0, -19.5);
   m.cena.add(telao.grupo);
   m.colisao.push({ x: 0, z: -19.7, mx: 3.3, mz: 0.35 });
+  m.cena.add(portais.grupo);
   return m;
 });
 
@@ -147,6 +159,8 @@ function limparSala(): void {
   sala = null;
   for (const r of remotos.values()) r.boneco.remover();
   remotos.clear();
+  filas = {};
+  definirPartida(null);
 }
 
 function adicionarRemoto(j: Jogador): void {
@@ -156,7 +170,7 @@ function adicionarRemoto(j: Jogador): void {
   boneco.grupo.position.set(x, y, z);
   boneco.grupo.rotation.y = r;
   mundo.cena.add(boneco.grupo);
-  remotos.set(j.id, { j, boneco, alvo: new THREE.Vector3(x, y, z), rotAlvo: r, anim: a, vel: 0, antes: new THREE.Vector3(x, y, z) });
+  remotos.set(j.id, { j, boneco, alvo: new THREE.Vector3(x, y, z), rotAlvo: r, anim: a, vel: 0, antes: new THREE.Vector3(x, y, z), visto: performance.now() });
 }
 
 const MENSAGEM_ERRO: Record<MotivoErro, string> = {
@@ -207,7 +221,24 @@ function receber(m: MsgServidor): void {
         r.alvo.set(x, y, z);
         r.rotAlvo = rot;
         r.anim = a;
+        r.visto = performance.now();
       }
+      break;
+    case 'filas':
+      filas = m.f;
+      portais.filas(filas, partida?.jogo ?? null);
+      break;
+    case 'partida':
+      definirPartida(m.p);
+      break;
+    case 'pegou': {
+      const nomeDe = (id: string) => (id === perfil?.id ? 'Você' : remotos.get(id)?.j.nome ?? '?');
+      if (partida?.jogo === 'esconde-esconde') mostrarAviso(m.para === perfil?.id ? 'Você foi achado!' : `${nomeDe(m.para)} foi achado!`);
+      else mostrarAviso(m.para === perfil?.id ? '🔥 Você está pegando! Encoste em alguém.' : `${nomeDe(m.de)} pegou ${nomeDe(m.para)}!`);
+      break;
+    }
+    case 'resultado':
+      mostrarResultado(m.jogo, m.l, m.conquistas[perfil?.id ?? ''] ?? []);
       break;
     case 'emote':
       remotos.get(m.id)?.boneco.emote(m.e);
@@ -237,6 +268,136 @@ function receber(m: MsgServidor): void {
       menu(MENSAGEM_ERRO[m.motivo]);
       break;
   }
+}
+
+/* ---------- Partidas ---------- */
+
+const souParticipante = (): boolean => Boolean(partida && perfil && partida.participantes.includes(perfil.id));
+const souBuscador = (): boolean => partida?.jogo === 'esconde-esconde' && partida.buscador === perfil?.id;
+
+function definirPartida(p: EstadoPartida | null): void {
+  const antes = partida;
+  partida = p;
+  partidaRecebidaEm = performance.now();
+  portais.filas(p ? {} : filas, p?.jogo ?? null);
+  if (p && !antes) {
+    resultadoEl.hidden = true;
+    mostrarAviso(souParticipante() ? `${ICONE_JOGO[p.jogo]} ${JOGOS[p.jogo].nome} vai começar!` : `Partida de ${JOGOS[p.jogo].nome} começou. Assista!`, 3500);
+  }
+  if (p?.jogo === 'esconde-esconde' && antes?.fase === 'esconder' && p.fase === 'jogando') mostrarAviso(souBuscador() ? '🔦 Valendo! Procure com a lanterna.' : 'Valendo! Fique escondido.');
+  // Lanterna de quem procura: a praça escurece e só dá para ver perto.
+  if (mundo) {
+    const escuro = souBuscador() && p?.fase === 'jogando';
+    mundo.cena.fog = escuro ? new THREE.Fog('#05070d', 1, VISAO_BUSCADOR) : new THREE.Fog('#9fd3f5', 60, 150);
+    mundo.cena.background = new THREE.Color(escuro ? '#05070d' : '#9fd3f5');
+  }
+  // Quem procura não se mexe (nem olha) enquanto os outros escondem.
+  const congelado = souBuscador() && (p?.fase === 'contagem' || p?.fase === 'esconder');
+  breu.hidden = !congelado;
+  breu.textContent = congelado ? '🙈 Você procura! Espere os outros se esconderem…' : '';
+  if (estado === 'jogo') controles.ativo = !congelado;
+  atualizarMarcas();
+  desenharFaixa();
+}
+
+/** 🔥 em cima de quem está pegando, ✓ em quem já foi achado. */
+function atualizarMarcas(): void {
+  const desejadas = new Map<string, [string, string]>();
+  if (partida?.jogo === 'pega-pega' && partida.pegador) desejadas.set(partida.pegador, ['🔥', '#ef4444']);
+  if (partida?.jogo === 'esconde-esconde') {
+    if (partida.buscador) desejadas.set(partida.buscador, ['🔦', '#8b5cf6']);
+    for (const id of partida.achados ?? []) desejadas.set(id, ['✓', '#64748b']);
+  }
+  for (const [id, s] of marcas) {
+    const d = desejadas.get(id);
+    if (!d || s.userData.texto !== d[0]) {
+      s.removeFromParent();
+      marcas.delete(id);
+    }
+  }
+  for (const [id, [texto, cor]] of desejadas) {
+    if (marcas.has(id)) continue;
+    const grupo = id === perfil?.id ? eu.boneco.grupo : remotos.get(id)?.boneco.grupo;
+    if (!grupo) continue;
+    const s = marca(texto, cor);
+    s.userData.texto = texto;
+    grupo.add(s);
+    marcas.set(id, s);
+  }
+}
+
+function desenharFaixa(): void {
+  if (!partida) {
+    faixa.hidden = true;
+    return;
+  }
+  const info = JOGOS[partida.jogo];
+  const restante = Math.max(0, Math.ceil((partida.restanteMs - (performance.now() - partidaRecebidaEm)) / 1000));
+  const eu_ = perfil?.id ?? '';
+  let objetivo = '';
+  if (partida.fase === 'contagem') objetivo = `Começa em ${restante}…`;
+  else if (partida.fase === 'esconder') objetivo = souBuscador() ? `Contando… ${restante}s` : `Esconda-se! ${restante}s`;
+  else if (!souParticipante()) objetivo = `Assistindo · ${restante}s`;
+  else if (partida.jogo === 'pega-pega') objetivo = partida.pegador === eu_ ? `🔥 Você está pegando! · ${restante}s` : `Fuja de quem tem 🔥 · ${restante}s`;
+  else if (partida.jogo === 'rei-da-colina') objetivo = `Seu tempo na zona: ${partida.placar[eu_]?.toFixed(0) ?? 0}s · ${restante}s`;
+  else objetivo = souBuscador() ? `Achados: ${partida.achados?.length ?? 0}/${partida.participantes.length - 1} · ${restante}s` : partida.achados?.includes(eu_) ? `Você foi achado · ${restante}s` : `Fique escondido · ${restante}s`;
+  faixa.style.setProperty('--cor', COR_JOGO[partida.jogo]);
+  faixa.replaceChildren(el('strong', { textContent: `${ICONE_JOGO[partida.jogo]} ${info.nome}` }), el('span', { textContent: objetivo }));
+  faixa.hidden = false;
+}
+
+/** Painel ao pisar num portal: explicação, fila e o botão de iniciar. */
+let portalAtual: IdJogo | null = null;
+function atualizarPainelFila(): void {
+  let aqui: IdJogo | null = null;
+  if (estado === 'jogo' && !partida) for (const jogo of Object.keys(JOGOS) as IdJogo[]) if (Math.hypot(eu.pos.x - JOGOS[jogo].portal[0], eu.pos.z - JOGOS[jogo].portal[1]) <= RAIO_PORTAL) aqui = jogo;
+  const fila = aqui ? filas[aqui] ?? [] : [];
+  const chave = aqui ? `${aqui}:${fila.join(',')}` : '';
+  if (chave === painelFila.dataset.chave) return;
+  painelFila.dataset.chave = chave;
+  portalAtual = aqui;
+  if (!aqui) {
+    painelFila.hidden = true;
+    return;
+  }
+  const info = JOGOS[aqui];
+  const nomes = fila.map((id) => (id === perfil?.id ? 'você' : remotos.get(id)?.j.nome ?? '?'));
+  const pronto = fila.length >= info.min && fila.includes(perfil?.id ?? '');
+  painelFila.style.setProperty('--cor', COR_JOGO[aqui]);
+  painelFila.replaceChildren(
+    el('strong', { textContent: `${ICONE_JOGO[aqui]} ${info.nome}` }),
+    el('p', { textContent: info.descricao }),
+    el('small', { textContent: `Na fila (${fila.length}/${info.min} para começar): ${nomes.join(', ') || '—'}` }),
+    el('button', { cls: 'btn forte', textContent: pronto ? '▶ Iniciar partida' : `Esperando mais ${Math.max(0, info.min - fila.length)}…`, disabled: !pronto, onclick: () => portalAtual && rede?.iniciar(portalAtual) }),
+    el('small', { cls: 'nota', textContent: 'Ao iniciar, a sala fecha para gente nova até a partida acabar.' }),
+  );
+  painelFila.hidden = false;
+}
+
+function mostrarResultado(jogo: IdJogo, l: LinhaResultado[], minhasConquistas: string[]): void {
+  const formato = (v: number) => (jogo === 'esconde-esconde' ? `${v.toFixed(0)}` : `${v.toFixed(1)}s`);
+  const coluna = jogo === 'pega-pega' ? 'Tempo pegando' : jogo === 'rei-da-colina' ? 'Tempo na zona' : 'Pontos';
+  const meu = l.find((x) => x.id === perfil?.id);
+  resultadoEl.replaceChildren(
+    el(
+      'div',
+      { cls: 'caixa centro' },
+      el('div', { cls: 'grande', textContent: meu?.posicao === 1 ? '🏆' : ICONE_JOGO[jogo] }),
+      el('h2', { textContent: meu ? (meu.posicao === 1 ? 'Você venceu!' : `Você ficou em ${meu.posicao}º`) : `Fim de ${JOGOS[jogo].nome}` }),
+      meu ? el('p', { cls: 'ganhos', textContent: `+${meu.xp} XP · +${meu.moedas} 🪙` }) : null,
+      ...minhasConquistas.map((c) => el('p', { cls: 'conquista', textContent: `🏅 Conquista: ${CONQUISTAS.find((x) => x.id === c)?.nome ?? c}` })),
+      el(
+        'table',
+        { cls: 'tabela' },
+        el('tr', {}, el('th', { textContent: '#' }), el('th', { textContent: 'Jogador' }), el('th', { textContent: coluna })),
+        ...l.map((x) => el('tr', { cls: x.id === perfil?.id ? 'eu' : '' }, el('td', { textContent: `${x.posicao}º` }), el('td', { textContent: x.nome }), el('td', { textContent: formato(x.pontos) }))),
+      ),
+      el('button', { cls: 'btn forte grande', textContent: 'Voltar para a praça', onclick: () => (resultadoEl.hidden = true) }),
+    ),
+  );
+  resultadoEl.hidden = false;
+  // XP, moedas e conquistas já foram gravados: traz o perfil novo.
+  void meuPerfil().then((p) => p && usarPerfil(p));
 }
 
 /** Garante o perfil (cria no primeiro acesso) e acerta o apelido se mudou no menu. */
@@ -512,6 +673,7 @@ const ANDAR = 4.2;
 const CORRER = 7.5;
 const GRAVIDADE = 28;
 const PULO = 9.5;
+let ultimaFaixa = 0;
 
 function anguloPerto(de: number, para: number, k: number): number {
   let d = (para - de) % (Math.PI * 2);
@@ -587,6 +749,17 @@ function quadro(): void {
     const passo = Math.hypot(g.position.x - r.antes.x, g.position.z - r.antes.z) / Math.max(dt, 1e-3);
     r.vel += (passo - r.vel) * k;
     r.boneco.atualizar(dt, r.anim, r.vel);
+    // Quem procura: escondido fora do alcance da lanterna some (o servidor parou de mandar a posição).
+    const escondido = souBuscador() && partida?.fase === 'jogando' && !partida.achados?.includes(r.j.id) && partida.participantes.includes(r.j.id) && performance.now() - r.visto > 600;
+    g.visible = !escondido;
+    r.boneco.mostrarNome(!(souBuscador() && partida?.fase === 'jogando'));
+  }
+
+  portais.animar(t);
+  if (t - ultimaFaixa > 0.2) {
+    ultimaFaixa = t;
+    desenharFaixa();
+    atualizarPainelFila();
   }
 
   // Sombra acompanha o jogador (mapa de sombra menor = mais nítido).
@@ -594,6 +767,9 @@ function quadro(): void {
   mundo.sol.target.position.copy(eu.pos);
   renderer.render(mundo.cena, camera);
 }
+
+// Só em desenvolvimento (npm run dev do jogo): atalho para os testes no navegador levarem o boneco a um lugar.
+if (import.meta.env.DEV) Object.assign(window, { __praca: { teleportar: (x: number, z: number) => eu.pos.set(x, 0, z) } });
 
 menu();
 requestAnimationFrame(quadro);
