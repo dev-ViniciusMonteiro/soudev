@@ -1220,3 +1220,224 @@ input.codigo {
   z-index: 3;
   pointer-events: none;
 }
+
+/* Mesas de cartas */
+.botao-mesa {
+  border-color: #22c55e;
+  bottom: 290px;
+}
+
+.mesa-cartas {
+  position: fixed;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  width: min(680px, calc(100vw - 20px));
+  max-height: 62vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 16px;
+  border: 2px solid #15803d;
+  background: rgba(5, 46, 22, 0.95);
+  z-index: 6;
+}
+
+.mesa-topo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mesa-topo h3 {
+  flex: 1;
+  color: #fde68a;
+}
+
+.cartas {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.carta {
+  width: 46px;
+  height: 66px;
+  border-radius: 7px;
+  background: #fafaf9;
+  color: #111827;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 1.05rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  line-height: 1.1;
+}
+
+.carta .naipe {
+  font-size: 1.3rem;
+}
+
+.carta.vermelha {
+  color: #dc2626;
+}
+
+.carta.verso {
+  background: repeating-linear-gradient(45deg, #1e3a8a 0 6px, #1d4ed8 6px 12px);
+  border: 2px solid #fff;
+}
+
+.carta.clicavel {
+  cursor: pointer;
+  outline: 2px solid #facc15;
+  transition: transform 0.1s;
+}
+
+.carta.clicavel:hover {
+  transform: translateY(-6px);
+}
+
+.maos21 {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+
+.mao21 {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.mao21.vez {
+  outline: 2px solid #facc15;
+}
+
+.mao21.eu {
+  background: rgba(250, 204, 21, 0.12);
+}
+
+.mao21.casa {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.mao-topo {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 0.85rem;
+}
+
+.ganhou {
+  color: #4ade80;
+  font-weight: 800;
+}
+
+.perdeu {
+  color: #f87171;
+  font-weight: 800;
+}
+
+.fichas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ficha {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 3px dashed #fde68a;
+  background: #b91c1c;
+  color: #fff;
+  font-weight: 900;
+}
+
+.ficha.ativa {
+  background: #15803d;
+  transform: scale(1.1);
+}
+
+.controles-mesa {
+  align-items: center;
+}
+
+.placar-truco {
+  font-weight: 900;
+  color: #fde68a;
+}
+
+.truco-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.vira {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.mesa-jogadas {
+  display: flex;
+  gap: 10px;
+  min-height: 86px;
+  padding: 8px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.jogada {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.75rem;
+}
+
+.mao-truco .carta {
+  width: 60px;
+  height: 86px;
+  font-size: 1.3rem;
+}
+
+.pedido {
+  padding: 8px;
+  border-radius: 10px;
+  background: rgba(220, 38, 38, 0.3);
+}
+
+.lugares-truco {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.lugar {
+  padding: 8px;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 0.85rem;
+}
+
+.lugar.t0 {
+  background: rgba(59, 130, 246, 0.3);
+}
+
+.lugar.t1 {
+  background: rgba(239, 68, 68, 0.3);
+}
+
+.encoberta {
+  font-size: 0.85rem;
+}

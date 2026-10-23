@@ -8,6 +8,7 @@ import { criarArena } from './arena';
 import { Carros } from './carros';
 import { FPS } from './fps';
 import { CorridaUI } from './corridaui';
+import { CartasUI } from './cartasui';
 import { criarPista } from './pista';
 import { Controles } from './controles';
 import { Halloween } from './halloween';
@@ -124,6 +125,15 @@ let carros: Carros | null = null;
 let halloween: Halloween | null = null;
 let fps: FPS | null = null;
 let corridaUI: CorridaUI | null = null;
+const cartasUI = new CartasUI({
+  el,
+  app,
+  euId: () => perfil?.id ?? '',
+  nome: (id) => remotos.get(id)?.j.nome ?? (id === perfil?.id ? nome : '?'),
+  mandar: (msg) => rede?.mandarCartas(msg),
+  pos: () => ({ x: eu.pos.x, z: eu.pos.z }),
+  aviso: (t) => mostrarAviso(t, 3500),
+});
 
 /* ---------- Mundo ---------- */
 
@@ -332,6 +342,18 @@ function receber(m: MsgServidor): void {
         eu.pos.set(6 + (Math.random() - 0.5) * 4, 0, 12);
         controles.yaw = 0;
       }
+      break;
+    case 'bj':
+      cartasUI.receber21(m.e);
+      break;
+    case 'truco':
+      cartasUI.receberTruco(m.e);
+      break;
+    case 'trucoMao':
+      cartasUI.receberMao(m.cartas);
+      break;
+    case 'mesaErro':
+      mostrarAviso(m.texto, 3000);
       break;
     case 'tiro':
       fps?.tiroDeOutro(m.de, m.o, m.p, m.arma);
@@ -954,6 +976,7 @@ function quadro(): void {
     camera.lookAt(alvo);
   } else if (estado === 'jogo') {
     controles.ler();
+    if (cartasUI.sentado) controles.mover.x = controles.mover.y = 0;
     // Andar no referencial da câmera.
     const fx = -Math.sin(controles.yaw);
     const fz = -Math.cos(controles.yaw);
@@ -1034,6 +1057,7 @@ function quadro(): void {
   });
   halloween?.animar(t);
   corridaUI?.animar(dt);
+  cartasUI.tick(estado === 'jogo' && !fps?.ativo && !corridaUI?.ativo && !carros?.meu);
   sprint.tick();
   // Botão de carro: perto de um carro livre ou dirigindo.
   const perto = estado === 'jogo' && carros && !carros.meu && !souParticipante() ? carros.livrePerto(eu.pos.x, eu.pos.z, 3.8) : null;

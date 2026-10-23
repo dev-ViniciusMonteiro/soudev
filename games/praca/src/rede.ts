@@ -1,7 +1,7 @@
 // Conexão com o backend (Cloudflare): perfil de convidado, ranking, pedir sala, entrar por WebSocket
 // e reconectar se a internet piscar.
 
-import type { AcaoRetro, IdJogo, MsgCliente, MsgClienteMM, MsgServidor, Perfil, Pose, RespostaNovoPerfil, RespostaRanking, RespostaSala, Skin } from './protocolo';
+import type { AcaoRetro, IdJogo, MsgCliente, MsgClienteCartas, MsgClienteMM, MsgServidor, Perfil, Pose, RespostaNovoPerfil, RespostaRanking, RespostaSala, Skin } from './protocolo';
 
 /** Endereço do backend: o publicado na Cloudflare; em desenvolvimento, o local do wrangler (npm run dev no backend-soudev). */
 export const BACKEND = (import.meta.env.VITE_BACKEND_URL as string | undefined) ?? (import.meta.env.DEV ? 'http://localhost:8787' : 'https://backend-soudev.backend-soudev.workers.dev');
@@ -131,6 +131,11 @@ export class Rede {
 
   emote(e: (MsgCliente & { k: 'emote' })['e']): void {
     this.mandar({ k: 'emote', e });
+  }
+
+  /** Mesas de cartas: sentar, apostar, jogar. */
+  mandarCartas(m: MsgClienteCartas): void {
+    this.mandar(m);
   }
 
   /** Mata-mata: comprar, trocar de arma, recarregar e atirar. */

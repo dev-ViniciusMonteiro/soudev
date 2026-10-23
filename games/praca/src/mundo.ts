@@ -4,7 +4,7 @@
 
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { LIMITE_MUNDO } from './protocolo';
+import { LIMITE_MUNDO, MESAS } from './protocolo';
 
 /** As peças vêm em escala de maquete (rua = 2 unidades): ×4 deixa um banco com ~1,6 m. */
 const ESCALA = 4;
@@ -51,6 +51,46 @@ async function carregarPecas(nomes: string[]): Promise<Map<string, THREE.Object3
     }),
   );
   return mapa;
+}
+
+/** Mesa de cartas redonda com feltro verde, cadeiras em volta e placa em cima. */
+function mesaCartas(titulo: string, lugares: number): THREE.Group {
+  const g = new THREE.Group();
+  const madeira = new THREE.MeshStandardMaterial({ color: '#78350f', flatShading: true });
+  const tampo = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 1.5, 0.12, 24), madeira);
+  tampo.position.y = 0.95;
+  const feltro = new THREE.Mesh(new THREE.CylinderGeometry(1.35, 1.35, 0.02, 24), new THREE.MeshStandardMaterial({ color: '#166534', roughness: 1 }));
+  feltro.position.y = 1.02;
+  const pe = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.4, 0.95, 8), madeira);
+  pe.position.y = 0.47;
+  for (const m of [tampo, feltro, pe]) {
+    m.castShadow = true;
+    m.receiveShadow = true;
+    g.add(m);
+  }
+  for (let i = 0; i < lugares; i++) {
+    const a = (i / lugares) * Math.PI * 2;
+    const cadeira = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), new THREE.MeshStandardMaterial({ color: '#7f1d1d', flatShading: true }));
+    cadeira.position.set(Math.sin(a) * 2.1, 0.25, Math.cos(a) * 2.1);
+    cadeira.castShadow = true;
+    g.add(cadeira);
+  }
+  const c = document.createElement('canvas');
+  c.width = 256;
+  c.height = 96;
+  const x = c.getContext('2d')!;
+  x.fillStyle = 'rgba(20,83,45,0.9)';
+  x.fillRect(0, 0, 256, 96);
+  x.fillStyle = '#fde68a';
+  x.font = '900 52px system-ui, sans-serif';
+  x.textAlign = 'center';
+  x.textBaseline = 'middle';
+  x.fillText(titulo, 128, 52);
+  const placa = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c) }));
+  placa.scale.set(2.6, 1, 1);
+  placa.position.y = 3;
+  g.add(placa);
+  return g;
 }
 
 /** Barraca da loja: balcão, toldo listrado e placa. */
@@ -379,6 +419,17 @@ export async function criarMundo(): Promise<Mundo> {
   por('dumpster', -24, 22.8, 0, [1.1, 0.7]);
   por('trash_A', 11, 9.5, 0);
   por('watertower', 55, -55, 0, [1, 1]);
+
+  // Mesas de cartas.
+  for (const [tipo, titulo, lugares] of [
+    ['21', '🃏 21', 5],
+    ['truco', '🂡 Truco', 4],
+  ] as const) {
+    const mesa = mesaCartas(titulo, lugares);
+    mesa.position.set(MESAS[tipo][0], 0, MESAS[tipo][1]);
+    cena.add(mesa);
+    colisao.push({ x: MESAS[tipo][0], z: MESAS[tipo][1], mx: 1.5, mz: 1.5 });
+  }
 
   // Barraca da loja, de frente para o chafariz.
   const barraca = barracaLoja();
