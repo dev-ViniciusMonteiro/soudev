@@ -7,6 +7,8 @@ import { ACESSORIOS, APARENCIA_PADRAO, ARMAS, type Aparencia, Boneco, CABELOS, C
 import { criarArena } from './arena';
 import { Carros } from './carros';
 import { FPS } from './fps';
+import { CorridaUI } from './corridaui';
+import { criarPista } from './pista';
 import { Controles } from './controles';
 import { Halloween } from './halloween';
 import { Loja } from './loja';
@@ -63,9 +65,10 @@ const botaoCarro = el('button', { cls: 'botao-carro', hidden: true }); // "E par
 const botaoAssistir = el('button', { cls: 'chip botao-assistir', hidden: true, textContent: '👀 Assistir mata-mata' });
 app.append(canvas, breu, hud, faixa, painelFila, botaoCarro, botaoAssistir, aviso, resultadoEl, tela);
 botaoAssistir.onclick = () => {
-  if (!fps) return;
-  fps.espectador = !fps.espectador;
-  botaoAssistir.textContent = fps.espectador ? '↩️ Voltar para a praça' : '👀 Assistir mata-mata';
+  // Assiste o que estiver rolando (mata-mata no domo ou corrida no circuito).
+  if (corridaUI?.estado && !corridaUI.ativo) corridaUI.espectador = !corridaUI.espectador;
+  else if (fps?.estado && !fps.ativo) fps.espectador = !fps.espectador;
+  botaoAssistir.dataset.ligado = String(Boolean(corridaUI?.espectador || fps?.espectador));
 };
 
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
@@ -120,6 +123,7 @@ const marcas = new Map<string, THREE.Sprite>();
 let carros: Carros | null = null;
 let halloween: Halloween | null = null;
 let fps: FPS | null = null;
+let corridaUI: CorridaUI | null = null;
 
 /* ---------- Mundo ---------- */
 
@@ -133,6 +137,19 @@ const carregando = criarMundo().then((m) => {
   carros = new Carros(m.cena, m.modelosCarro);
   halloween = new Halloween(m);
   criarArena(m.cena);
+  criarPista(m.cena);
+  corridaUI = new CorridaUI({
+    el,
+    app,
+    cena: m.cena,
+    camera,
+    controles,
+    euId: () => perfil?.id ?? '',
+    modelos: () => m.modelosCarro,
+    remotos: () => [...remotos.values()].map((r) => ({ id: r.j.id, nome: r.j.nome, boneco: r.boneco })),
+    meuBoneco: () => eu.boneco,
+    aviso: (t) => mostrarAviso(t, 4500),
+  });
   fps = new FPS({
     el,
     app,
@@ -305,6 +322,15 @@ function receber(m: MsgServidor): void {
           controles.pitch = 0.35;
         }
         botaoAssistir.hidden = true;
+      }
+      break;
+    case 'corrida':
+      corridaUI?.receberEstado(m.e);
+      if (!m.e && corridaUI?.voltarPraca) {
+        // Fim da corrida: quem correu volta para a praça.
+        corridaUI.voltarPraca = false;
+        eu.pos.set(6 + (Math.random() - 0.5) * 4, 0, 12);
+        controles.yaw = 0;
       }
       break;
     case 'tiro':
@@ -837,7 +863,7 @@ function desenharHud(): void {
 }
 
 function fazerEmote(e: Emote): void {
-  if (estado !== 'jogo' || fps?.ativo) return;
+  if (estado !== 'jogo' || fps?.ativo || corridaUI?.ativo) return;
   eu.boneco.emote(e);
   rede?.emote(e);
 }
@@ -867,7 +893,22 @@ function quadro(): void {
   if (!mundo) return;
   const t = relogio.elapsedTime;
 
-  if (estado === 'jogo' && fps?.ativo) {
+  if (estado === 'jogo' && corridaUI?.ativo) {
+    // Corrida: o carrinho anda na física local; a pose vai para o servidor conferir os checkpoints.
+    const p = corridaUI.quadro(dt, mundo.colisao);
+    if (p) {
+      eu.pos.set(p[0], 0, p[2]);
+      eu.rot = p[3];
+      eu.boneco.grupo.position.copy(eu.pos);
+      if (rede && t - ultimoEnvio >= 1 / ENVIOS_POR_SEGUNDO) {
+        const pose: Pose = [p[0], 0, p[2], p[3], Anim.Dirigindo];
+        rede.pose(pose);
+        ultimoEnvio = t;
+      }
+    }
+  } else if (estado === 'jogo' && corridaUI?.espectador && corridaUI.estado) {
+    // Câmera de quem assiste a corrida (corridaUI.animar cuida dela).
+  } else if (estado === 'jogo' && fps?.ativo) {
     // Mata-mata em primeira pessoa: o FPS cuida de andar, mirar, atirar e da câmera.
     const p = fps.quadro(dt);
     if (p) {
@@ -976,7 +1017,7 @@ function quadro(): void {
     const escondido = souBuscador() && partida?.fase === 'jogando' && !partida.achados?.includes(r.j.id) && partida.participantes.includes(r.j.id) && performance.now() - r.visto > 600;
     g.visible = !escondido && !fps?.oculto(r.j.id);
     r.boneco.mostrarNome(!(souBuscador() && partida?.fase === 'jogando'));
-    r.boneco.mostrarCorpo(r.anim !== Anim.Dirigindo);
+    r.boneco.mostrarCorpo(r.anim !== Anim.Dirigindo && !corridaUI?.correndo(r.j.id));
     // Passageiro de outro carro: o boneco (só o nome aparece) vai junto com o carro.
     const carona = carros?.deQuemEPassageiro(r.j.id);
     if (carona) {
@@ -992,15 +1033,18 @@ function quadro(): void {
     return r ? { x: r.boneco.grupo.position.x, z: r.boneco.grupo.position.z, rot: r.boneco.grupo.rotation.y } : null;
   });
   halloween?.animar(t);
+  corridaUI?.animar(dt);
   sprint.tick();
   // Botão de carro: perto de um carro livre ou dirigindo.
   const perto = estado === 'jogo' && carros && !carros.meu && !souParticipante() ? carros.livrePerto(eu.pos.x, eu.pos.z, 3.8) : null;
   botaoCarro.hidden = !(carros?.meu || perto);
   botaoCarro.textContent = carros?.meu ? '🚶 Sair do carro (E)' : perto?.motorista ? '🚗 Entrar de passageiro (E)' : '🚗 Dirigir (E)';
 
-  botaoAssistir.hidden = !(estado === 'jogo' && fps?.estado && !fps.ativo);
+  const assistivel = estado === 'jogo' && ((fps?.estado && !fps.ativo) || (corridaUI?.estado && !corridaUI.ativo));
+  botaoAssistir.hidden = !assistivel;
+  if (assistivel) botaoAssistir.textContent = corridaUI?.espectador || fps?.espectador ? '↩️ Voltar para a praça' : corridaUI?.estado ? '👀 Assistir corrida' : '👀 Assistir mata-mata';
   // No mata-mata em primeira pessoa, só fica o que é do jogo na tela.
-  document.body.classList.toggle('modo-fps', Boolean(fps?.ativo));
+  document.body.classList.toggle('modo-fps', Boolean(fps?.ativo || corridaUI?.ativo));
   botaoLoja.hidden = !(estado === 'jogo' && !carros?.meu && !loja.aberta && Math.hypot(eu.pos.x - POS_LOJA[0], eu.pos.z - POS_LOJA[1]) < 4.5);
   portais.animar(t, camera.position);
   if (t - ultimaFaixa > 0.2) {

@@ -1132,3 +1132,91 @@ input.codigo {
 .modo-fps .botao-pulo {
   display: none !important;
 }
+
+/* Corrida */
+.corrida-hud {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+  font-weight: 800;
+  text-shadow: 0 1px 3px #000;
+}
+
+.corrida-topo {
+  position: absolute;
+  top: 54px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 18px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.55);
+  font-size: 1.1rem;
+}
+
+.corrida-topo strong {
+  color: #facc15;
+}
+
+.corrida-lista {
+  position: absolute;
+  left: 12px;
+  top: 100px;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 0.85rem;
+  counter-reset: pos;
+}
+
+.corrida-lista li {
+  counter-increment: pos;
+  padding: 3px 10px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.corrida-lista li::before {
+  content: counter(pos) 'º ';
+  color: #facc15;
+}
+
+.corrida-lista li.eu {
+  outline: 1px solid #facc15;
+}
+
+.corrida-grama {
+  position: absolute;
+  top: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 14px;
+  border-radius: 10px;
+  background: rgba(22, 101, 52, 0.8);
+}
+
+.corrida-contagem {
+  position: fixed;
+  top: 35%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 7rem;
+  font-weight: 900;
+  color: #facc15;
+  text-shadow: 0 4px 20px #000;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.corrida-mapa {
+  position: fixed;
+  right: 12px;
+  bottom: 90px;
+  width: 180px;
+  height: 180px;
+  z-index: 3;
+  pointer-events: none;
+}
