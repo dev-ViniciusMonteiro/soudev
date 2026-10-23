@@ -10,7 +10,8 @@
     "typecheck:game": "tsc -p games/cidade-neon --noEmit && tsc -p games/escritorio-ia --noEmit && tsc -p games/pesca-no-gelo --noEmit && tsc -p games/monkepo --noEmit && tsc -p games/vinte-e-um --noEmit && tsc -p games/corte-neon --noEmit && tsc -p games/corta-fruta --noEmit && tsc -p games/pedra-papel-tesoura --noEmit && tsc -p games/muro-de-poses --noEmit && tsc -p games/boca-gulosa --noEmit && tsc -p games/fuga-no-morro --noEmit && tsc -p games/nocaute --noEmit && tsc -p games/cubo-no-ritmo --noEmit && tsc -p games/praca --noEmit",
     "build:monkepo-script": "node games/monkepo/scripts/build-apps-script.mjs",
     "build:sistemas-script": "node lib/sistemas/apps-script/build.mjs",
-    "build:treino-exercicios": "node lib/treino/gerar-exercicios.mjs"
+    "build:treino-exercicios": "node lib/treino/gerar-exercicios.mjs",
+    "build:sistemas-nuvem": "node lib/sistemas/apps-script/build-nuvem.mjs"
   },
   "dependencies": {
     "docx": "^9.11.0",

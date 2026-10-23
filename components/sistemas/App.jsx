@@ -1,12 +1,13 @@
 'use client'
 
-// Casca dos sistemas: abre o banco (demonstração ou planilha), menu lateral e troca de módulos pelo #hash.
+// Casca dos sistemas: abre o banco (versão beta de demonstração, equipe na nuvem ou planilha), menu lateral e troca
+// de módulos pelo #hash. "?beta=1" abre a demonstração mesmo com uma equipe conectada neste navegador.
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { SistemaContext, useStatus } from './base'
 import { abrirBanco } from '@/lib/sistemas/db'
-import { idDaUrl, lerConexao } from '@/lib/sistemas/api'
+import { idDaUrl, lerConexao, salvarConexao } from '@/lib/sistemas/api'
 import { getNicho, gruposMenu, modulos } from '@/lib/sistemas/nichos'
 import { semear } from '@/lib/sistemas/seed'
 import { dataBR } from '@/lib/sistemas/regras'
@@ -43,19 +44,25 @@ export default function SistemaApp({ slug }) {
 
   useEffect(() => {
     let vivo = true
-    const c = lerConexao()
+    const beta = new URLSearchParams(window.location.search).has('beta')
+    const c = beta ? null : lerConexao()
     const id = c && idDaUrl(c.url)
     const ns = id ? `planilha-${id}` : `demo-${slug}`
     abrirBanco(ns, id ? { ...c } : null)
       .then((b) => {
         if (!vivo) return
         if (!id && b.vazio()) semear(b, slug)
+        // Equipe recém-criada: o nome do negócio vira o nome da empresa nas configurações.
+        if (id && c.nova) {
+          if (!b.config().empresa_nome && c.empresa) b.setConfig({ empresa_nome: c.empresa })
+          salvarConexao({ ...c, nova: false })
+        }
         if (id) b.iniciarSync()
         setConexao(id ? c : null)
         setBanco(b)
       })
       .catch((e) => vivo && setErro(`Não foi possível abrir o banco do navegador (${e?.message || e}). Em janela anônima alguns navegadores bloqueiam o armazenamento.`))
-    track('sistema_aberto', { sistema: slug, modo: id ? 'planilha' : 'demo' })
+    track('sistema_aberto', { sistema: slug, modo: id ? (c.nuvem ? 'nuvem' : 'planilha') : 'demo' })
     return () => {
       vivo = false
     }
@@ -106,8 +113,8 @@ function Casca({ nicho, banco, conexao }) {
 
   const ativos = useMemo(() => {
     const lista = [...nicho.modulos, ...extras.filter((m) => modulos[m] && !nicho.modulos.includes(m))]
-    return lista.filter((m) => papel !== 'operador' || !SO_GESTOR.includes(m))
-  }, [nicho, extras, papel])
+    return lista.filter((m) => (papel !== 'operador' || !SO_GESTOR.includes(m)) && !(conexao?.nuvem && m === 'tabela:usuarios'))
+  }, [nicho, extras, papel, conexao])
 
   const ir = useCallback((m) => {
     window.location.hash = m
@@ -151,6 +158,15 @@ function Casca({ nicho, banco, conexao }) {
             })}
           </nav>
           <div className="sx-lateral-pe">
+            {conexao?.nuvem ? (
+              <Link href={`/sistemas/${nicho.slug}/equipe`} className="sx-sair">
+                ⇄ Trocar de equipe
+              </Link>
+            ) : (
+              <Link href={`/sistemas/${nicho.slug}/equipe`} className="sx-sair sx-sair-destaque">
+                ★ Cadastrar equipe (grátis)
+              </Link>
+            )}
             <Link href={`/sistemas/${nicho.slug}`} className="sx-sair">
               ← Sobre este sistema
             </Link>
@@ -166,7 +182,7 @@ function Casca({ nicho, banco, conexao }) {
               ☰
             </button>
             <span className="sx-barra-titulo">{modulos[atual].icone} {modulos[atual].tabela ? nicho.rotulos[modulos[atual].tabela] ?? modulos[atual].rotulo : modulos[atual].rotulo}</span>
-            <StatusSync banco={banco} conexao={conexao} ir={ir} />
+            <StatusSync banco={banco} conexao={conexao} ir={ir} slug={nicho.slug} />
             <span className="sx-usuario" title={`Papel: ${papel}`}>
               {usuario}
             </span>
@@ -186,26 +202,27 @@ function lerExtras(banco, slug) {
   }
 }
 
-function StatusSync({ banco, conexao, ir }) {
+function StatusSync({ banco, conexao, ir, slug }) {
   const s = useStatus(banco)
   if (!conexao) {
     return (
-      <button type="button" className="sx-status tom-aviso" onClick={() => ir('config')} title="Os dados ficam só neste navegador. Conecte uma planilha para guardar na nuvem.">
-        Demonstração · conectar planilha
-      </button>
+      <Link href={`/sistemas/${slug}/equipe`} className="sx-status tom-aviso" title="Versão beta com dados de exemplo: fica só neste navegador. Cadastre a sua equipe para usar de verdade, grátis.">
+        Versão beta · cadastrar equipe
+      </Link>
     )
   }
+  const onde = conexao.nuvem ? 'Nuvem' : 'Planilha'
   const textos = {
     pendente: ['Conectando…', 'neutro'],
     enviando: ['Sincronizando…', 'neutro'],
-    sincronizado: [s.pendentes ? `${s.pendentes} para enviar` : `Planilha em dia${s.ultimo ? ` · ${dataBR(s.ultimo, true).slice(11)}` : ''}`, 'ok'],
+    sincronizado: [s.pendentes ? `${s.pendentes} para enviar` : `${onde} em dia${s.ultimo ? ` · ${dataBR(s.ultimo, true).slice(11)}` : ''}`, 'ok'],
     offline: [`Sem internet · ${s.pendentes} na fila`, 'aviso'],
     erro: [`Erro ao sincronizar · ${s.pendentes} na fila`, 'erro'],
     sessao: ['Sessão expirada · entrar de novo', 'erro'],
   }
   const [texto, tom] = textos[s.estado] ?? textos.pendente
   return (
-    <button type="button" className={`sx-status tom-${tom}`} title={s.erro || 'Clique para sincronizar agora'} onClick={() => (s.estado === 'sessao' ? ir('config') : banco.sincronizar())}>
+    <button type="button" className={`sx-status tom-${tom}`} title={s.erro || 'Clique para sincronizar agora'} onClick={() => (s.estado !== 'sessao' ? banco.sincronizar() : conexao.nuvem ? (window.location.href = `/sistemas/${slug}/equipe`) : ir('config'))}>
       {texto}
     </button>
   )

@@ -6,7 +6,7 @@ import CartaoBanner from '@/components/CartaoBanner'
 
 const title = 'Sistemas de Gestão: PDV, Cardápio Online, Agenda e OS'
 const description =
-  'Sistemas de gestão para usar sem limite no navegador, com os dados na sua planilha do Google: PDV, cardápio online, agenda, ordem de serviço, academia, pet shop e CRM.'
+  'Sistemas de gestão grátis e sem limite no navegador: crie a conta, cadastre a equipe e use PDV, cardápio online, agenda, ordem de serviço, academia, pet shop e CRM com os dados na nuvem.'
 
 export const metadata = {
   title,
@@ -16,10 +16,10 @@ export const metadata = {
 }
 
 const passos = [
-  ['Teste na hora', 'Cada sistema abre com dados de exemplo. Nada é enviado: a demonstração fica só no seu navegador.'],
-  ['Conecte sua planilha', 'Cole um script no Google Planilhas e publique. Cada tabela vira uma aba, e você é dono dos dados.'],
-  ['Entre com o e-mail', 'Login por código enviado ao e-mail, sem senha. Cadastre funcionários na aba de usuários, com papel de dono, gerente ou operador.'],
-  ['Funciona sem internet', 'As vendas ficam no aparelho e sobem para a planilha quando a conexão volta. Cada venda pode gerar um e-mail.'],
+  ['Veja a versão beta', 'Cada sistema abre com dados de exemplo, sem cadastro. Nada é enviado: fica só no seu navegador.'],
+  ['Cadastre a sua equipe', 'Crie a conta com e-mail e senha e dê o nome do seu negócio. É grátis e sem limite: os dados ficam na nuvem.'],
+  ['Convide quem trabalha com você', 'Em Configurações → Equipe, adicione o e-mail de cada pessoa como gerente ou operador. Ela cria a conta com o mesmo e-mail e já entra.'],
+  ['Funciona sem internet', 'As vendas ficam no aparelho e sobem para a nuvem quando a conexão volta, em todos os aparelhos da equipe.'],
 ]
 
 export default function SistemasIndex() {
@@ -47,7 +47,7 @@ export default function SistemasIndex() {
       <header className="index-header">
         <h1>Sistemas de gestão</h1>
         <p className="lead">
-          PDV, caixa, cardápio online, agenda, ordem de serviço, mensalidades e CRM. Todos usam o mesmo banco de dados, uma planilha do Google sua, então os módulos se ligam: o cliente do cardápio é o mesmo da
+          PDV, caixa, cardápio online, agenda, ordem de serviço, mensalidades e CRM, grátis para a sua equipe. Todos usam o mesmo banco de dados, então os módulos se ligam: o cliente do cardápio é o mesmo da
           agenda, e a venda baixa o estoque e entra no caixa.
         </p>
       </header>
@@ -72,7 +72,7 @@ export default function SistemasIndex() {
         </ol>
         <p className="see-all">
           <Link href="/sistemas/planilha" className="btn btn-ghost">
-            Como ligar à sua planilha: passo a passo →
+            Prefere uma planilha do Google sua? Passo a passo →
           </Link>
         </p>
       </section>
@@ -91,9 +91,9 @@ export default function SistemasIndex() {
       </section>
 
       <section className="tool-info prose">
-        <h2>Uma planilha, vários sistemas</h2>
+        <h2>Um banco, vários sistemas</h2>
         <p>
-          As abas são compartilhadas: <code>clientes</code>, <code>produtos</code>, <code>vendas</code>, <code>caixas</code>, <code>lancamentos</code>, e as de cada nicho, como <code>agendamentos</code>,{' '}
+          As tabelas são compartilhadas: <code>clientes</code>, <code>produtos</code>, <code>vendas</code>, <code>caixas</code>, <code>lancamentos</code>, e as de cada nicho, como <code>agendamentos</code>,{' '}
           <code>ordens</code>, <code>pets</code>, <code>matriculas</code> e <code>leads</code>. Um pet shop pode usar a agenda da barbearia e o PDV do mercadinho ao mesmo tempo, e uma academia pode ligar o funil
           de vendas do CRM. Campos novos viram colunas novas sozinhos.
         </p>

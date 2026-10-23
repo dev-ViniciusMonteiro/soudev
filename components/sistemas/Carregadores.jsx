@@ -12,6 +12,7 @@ const carregando = () => (
 
 const App = dynamic(() => import('./App'), { ssr: false, loading: carregando })
 const Loja = dynamic(() => import('./LojaPublica'), { ssr: false, loading: carregando })
+const Equipe = dynamic(() => import('./Equipe'), { ssr: false, loading: carregando })
 
 export function SistemaCliente({ slug }) {
   return <App slug={slug} />
@@ -19,4 +20,8 @@ export function SistemaCliente({ slug }) {
 
 export function LojaCliente({ pagina }) {
   return <Loja pagina={pagina} />
+}
+
+export function EquipeCliente({ slug }) {
+  return <Equipe slug={slug} />
 }

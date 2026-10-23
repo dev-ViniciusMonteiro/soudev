@@ -1,11 +1,12 @@
 'use client'
 
-// Configurações: dados do negócio, conexão com a planilha (login por código no e-mail), módulos e backup.
+// Configurações: dados do negócio, conta na nuvem e equipe (ou a conexão com uma planilha do Google), módulos e backup.
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { CampoInput, Topo, converter, paraInput, useConfig, useSistema, useStatus } from '../base'
 import { abrirBanco, esquecerBanco } from '@/lib/sistemas/db'
-import { idDaUrl, pedirCodigo, entrar, salvarConexao } from '@/lib/sistemas/api'
+import { chamarConta, idDaUrl, pedirCodigo, entrar, salvarConexao, salvarConta } from '@/lib/sistemas/api'
 import { gruposMenu, modulos } from '@/lib/sistemas/nichos'
 import { CONFIGS, tabelas } from '@/lib/sistemas/schema'
 import { dataBR } from '@/lib/sistemas/regras'
@@ -24,10 +25,26 @@ const grupos = [
 
 export default function Config() {
   const { banco, conexao } = useSistema()
+  const sub = conexao?.nuvem ? `Equipe na nuvem · ${conexao.email}` : conexao ? `Conectado à planilha como ${conexao.email}` : 'Versão beta: os dados de exemplo ficam só neste navegador'
   return (
     <div className="sx-modulo">
-      <Topo titulo="Configurações" sub={conexao ? `Conectado à planilha como ${conexao.email}` : 'Modo demonstração: os dados ficam só neste navegador'} />
-      <Planilha />
+      <Topo titulo="Configurações" sub={sub} />
+      {conexao?.nuvem ? (
+        <>
+          <Nuvem />
+          <MembrosEquipe />
+        </>
+      ) : conexao ? (
+        <Planilha />
+      ) : (
+        <>
+          <UsarDeVerdade />
+          <details className="sx-cartao sx-outra-forma">
+            <summary>Prefere guardar os dados numa planilha do Google sua?</summary>
+            <Planilha />
+          </details>
+        </>
+      )}
       <DadosNegocio key={banco.ns} />
       <Modulos />
       <Backup />
@@ -77,6 +94,189 @@ function DadosNegocio() {
         {salvo && <span className="notice ok">Salvo!</span>}
       </div>
     </form>
+  )
+}
+
+/** Na versão beta: o caminho para usar de verdade, grátis, com a equipe. */
+function UsarDeVerdade() {
+  const { nicho } = useSistema()
+  return (
+    <section className="sx-cartao sx-usar">
+      <h2>Usar de verdade, grátis</h2>
+      <p className="muted">Crie uma conta com e-mail e senha, cadastre a sua equipe e convide quem trabalha com você. Os dados ficam na nuvem, em todos os aparelhos, sem limite e sem mensalidade.</p>
+      <div className="sx-acoes">
+        <Link href={`/sistemas/${nicho.slug}/equipe`} className="btn btn-primary">
+          Cadastrar equipe e utilizar o sistema
+        </Link>
+      </div>
+    </section>
+  )
+}
+
+/** Conectado à nuvem: situação da sincronização, trocar de equipe e sair. */
+function Nuvem() {
+  const { banco, conexao, nicho } = useSistema()
+  const status = useStatus(banco)
+  return (
+    <section className="sx-cartao">
+      <h2>Na nuvem</h2>
+      <ul className="sx-lista-valores">
+        <li>
+          <span>Equipe</span>
+          <strong>{conexao.empresa || '—'}</strong>
+        </li>
+        <li>
+          <span>Conta</span>
+          <strong>{conexao.email}</strong>
+        </li>
+        <li>
+          <span>Papel</span>
+          <strong>{conexao.papel}</strong>
+        </li>
+        <li>
+          <span>Situação</span>
+          <strong>{status.estado === 'sincronizado' ? `Em dia${status.ultimo ? ` (${dataBR(status.ultimo, true)})` : ''}` : status.estado}</strong>
+        </li>
+        <li>
+          <span>Na fila para enviar</span>
+          <strong>{status.pendentes}</strong>
+        </li>
+      </ul>
+      {status.erro && <p className="notice warn">{status.erro}</p>}
+      <div className="sx-acoes">
+        <button type="button" className="btn btn-primary" onClick={() => banco.sincronizar()}>
+          Sincronizar agora
+        </button>
+        <Link href={`/sistemas/${nicho.slug}/equipe`} className="btn btn-ghost">
+          Trocar de equipe
+        </Link>
+        <button
+          type="button"
+          className="btn btn-ghost"
+          onClick={async () => {
+            if (status.pendentes && !confirm(`Ainda há ${status.pendentes} alterações sem enviar. Sair mesmo assim? Elas continuam neste navegador e sobem quando você entrar de novo.`)) return
+            await chamarConta('sair').catch(() => {})
+            salvarConta(null)
+            salvarConexao(null)
+            window.location.href = `/sistemas/${nicho.slug}/equipe`
+          }}
+        >
+          Sair da conta neste aparelho
+        </button>
+      </div>
+    </section>
+  )
+}
+
+const PAPEIS = { dono: 'Dono', gerente: 'Gerente', operador: 'Operador' }
+
+/** Equipe na nuvem: quem pode entrar no sistema (dono e gerentes cuidam). */
+function MembrosEquipe() {
+  const { conexao } = useSistema()
+  const gestor = conexao.papel === 'dono' || conexao.papel === 'gerente'
+  const [lista, setLista] = useState(null)
+  const [email, setEmail] = useState('')
+  const [papel, setPapel] = useState('operador')
+  const [msg, setMsg] = useState(null)
+  const [ocupado, setOcupado] = useState(false)
+
+  const pedir = async (acao, dados = {}, aviso = '') => {
+    setOcupado(true)
+    setMsg(null)
+    try {
+      const r = await chamarConta(acao, { equipe: conexao.equipe, ...dados })
+      if (r.membros) setLista(r.membros)
+      if (aviso) setMsg({ ok: true, texto: aviso })
+      return r
+    } catch (e) {
+      setMsg({ ok: false, texto: e.codigo === 'sessao' ? 'Sua sessão da conta expirou: saia e entre de novo para cuidar da equipe.' : e.message })
+    } finally {
+      setOcupado(false)
+    }
+  }
+
+  useEffect(() => {
+    if (gestor) pedir('membros')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gestor])
+
+  if (!gestor) {
+    return (
+      <section className="sx-cartao">
+        <h2>Equipe</h2>
+        <p className="muted small">Quem cuida da equipe (adicionar e tirar pessoas) é o dono ou um gerente.</p>
+      </section>
+    )
+  }
+  return (
+    <section className="sx-cartao">
+      <h2>Equipe</h2>
+      <p className="muted small">
+        Adicione o e-mail de quem trabalha com você. A pessoa entra em <b>/sistemas → Cadastrar equipe</b>, cria a conta com esse mesmo e-mail e a equipe já aparece para ela. Gerente vê tudo; operador não mexe em configurações,
+        financeiro e relatórios.
+      </p>
+      <form
+        className="sx-membro-novo"
+        onSubmit={async (e) => {
+          e.preventDefault()
+          const r = await pedir('membro_salvar', { email, papel }, `${email} foi adicionado como ${PAPEIS[papel].toLowerCase()}.`)
+          if (r) setEmail('')
+        }}
+      >
+        <input type="email" required placeholder="email@da.pessoa" value={email} onChange={(e) => setEmail(e.target.value)} aria-label="E-mail" />
+        <select value={papel} onChange={(e) => setPapel(e.target.value)} aria-label="Papel">
+          <option value="operador">Operador</option>
+          {conexao.papel === 'dono' && <option value="gerente">Gerente</option>}
+        </select>
+        <button type="submit" className="btn btn-primary" disabled={ocupado}>
+          Adicionar
+        </button>
+      </form>
+      {msg && <p className={msg.ok ? 'notice ok' : 'notice error'}>{msg.texto}</p>}
+      {lista === null ? (
+        <p className="muted small">Carregando…</p>
+      ) : (
+        <ul className="sx-membros">
+          {lista.map((m) => (
+            <li key={m.email}>
+              <div>
+                <strong>{m.email}</strong>
+                <small className="muted">
+                  {PAPEIS[m.papel]}
+                  {!m.temConta && ' · ainda não criou a conta'}
+                </small>
+              </div>
+              {m.papel !== 'dono' && (conexao.papel === 'dono' || m.papel === 'operador') && (
+                <div className="sx-membro-acoes">
+                  {conexao.papel === 'dono' && m.email !== conexao.email && (
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-sm"
+                      disabled={ocupado}
+                      title="Esqueceu a senha? Gere uma provisória e passe para a pessoa (ela troca ao entrar)."
+                      onClick={async () => {
+                        const r = await pedir('senha_provisoria', { email: m.email })
+                        if (r?.senha) setMsg({ ok: true, texto: `Senha provisória de ${m.email}: ${r.senha} (passe para a pessoa; ela troca ao entrar).` })
+                      }}
+                    >
+                      Senha provisória
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm"
+                    disabled={ocupado}
+                    onClick={() => confirm(`Tirar ${m.email} da equipe? A pessoa perde o acesso na hora.`) && pedir('membro_remover', { email: m.email }, `${m.email} saiu da equipe.`)}
+                  >
+                    Remover
+                  </button>
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   )
 }
 

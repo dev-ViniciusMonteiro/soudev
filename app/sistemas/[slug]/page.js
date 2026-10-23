@@ -27,12 +27,12 @@ export async function generateMetadata({ params }) {
 }
 
 const faqComum = [
-  ['Tem limite de uso ou mensalidade?', 'Não. Use quanto quiser, com quantas vendas, clientes e aparelhos precisar. A demonstração roda no seu navegador e, para usar de verdade, os dados ficam numa planilha do Google na sua conta.'],
+  ['Tem limite de uso ou mensalidade?', 'Não. É grátis: crie a conta, cadastre a equipe e use com quantas vendas, clientes e aparelhos precisar. A versão beta roda no seu navegador com dados de exemplo, sem cadastro.'],
   ['Dá para fazer um sistema do jeito do meu negócio?', 'Sim. Se precisar de outro fluxo, integração com o que você já usa, nota fiscal, app ou um sistema totalmente sob medida, mande uma mensagem pelo formulário de contato e eu preparo uma proposta.'],
-  ['Onde ficam os meus dados?', 'Na demonstração, só no seu navegador. Conectado, numa planilha do Google Planilhas que é sua: cada tabela é uma aba e você pode abrir, filtrar e baixar tudo a qualquer momento.'],
-  ['Funciona sem internet?', 'Sim. As vendas e os cadastros ficam guardados no aparelho e sobem para a planilha quando a internet volta. O status no topo mostra quantas alterações estão na fila.'],
-  ['Como funciona o login?', 'Por e-mail, sem senha: você digita o e-mail e recebe um código de 6 dígitos. O dono da planilha cadastra os funcionários na aba de usuários, com papel de gerente ou operador de caixa.'],
-  ['Recebo um e-mail a cada venda?', 'Sim, se quiser. O servidor da planilha manda um e-mail para os endereços que você escolher a cada venda concluída e a cada pedido ou agendamento online. Uma conta Gmail comum envia até cerca de 100 e-mails por dia.'],
+  ['Onde ficam os meus dados?', 'Na versão beta, só no seu navegador. Com a equipe cadastrada, na nuvem (Cloudflare), separados por equipe e disponíveis em todos os aparelhos. Em Configurações → Backup dá para baixar tudo quando quiser. Se preferir, também dá para guardar numa planilha do Google sua.'],
+  ['Funciona sem internet?', 'Sim. As vendas e os cadastros ficam guardados no aparelho e sobem para a nuvem quando a internet volta. O status no topo mostra quantas alterações estão na fila.'],
+  ['Como funciona o login e a equipe?', 'Com e-mail e senha. Quem cria a equipe é o dono e, em Configurações → Equipe, adiciona o e-mail de cada funcionário como gerente ou operador. A pessoa cria a conta com o mesmo e-mail e a equipe já aparece. Esqueceu a senha? O dono gera uma senha provisória.'],
+  ['Recebo um e-mail a cada venda?', 'Na nuvem, os avisos aparecem no próprio sistema (pedidos e agendamentos novos chegam na tela). O aviso por e-mail a cada venda existe no modo planilha do Google, que manda até cerca de 100 e-mails por dia de uma conta Gmail comum.'],
   ['Emite nota fiscal?', 'Na demonstração, a NFC-e (venda de produto) e a NFS-e (serviço) saem em modo simulação: o sistema mostra todo o fluxo, gera a chave de acesso e imprime o DANFE com QR Code, mas nada vai para a SEFAZ e a nota não tem valor fiscal. A emissão de verdade entra num sistema sob medida, ligado a uma API fiscal com o certificado digital do seu negócio.'],
 ]
 
@@ -94,10 +94,13 @@ export default async function NichoPage({ params }) {
         </span>
         <div>
           <h1>{n.titulo}</h1>
-          <p className="lead">{n.curto} Use sem limite, no navegador, com os dados na sua planilha do Google.</p>
+          <p className="lead">{n.curto} Grátis e sem limite: cadastre a sua equipe e use no navegador, em todos os aparelhos.</p>
           <div className="hero-actions">
-            <Link href={`/sistemas/${n.slug}/app`} className="btn btn-primary btn-lg">
-              Abrir demonstração
+            <Link href={`/sistemas/${n.slug}/equipe`} className="btn btn-primary btn-lg">
+              Cadastrar equipe e utilizar sistema
+            </Link>
+            <Link href={`/sistemas/${n.slug}/app?beta=1`} className="btn btn-ghost btn-lg">
+              Ver beta
             </Link>
             {n.publico.includes('cardapio') && (
               <Link href={`/loja/cardapio?s=${fonte}`} className="btn btn-ghost btn-lg">
@@ -110,7 +113,7 @@ export default async function NichoPage({ params }) {
               </Link>
             )}
           </div>
-          <p className="muted small">A demonstração já vem com clientes, produtos e vendas de exemplo. Pode mexer à vontade: tudo fica só no seu navegador.</p>
+          <p className="muted small">A versão beta já vem com clientes, produtos e vendas de exemplo, sem cadastro: pode mexer à vontade, tudo fica só no seu navegador.</p>
         </div>
       </header>
 
@@ -136,23 +139,22 @@ export default async function NichoPage({ params }) {
           ))}
         </ul>
         <p className="muted small">
-          Recursos que você encontra em sistemas pagos como {n.parecido.join(', ')}. Dá para ligar módulos dos outros sistemas em Configurações, porque todos usam a mesma planilha.
+          Recursos que você encontra em sistemas pagos como {n.parecido.join(', ')}. Dá para ligar módulos dos outros sistemas em Configurações, porque todos usam o mesmo banco de dados.
         </p>
       </section>
 
       <section className="tool-info">
-        <h2>Como usar com a sua planilha</h2>
+        <h2>Como começar</h2>
         <ol className="steps-list">
-          <li>Abra a demonstração e veja se o sistema serve para o seu negócio.</li>
-          <li>Crie uma planilha no Google Planilhas, abra Extensões → Apps Script e cole o código que o sistema oferece em Configurações.</li>
-          <li>Rode a função “configurar” e publique como App da Web. As abas são criadas sozinhas.</li>
-          <li>Cole o link no sistema e entre com o código que chega no seu e-mail. Se quiser, leve junto os dados da demonstração.</li>
-          <li>Cadastre seus produtos, serviços e funcionários. Pronto: cada venda vai para a planilha e para o seu e-mail.</li>
+          <li>Clique em “Ver beta” e veja se o sistema serve para o seu negócio, com dados de exemplo.</li>
+          <li>Clique em “Cadastrar equipe e utilizar sistema” e crie a sua conta com e-mail e senha.</li>
+          <li>Dê o nome do seu negócio: essa é a sua equipe, e você é o dono.</li>
+          <li>Em Configurações → Equipe, adicione o e-mail de quem trabalha com você (gerente ou operador). A pessoa cria a conta com o mesmo e-mail e já entra na equipe.</li>
+          <li>Cadastre seus produtos, serviços e clientes. Pronto: tudo fica na nuvem e aparece em todos os aparelhos da equipe.</li>
         </ol>
-        <p className="see-all">
-          <Link href="/sistemas/planilha" className="btn btn-ghost">
-            Ver o guia completo, tela por tela →
-          </Link>
+        <p className="muted small">
+          Prefere os dados numa planilha do Google sua? Também dá:{' '}
+          <Link href="/sistemas/planilha">veja o guia da planilha</Link>.
         </p>
       </section>
 

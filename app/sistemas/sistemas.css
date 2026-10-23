@@ -3644,3 +3644,127 @@ html.sx-tela-cheia .site-footer {
 .mf-estoque .mf-linha > label {
   flex: 1 1 180px;
 }
+
+/* ---------- Conta e equipe na nuvem ---------- */
+
+.sx-equipe {
+  max-width: 640px;
+}
+
+.sx-equipe-topo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 18px 0;
+}
+
+.sx-equipe-topo h1 {
+  font-size: 1.6rem;
+}
+
+.sx-acesso,
+.sx-equipes {
+  gap: 14px;
+}
+
+.sx-acesso .field input,
+.sx-criar-equipe .field input {
+  width: 100%;
+}
+
+.sx-equipes-topo {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.sx-equipes-lista,
+.sx-membros {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sx-equipes-lista li,
+.sx-membros li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--bg-2);
+}
+
+.sx-equipes-lista li > div,
+.sx-membros li > div:first-child {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.sx-criar-equipe {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.sx-equipes details > summary,
+.sx-outra-forma > summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.sx-equipe-pe {
+  margin-top: 18px;
+}
+
+.sx-membro-novo {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sx-membro-novo input {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+.sx-membro-acoes {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.sx-membro-acoes .btn {
+  padding: 6px 10px;
+  font-size: 0.85rem;
+}
+
+.sx-usar {
+  border-color: var(--sx-cor, var(--line));
+}
+
+.sx-sair.sx-sair-destaque {
+  color: var(--sx-cor, inherit);
+  font-weight: 700;
+}
+
+a.sx-status {
+  text-decoration: none;
+}
+
+.sx-membro-novo > select,
+.sx-membro-novo > .btn {
+  width: auto;
+  flex: 0 0 auto;
+}
