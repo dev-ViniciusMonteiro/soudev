@@ -1,0 +1,348 @@
+:root {
+  color-scheme: dark;
+  --cor1: #22c55e;
+  --cor2: #06b6d4;
+  --texto: #f5f7ff;
+  --fundo: rgba(12, 16, 28, 0.88);
+  --linha: rgba(255, 255, 255, 0.16);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #9fd3f5;
+  color: var(--texto);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+#app {
+  position: fixed;
+  inset: 0;
+}
+
+.tela-jogo {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+}
+
+.btn {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--linha);
+  background: rgba(255, 255, 255, 0.08);
+  font-weight: 700;
+}
+
+.btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.btn.forte {
+  border: 0;
+  background: linear-gradient(90deg, var(--cor1), var(--cor2));
+  color: #04141a;
+}
+
+.btn.grande {
+  width: 100%;
+  padding: 13px;
+  font-size: 1.05rem;
+}
+
+.tela {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center start;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.caixa {
+  width: min(440px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 22px;
+  border-radius: 16px;
+  border: 1px solid var(--linha);
+  background: var(--fundo);
+  backdrop-filter: blur(6px);
+}
+
+.caixa.centro {
+  align-items: center;
+  text-align: center;
+  justify-self: center;
+}
+
+.caixa h1 {
+  font-size: 2.4rem;
+  font-weight: 900;
+  background: linear-gradient(90deg, var(--cor1), var(--cor2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.sub,
+.nota {
+  color: rgba(245, 247, 255, 0.75);
+}
+
+.nota {
+  font-size: 0.8rem;
+}
+
+.erro-msg {
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.85rem;
+}
+
+input {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--linha);
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 1rem;
+  min-width: 0;
+}
+
+input.erro {
+  border-color: #ef4444;
+}
+
+input.codigo {
+  width: 7.5em;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-align: center;
+}
+
+.linha {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.personalizar summary {
+  cursor: pointer;
+  font-weight: 700;
+  padding: 4px 0;
+}
+
+.aparencia {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 8px;
+}
+
+.grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.78rem;
+  color: rgba(245, 247, 255, 0.75);
+}
+
+.opcoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.cor {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.cor.ativa,
+.opcao.ativa {
+  border-color: #fff;
+  outline: 2px solid var(--cor1);
+}
+
+.opcao {
+  padding: 4px 9px;
+  border-radius: 7px;
+  border: 1px solid var(--linha);
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 0.8rem;
+  color: var(--texto);
+}
+
+/* HUD */
+.hud {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+.hud > * {
+  pointer-events: auto;
+}
+
+.topo {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--linha);
+  background: var(--fundo);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.lista,
+.painel-aparencia {
+  position: absolute;
+  top: 56px;
+  left: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--linha);
+  background: var(--fundo);
+  font-size: 0.9rem;
+}
+
+.painel-aparencia {
+  width: min(330px, calc(100vw - 20px));
+  max-height: calc(100vh - 140px);
+  overflow-y: auto;
+}
+
+.emotes {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+}
+
+.emote {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid var(--linha);
+  background: var(--fundo);
+  font-size: 1.4rem;
+}
+
+.aviso {
+  position: fixed;
+  top: 64px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: var(--fundo);
+  border: 1px solid var(--linha);
+  font-size: 0.9rem;
+  z-index: 5;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* Celular */
+.joystick {
+  position: fixed;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  background: rgba(0, 0, 0, 0.15);
+  pointer-events: none;
+  opacity: 0;
+  z-index: 3;
+}
+
+.joystick.ativo {
+  opacity: 1;
+}
+
+.joystick-bola {
+  position: absolute;
+  left: 35px;
+  top: 35px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.botao-pulo {
+  position: fixed;
+  right: 22px;
+  bottom: 90px;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  background: rgba(0, 0, 0, 0.3);
+  font-size: 1.8rem;
+  z-index: 3;
+  touch-action: none;
+}
+
+@media (max-width: 640px) {
+  .tela {
+    place-items: end center;
+  }
+
+  .caixa.menu {
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+}
