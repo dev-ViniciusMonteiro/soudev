@@ -12,6 +12,8 @@ const ESCALA = 4;
  *  Múltiplos de 8 (tamanho de cada pedaço de rua) para as avenidas casarem com os cruzamentos. */
 export const RUA_INTERNA = 32;
 export const RUA_EXTERNA = 72;
+/** Barraca da loja na praça (x, z). */
+export const POS_LOJA: [number, number] = [16, 10];
 
 /** Caixa de colisão no chão (centro e meia-largura em x/z). */
 export interface Caixa {
@@ -49,6 +51,57 @@ async function carregarPecas(nomes: string[]): Promise<Map<string, THREE.Object3
     }),
   );
   return mapa;
+}
+
+/** Barraca da loja: balcão, toldo listrado e placa. */
+function barracaLoja(): THREE.Group {
+  const g = new THREE.Group();
+  const madeira = new THREE.MeshStandardMaterial({ color: '#92400e', flatShading: true });
+  const balcao = new THREE.Mesh(new THREE.BoxGeometry(3.2, 1.1, 1.2), madeira);
+  balcao.position.y = 0.55;
+  balcao.castShadow = true;
+  g.add(balcao);
+  for (const x of [-1.5, 1.5]) {
+    const poste = new THREE.Mesh(new THREE.BoxGeometry(0.15, 2.8, 0.15), madeira);
+    poste.position.set(x, 1.4, -0.5);
+    g.add(poste);
+  }
+  // Toldo com listras.
+  for (let i = 0; i < 6; i++) {
+    const listra = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.08, 1.8), new THREE.MeshStandardMaterial({ color: i % 2 ? '#fde047' : '#7c3aed', flatShading: true }));
+    listra.position.set(-1.5 + 0.3 + i * 0.6, 2.85, 0.1);
+    listra.rotation.x = 0.18;
+    listra.castShadow = true;
+    g.add(listra);
+  }
+  const c = document.createElement('canvas');
+  c.width = 512;
+  c.height = 128;
+  const x = c.getContext('2d')!;
+  x.fillStyle = '#1e1b4b';
+  x.fillRect(0, 0, 512, 128);
+  x.fillStyle = '#fde047';
+  x.font = '900 72px system-ui, sans-serif';
+  x.textAlign = 'center';
+  x.textBaseline = 'middle';
+  x.fillText('🛒 LOJA', 256, 68);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const placa = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 0.6), new THREE.MeshBasicMaterial({ map: tex }));
+  placa.position.set(0, 3.35, 0.95);
+  g.add(placa);
+  // Coroas e chapéus em exposição no balcão.
+  const ouro = new THREE.MeshStandardMaterial({ color: '#facc15', metalness: 0.8, roughness: 0.3, flatShading: true });
+  for (const [px, cor] of [
+    [-1, '#facc15'],
+    [0, '#67e8f9'],
+    [1, '#b91c1c'],
+  ] as const) {
+    const peca = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.2, 0.18, 8), px === -1 ? ouro : new THREE.MeshStandardMaterial({ color: cor, flatShading: true }));
+    peca.position.set(px, 1.2, 0.2);
+    g.add(peca);
+  }
+  return g;
 }
 
 /** Placa grande do Sprint Retro SuperApp (momentânea, para o evento). */
@@ -326,6 +379,13 @@ export async function criarMundo(): Promise<Mundo> {
   por('dumpster', -24, 22.8, 0, [1.1, 0.7]);
   por('trash_A', 11, 9.5, 0);
   por('watertower', 55, -55, 0, [1, 1]);
+
+  // Barraca da loja, de frente para o chafariz.
+  const barraca = barracaLoja();
+  barraca.position.set(POS_LOJA[0], 0, POS_LOJA[1]);
+  barraca.rotation.y = Math.atan2(-POS_LOJA[0], -POS_LOJA[1]);
+  cena.add(barraca);
+  colisao.push({ x: POS_LOJA[0], z: POS_LOJA[1], mx: 1.4, mz: 1.4 });
 
   // Placa do Sprint Retro na diagonal da praça, de frente para o chafariz.
   const placa = placaSprint();

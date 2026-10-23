@@ -59,6 +59,8 @@ export async function criarPerfil(apelido: string, skin: Skin): Promise<Perfil> 
 
 export const atualizarPerfil = (dados: { apelido?: string; skin?: Skin }): Promise<Perfil> => api<Perfil>('/perfil', { metodo: 'PATCH', dados });
 
+export const comprarItem = (item: string): Promise<Perfil> => api<Perfil>('/loja/comprar', { metodo: 'POST', dados: { item } });
+
 export const pedirRanking = (por: string): Promise<RespostaRanking> => api<RespostaRanking>(`/ranking?por=${encodeURIComponent(por)}`);
 
 export const pedirSala = async (publica: boolean): Promise<string> => (await api<RespostaSala>(publica ? '/jogar' : '/salas', { metodo: 'POST' })).codigo;

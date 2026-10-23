@@ -3,15 +3,16 @@
 
 import './estilo.css';
 import * as THREE from 'three';
-import { APARENCIA_PADRAO, type Aparencia, Boneco, CABELOS, CHAPEUS, CORES, PELES, escreverSkin, lerSkin } from './boneco';
+import { ACESSORIOS, APARENCIA_PADRAO, ARMAS, type Aparencia, Boneco, CABELOS, CHAPEUS, CORES, PELES, PETS, ROUPAS, escreverSkin, lerSkin } from './boneco';
 import { Carros } from './carros';
 import { Controles } from './controles';
 import { Halloween } from './halloween';
-import { criarMundo, resolverColisao } from './mundo';
+import { Loja } from './loja';
+import { POS_LOJA, criarMundo, resolverColisao } from './mundo';
 import { SprintUI } from './sprint';
 import { COR_JOGO, ICONE_JOGO, Portais, marca } from './portais';
 import { Anim, CONQUISTAS, EMOTES, type Emote, ENVIOS_POR_SEGUNDO, type EstadoPartida, ITENS, type IdJogo, type InfoSala, JOGOS, type Jogador, type LinhaResultado, type MotivoErro, type MsgServidor, type Perfil, type Pose, RAIO_PORTAL, VISAO_BUSCADOR, itensBloqueados, xpDoNivel } from './protocolo';
-import { Rede, atualizarPerfil, criarPerfil, meuPerfil, online, pedirRanking, pedirSala } from './rede';
+import { Rede, atualizarPerfil, comprarItem, criarPerfil, meuPerfil, online, pedirRanking, pedirSala } from './rede';
 import { Telao } from './telao';
 
 /* ---------- Utilidades de tela ---------- */
@@ -143,6 +144,7 @@ const carregandoPerfil = meuPerfil().then((p) => {
 
 function usarPerfil(p: Perfil): void {
   perfil = p;
+  queueMicrotask(() => loja.desenhar());
   nome = p.apelido;
   guardar('praca.nome', nome);
   if (p.skin) {
@@ -473,7 +475,9 @@ function motivoBloqueio(a: Aparencia): string | null {
   const b = itensBloqueados(escreverSkin(a), nivel, perfil?.itens ?? [])[0];
   if (!b) return null;
   const it = ITENS.find((i) => i.id === b)!;
-  return it.nivel ? `Nível ${it.nivel}` : `Conquista: ${CONQUISTAS.find((c) => c.id === it.conquista)?.nome ?? it.conquista}`;
+  if (it.nivel) return `Nível ${it.nivel}`;
+  if (it.preco) return `Loja (🪙 ${it.preco.toLocaleString('pt-BR')})${it.conquista ? ' ou conquista' : ''}`;
+  return `Conquista: ${CONQUISTAS.find((c) => c.id === it.conquista)?.nome ?? it.conquista}`;
 }
 
 function cartaoPerfil(): HTMLElement | null {
@@ -521,6 +525,24 @@ function painelRanking(): HTMLElement {
   return caixa;
 }
 
+/** Troca a aparência e salva (dentro da sala pela conexão, que o servidor valida; fora, direto no perfil). */
+function mudarAparencia(parcial: Partial<Aparencia>): void {
+  aparencia = { ...aparencia, ...parcial };
+  const skin = escreverSkin(aparencia);
+  guardar('praca.skin', skin);
+  eu.boneco.aplicarSkin(skin);
+  if (rede) rede.trocarSkin(skin);
+  else if (perfil) void atualizarPerfil({ skin }).then(usarPerfil, (e: Error) => mostrarAviso(e.message));
+  if (perfil) perfil = { ...perfil, skin };
+}
+
+/** Nome de cada peça para os botões (o id fica no texto da skin). */
+const NOME_PECA: Record<string, string> = {
+  nenhum: 'nenhum', bone: 'boné', gorro: 'gorro', cartola: 'cartola', coroa: 'coroa', 'coroa-ouro': 'coroa de ouro', 'coroa-diamante': 'coroa de diamante', chifres: 'chifres', aureola: 'auréola', tiara: 'tiara',
+  mochila: 'mochila', capa: 'capa', guitarra: 'guitarra', asas: 'asas', basica: 'básica', jaqueta: 'jaqueta', moletom: 'moletom', terno: 'terno', esqueleto: 'esqueleto',
+  cachorro: 'cachorro', gato: 'gato', padrao: 'padrão', camuflada: 'camuflada', neon: 'neon', ouro: 'ouro', dragao: 'dragão',
+};
+
 function editorAparencia(): HTMLElement {
   const grupo = (titulo: string, ...itens: HTMLElement[]) => el('div', { cls: 'grupo' }, el('span', { textContent: titulo }), el('div', { cls: 'opcoes' }, ...itens));
   const corBtn = (cor: string, ativa: boolean, fn: () => void) => {
@@ -535,14 +557,7 @@ function editorAparencia(): HTMLElement {
     return b;
   };
   const mudar = (parcial: Partial<Aparencia>) => {
-    aparencia = { ...aparencia, ...parcial };
-    const skin = escreverSkin(aparencia);
-    guardar('praca.skin', skin);
-    eu.boneco.aplicarSkin(skin);
-    // Dentro da sala a troca vai pela conexão (o servidor valida e salva); fora, direto no perfil.
-    if (rede) rede.trocarSkin(skin);
-    else if (perfil) void atualizarPerfil({ skin }).then(usarPerfil, (e: Error) => mostrarAviso(e.message));
-    if (perfil) perfil = { ...perfil, skin };
+    mudarAparencia(parcial);
     caixa.replaceWith(editorAparencia());
   };
   const caixa = el(
@@ -554,8 +569,13 @@ function editorAparencia(): HTMLElement {
     grupo('Camiseta', ...CORES.map((c) => corBtn(c, aparencia.camisa === c, () => mudar({ camisa: c })))),
     grupo('Calça', ...CORES.map((c) => corBtn(c, aparencia.calca === c, () => mudar({ calca: c })))),
     grupo('Tênis', ...CORES.map((c) => corBtn(c, aparencia.sapato === c, () => mudar({ sapato: c })))),
-    grupo('Chapéu', ...CHAPEUS.map((c) => txtBtn(c, aparencia.chapeu === c, { chapeu: c }))),
+    grupo('Chapéu', ...CHAPEUS.map((c) => txtBtn(NOME_PECA[c] ?? c, aparencia.chapeu === c, { chapeu: c }))),
     grupo('Óculos', txtBtn('sem', !aparencia.oculos, { oculos: false }), txtBtn('escuros', aparencia.oculos, { oculos: true })),
+    grupo('Nas costas', ...ACESSORIOS.map((c) => txtBtn(NOME_PECA[c] ?? c, aparencia.acessorio === c, { acessorio: c }))),
+    grupo('Roupa', ...ROUPAS.map((c) => txtBtn(NOME_PECA[c] ?? c, aparencia.roupa === c, { roupa: c }))),
+    grupo('Pet', ...PETS.map((c) => txtBtn(NOME_PECA[c] ?? c, aparencia.pet === c, { pet: c }))),
+    grupo('Armas (mata-mata)', ...ARMAS.map((c) => txtBtn(NOME_PECA[c] ?? c, aparencia.arma === c, { arma: c }))),
+    el('button', { cls: 'btn', textContent: '🛒 Abrir a loja', onclick: () => loja.abrir() }),
   );
   return caixa;
 }
@@ -622,11 +642,32 @@ function menu(erro?: string): void {
       contador,
       el('details', { cls: 'personalizar' }, el('summary', { textContent: '🎨 Personalizar boneco' }), editorAparencia()),
       el('details', { cls: 'personalizar' }, el('summary', { textContent: '🏆 Ranking' }), painelRanking()),
+      el('button', { cls: 'btn', textContent: '🛒 Loja (coroas, roupas, pets, armas)', onclick: () => loja.abrir() }),
       el('p', { cls: 'nota', textContent: 'WASD ou setas andam, Shift corre, Espaço pula, 1–4 fazem emotes, arraste para girar a câmera. No celular: joystick na esquerda. Cada minuto na praça vale 1 XP (até 60 por dia).' }),
     ),
   );
   tela.hidden = false;
 }
+
+/* ---------- Loja ---------- */
+
+const loja = new Loja({
+  el,
+  perfil: () => perfil,
+  aparencia: () => aparencia,
+  provar: (parcial) => eu.boneco.aplicarSkin(escreverSkin(parcial ? { ...aparencia, ...parcial } : aparencia)),
+  usar: (parcial) => mudarAparencia(parcial),
+  comprar: async (item) => {
+    await garantirPerfil();
+    const p = await comprarItem(item);
+    usarPerfil(p);
+    return p;
+  },
+  aviso: (t) => mostrarAviso(t),
+});
+app.append(loja.painel);
+const botaoLoja = el('button', { cls: 'botao-carro botao-loja', hidden: true, textContent: '🛒 Abrir loja', onclick: () => loja.abrir() });
+app.append(botaoLoja);
 
 /* ---------- Sprint Retro ---------- */
 
@@ -719,6 +760,7 @@ function desenharHud(): void {
         },
       }),
       el('button', { cls: 'chip', textContent: '🎨', title: 'Aparência', onclick: () => alternar(painelAparencia) }),
+      el('button', { cls: 'chip', textContent: '🛒', title: 'Loja', onclick: () => loja.abrir() }),
       el('button', {
         cls: 'chip',
         textContent: '🏆',
@@ -891,6 +933,7 @@ function quadro(): void {
   botaoCarro.hidden = !(carros?.meu || perto);
   botaoCarro.textContent = carros?.meu ? '🚶 Sair do carro (E)' : perto?.motorista ? '🚗 Entrar de passageiro (E)' : '🚗 Dirigir (E)';
 
+  botaoLoja.hidden = !(estado === 'jogo' && !carros?.meu && !loja.aberta && Math.hypot(eu.pos.x - POS_LOJA[0], eu.pos.z - POS_LOJA[1]) < 4.5);
   portais.animar(t, camera.position);
   if (t - ultimaFaixa > 0.2) {
     ultimaFaixa = t;

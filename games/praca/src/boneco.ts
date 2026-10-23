@@ -4,11 +4,17 @@
 
 import * as THREE from 'three';
 import { Anim, type Emote } from './protocolo';
+import { acessorio, chapeuLoja, pet, roupa } from './visual';
 
 export const PELES = ['#f6d3b3', '#e8b48f', '#c98e64', '#a26a43', '#7a4b2c', '#4f2f1c'];
 export const CORES = ['#ef4444', '#f97316', '#facc15', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#f5f5f4', '#27272a', '#78716c', '#1e3a8a'];
 export const CABELOS = ['curto', 'arrepiado', 'comprido', 'careca'] as const;
-export const CHAPEUS = ['nenhum', 'bone', 'gorro', 'cartola', 'coroa'] as const;
+export const CHAPEUS = ['nenhum', 'bone', 'gorro', 'cartola', 'coroa', 'coroa-ouro', 'coroa-diamante', 'chifres', 'aureola', 'tiara'] as const;
+export const ACESSORIOS = ['nenhum', 'mochila', 'capa', 'guitarra', 'asas'] as const;
+export const ROUPAS = ['basica', 'jaqueta', 'moletom', 'terno', 'esqueleto'] as const;
+export const PETS = ['nenhum', 'cachorro', 'gato'] as const;
+/** Visual das armas no mata-mata (só aparência). */
+export const ARMAS = ['padrao', 'camuflada', 'neon', 'ouro', 'dragao'] as const;
 
 export interface Aparencia {
   pele: number;
@@ -19,9 +25,13 @@ export interface Aparencia {
   sapato: string;
   chapeu: (typeof CHAPEUS)[number];
   oculos: boolean;
+  acessorio: (typeof ACESSORIOS)[number];
+  roupa: (typeof ROUPAS)[number];
+  pet: (typeof PETS)[number];
+  arma: (typeof ARMAS)[number];
 }
 
-export const APARENCIA_PADRAO: Aparencia = { pele: 1, cabelo: 'curto', corCabelo: '#3f2a1d', camisa: '#3b82f6', calca: '#27272a', sapato: '#f5f5f4', chapeu: 'nenhum', oculos: false };
+export const APARENCIA_PADRAO: Aparencia = { pele: 1, cabelo: 'curto', corCabelo: '#3f2a1d', camisa: '#3b82f6', calca: '#27272a', sapato: '#f5f5f4', chapeu: 'nenhum', oculos: false, acessorio: 'nenhum', roupa: 'basica', pet: 'nenhum', arma: 'padrao' };
 
 const COR = /^#[0-9a-f]{6}$/i;
 
@@ -34,12 +44,17 @@ export function lerSkin(texto: string): Aparencia {
     else if (k === 'cabelo' && (CABELOS as readonly string[]).includes(v)) a.cabelo = v as Aparencia['cabelo'];
     else if (k === 'chapeu' && (CHAPEUS as readonly string[]).includes(v)) a.chapeu = v as Aparencia['chapeu'];
     else if (k === 'oculos') a.oculos = v === '1';
+    else if (k === 'acessorio' && (ACESSORIOS as readonly string[]).includes(v)) a.acessorio = v as Aparencia['acessorio'];
+    else if (k === 'roupa' && (ROUPAS as readonly string[]).includes(v)) a.roupa = v as Aparencia['roupa'];
+    else if (k === 'pet' && (PETS as readonly string[]).includes(v)) a.pet = v as Aparencia['pet'];
+    else if (k === 'arma' && (ARMAS as readonly string[]).includes(v)) a.arma = v as Aparencia['arma'];
     else if ((k === 'corCabelo' || k === 'camisa' || k === 'calca' || k === 'sapato') && COR.test(v)) a[k] = v;
   }
   return a;
 }
 
-export const escreverSkin = (a: Aparencia): string => `pele:${a.pele}|cabelo:${a.cabelo}|corCabelo:${a.corCabelo}|camisa:${a.camisa}|calca:${a.calca}|sapato:${a.sapato}|chapeu:${a.chapeu}|oculos:${a.oculos ? 1 : 0}`;
+export const escreverSkin = (a: Aparencia): string =>
+  `pele:${a.pele}|cabelo:${a.cabelo}|corCabelo:${a.corCabelo}|camisa:${a.camisa}|calca:${a.calca}|sapato:${a.sapato}|chapeu:${a.chapeu}|oculos:${a.oculos ? 1 : 0}|acessorio:${a.acessorio}|roupa:${a.roupa}|pet:${a.pet}|arma:${a.arma}`;
 
 const mat = (cor: string): THREE.MeshStandardMaterial => new THREE.MeshStandardMaterial({ color: cor, roughness: 0.75, flatShading: true });
 
@@ -83,8 +98,11 @@ export class Boneco {
   private bracoD = new THREE.Group();
   private cabeca = new THREE.Group();
   private extras = new THREE.Group(); // cabelo, chapéu e óculos
+  private loja = new THREE.Group(); // roupa e acessório (no corpo)
+  private petGrupo = new THREE.Group(); // pet ao lado
   private mats = { pele: mat('#fff'), camisa: mat('#fff'), calca: mat('#fff'), sapato: mat('#fff'), cabelo: mat('#fff') };
   private fase = 0;
+  private tempo = 0;
   private emoteAtual: { e: Emote; t: number } | null = null;
   private placa: THREE.Sprite | null = null;
   private placaMao: THREE.Group | null = null; // Sprint Retro: placa levantada na mão direita
@@ -119,8 +137,8 @@ export class Boneco {
     const olhoD = olhoE.clone();
     olhoD.position.x = 0.09;
     this.cabeca.add(rosto, olhoE, olhoD, this.extras);
-    this.corpo.add(tronco, this.cabeca);
-    this.grupo.add(this.corpo);
+    this.corpo.add(tronco, this.cabeca, this.loja);
+    this.grupo.add(this.corpo, this.petGrupo);
     if (nome) {
       this.placa = placaNome(nome);
       this.grupo.add(this.placa);
@@ -165,11 +183,22 @@ export class Boneco {
         this.extras.add(ponta);
       }
     }
+    const chapeu = chapeuLoja(a.chapeu);
+    if (chapeu) this.extras.add(chapeu);
     if (a.oculos) {
       const o = caixa(0.36, 0.08, 0.03, mat('#09090b'), 0.27);
       o.position.z = 0.205;
       this.extras.add(o);
     }
+    // Loja: roupa por cima do tronco, acessório nas costas e pet do lado.
+    this.loja.clear();
+    const r = roupa(a.roupa, a.camisa);
+    if (r) this.loja.add(r);
+    const ac = acessorio(a.acessorio, a.camisa);
+    if (ac) this.loja.add(ac);
+    this.petGrupo.clear();
+    const p = pet(a.pet);
+    if (p) this.petGrupo.add(p);
   }
 
   /** Esconde o corpo (dirigindo, o boneco "está dentro" do carro; o nome continua aparecendo). */
@@ -334,6 +363,28 @@ export class Boneco {
     this.corpo.position.y = ir(this.corpo.position.y, alvo.y);
     this.corpo.rotation.x = ir(this.corpo.rotation.x, alvo.inc);
     this.cabeca.rotation.y = ir(this.cabeca.rotation.y, alvo.cab);
+    this.animarLoja(dt, anim, vel);
+  }
+
+  /** Capa balança com a corrida, asas batem no ar, auréola gira, pet saltita e abana o rabo. */
+  private animarLoja(dt: number, anim: Anim, vel: number): void {
+    this.tempo += dt;
+    const capa = this.loja.getObjectByName('capa');
+    if (capa) capa.rotation.x = -Math.min(1.1, 0.08 + vel * 0.12) - (anim === Anim.NoAr ? 0.5 : 0) - Math.sin(this.tempo * 6) * 0.04;
+    const bate = anim === Anim.NoAr ? Math.sin(this.tempo * 18) * 0.6 : Math.sin(this.tempo * 2) * 0.08;
+    const asaE = this.loja.getObjectByName('asaE');
+    const asaD = this.loja.getObjectByName('asaD');
+    if (asaE) asaE.rotation.y = -0.5 - bate;
+    if (asaD) asaD.rotation.y = 0.5 + bate;
+    const aureola = this.extras.getObjectByName('aureola');
+    if (aureola) aureola.rotation.z = this.tempo * 1.5;
+    const p = this.petGrupo.getObjectByName('pet');
+    if (p) {
+      const andando = anim === Anim.Andando || anim === Anim.Correndo;
+      p.position.y = andando ? Math.abs(Math.sin(this.tempo * 12)) * 0.12 : 0;
+      const rabo = p.getObjectByName('rabo');
+      if (rabo) rabo.rotation.y = Math.sin(this.tempo * (andando ? 14 : 5)) * 0.6;
+    }
   }
 
   remover(): void {

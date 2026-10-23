@@ -746,3 +746,90 @@ input.codigo {
 .btn.sair.ativo {
   background: rgba(239, 68, 68, 0.25);
 }
+
+/* Loja */
+.loja {
+  position: fixed;
+  right: 12px;
+  top: 60px;
+  width: min(460px, calc(100vw - 24px));
+  max-height: calc(100vh - 90px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 2px solid #facc15;
+  background: rgba(17, 12, 40, 0.95);
+  z-index: 6;
+}
+
+.loja-topo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.loja-topo h3 {
+  flex: 1;
+  color: #fde047;
+}
+
+.loja-saldo {
+  font-weight: 800;
+  color: #fde047;
+}
+
+.loja-grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 8px;
+}
+
+.loja-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid var(--linha);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.loja-item.usando {
+  border-color: #22c55e;
+}
+
+.loja-item.provando {
+  border-color: #facc15;
+}
+
+.loja-icone {
+  font-size: 2rem;
+}
+
+.loja-item small {
+  color: rgba(245, 247, 255, 0.7);
+  font-size: 0.75rem;
+}
+
+.loja-preco {
+  font-weight: 800;
+  color: #fde047;
+}
+
+.loja-item .btn {
+  padding: 6px 10px;
+  font-size: 0.85rem;
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.botao-loja {
+  border-color: #a855f7;
+  bottom: 230px;
+}
