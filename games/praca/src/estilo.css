@@ -549,3 +549,182 @@ input.codigo {
     font-size: 0.82rem;
   }
 }
+
+/* Carros */
+.botao-carro {
+  position: fixed;
+  right: 16px;
+  bottom: 170px;
+  padding: 12px 18px;
+  border-radius: 999px;
+  border: 2px solid #facc15;
+  background: var(--fundo);
+  font-weight: 800;
+  font-size: 1rem;
+  z-index: 4;
+}
+
+/* Sprint Review */
+.sprint {
+  position: fixed;
+  left: 12px;
+  top: 60px;
+  width: min(380px, calc(100vw - 24px));
+  max-height: calc(100vh - 150px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 2px solid #f97316;
+  background: rgba(30, 11, 58, 0.92);
+  z-index: 5;
+}
+
+.sprint h3 {
+  font-size: 1.35rem;
+  color: #fdba74;
+}
+
+.sprint-numero {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #c4b5fd;
+}
+
+.sprint-pergunta {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.sprint-campo {
+  font-size: 1.05rem;
+  border-color: #f97316;
+}
+
+.sprint .btn.baixar {
+  border-color: #f97316;
+}
+
+.sprint-ok {
+  color: #86efac;
+  font-size: 0.85rem;
+}
+
+.sprint-lista {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 0.85rem;
+}
+
+.sprint-corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.relatorio {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 12px;
+  background: rgba(10, 4, 24, 0.6);
+  z-index: 7;
+}
+
+.relatorio-caixa {
+  width: min(720px, 100%);
+  max-height: calc(100vh - 24px);
+  overflow-y: auto;
+  border-color: #f97316;
+  background: rgba(30, 11, 58, 0.96);
+}
+
+.relatorio h2 {
+  color: #fdba74;
+}
+
+.r-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 8px;
+  border-top: 1px solid var(--linha);
+}
+
+.r-grupo h4 {
+  font-size: 1.05rem;
+}
+
+.r-grupo ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.r-grupo li {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.r-grupo li.votada {
+  outline: 2px solid #f472b6;
+}
+
+.r-grupo li.top {
+  background: rgba(250, 204, 21, 0.14);
+}
+
+.r-grupo li small {
+  color: rgba(245, 247, 255, 0.65);
+}
+
+.voto {
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--linha);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.voto.ativo {
+  border-color: #f472b6;
+  background: rgba(244, 114, 182, 0.2);
+}
+
+.voto:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.r-podio {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+@media (max-width: 640px) {
+  .sprint {
+    top: auto;
+    bottom: 76px;
+    max-height: 48vh;
+  }
+
+  .botao-carro {
+    bottom: 176px;
+    right: 100px;
+  }
+}

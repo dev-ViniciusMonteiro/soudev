@@ -4,8 +4,8 @@
 import * as THREE from 'three';
 import { type IdJogo, JOGOS, RAIO_PORTAL, ZONA_REI } from './protocolo';
 
-const COR: Record<IdJogo, string> = { 'pega-pega': '#ef4444', 'rei-da-colina': '#facc15', 'esconde-esconde': '#8b5cf6' };
-const ICONE: Record<IdJogo, string> = { 'pega-pega': '🏃', 'rei-da-colina': '👑', 'esconde-esconde': '🙈' };
+const COR: Record<IdJogo, string> = { 'pega-pega': '#ef4444', 'rei-da-colina': '#facc15', 'esconde-esconde': '#8b5cf6', 'sprint-review': '#f97316' };
+const ICONE: Record<IdJogo, string> = { 'pega-pega': '🏃', 'rei-da-colina': '👑', 'esconde-esconde': '🙈', 'sprint-review': '🎃' };
 
 function placa(texto: string, subtexto: string, cor: string): THREE.Sprite {
   const c = document.createElement('canvas');
@@ -61,7 +61,7 @@ export class Portais {
       anel.position.set(x, 0.03, z);
       const luz = new THREE.Mesh(new THREE.CylinderGeometry(RAIO_PORTAL, RAIO_PORTAL, 2.2, 32, 1, true), new THREE.MeshBasicMaterial({ color: cor, transparent: true, opacity: 0.12, side: THREE.DoubleSide, depthWrite: false }));
       luz.position.set(x, 1.1, z);
-      const p = placa(`${ICONE[jogo]} ${JOGOS[jogo].nome}`, `fila 0/${JOGOS[jogo].min}`, cor);
+      const p = placa(`${ICONE[jogo]} ${JOGOS[jogo].nome}`, jogo === 'sprint-review' ? 'a sala toda participa' : `fila 0/${JOGOS[jogo].min}`, cor);
       p.position.set(x, 3.4, z);
       this.grupo.add(anel, luz, p);
       this.portais.push({ jogo, anel, luz, placa: p, texto: '' });
@@ -78,7 +78,7 @@ export class Portais {
   filas(f: Partial<Record<IdJogo, string[]>>, emPartida: IdJogo | null): void {
     for (const p of this.portais) {
       const n = f[p.jogo]?.length ?? 0;
-      const texto = emPartida ? 'em partida' : `fila ${n}/${JOGOS[p.jogo].min}${n >= JOGOS[p.jogo].min ? ' ✓' : ''}`;
+      const texto = emPartida ? 'em partida' : p.jogo === 'sprint-review' ? 'a sala toda participa' : `fila ${n}/${JOGOS[p.jogo].min}${n >= JOGOS[p.jogo].min ? ' ✓' : ''}`;
       if (texto !== p.texto) {
         p.texto = texto;
         desenharPlaca(p.placa, `${ICONE[p.jogo]} ${JOGOS[p.jogo].nome}`, texto, COR[p.jogo]);
@@ -90,10 +90,12 @@ export class Portais {
     this.zona.visible = emPartida === 'rei-da-colina';
   }
 
-  animar(t: number): void {
+  animar(t: number, camera: THREE.Vector3): void {
     for (const p of this.portais) {
       (p.luz.material as THREE.MeshBasicMaterial).opacity = 0.1 + Math.sin(t * 2 + p.anel.position.x) * 0.05;
       p.placa.position.y = 3.4 + Math.sin(t * 1.5 + p.anel.position.z) * 0.1;
+      // Placa colada na câmera tapa a tela: some aos poucos quando está a menos de 7 m.
+      p.placa.material.opacity = Math.min(1, Math.max(0, (p.placa.position.distanceTo(camera) - 3) / 4));
     }
     (this.zona.material as THREE.MeshBasicMaterial).opacity = 0.25 + Math.sin(t * 3) * 0.1;
   }

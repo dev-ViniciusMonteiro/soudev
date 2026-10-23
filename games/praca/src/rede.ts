@@ -1,7 +1,7 @@
 // Conexão com o backend (Cloudflare): perfil de convidado, ranking, pedir sala, entrar por WebSocket
 // e reconectar se a internet piscar.
 
-import type { IdJogo, MsgCliente, MsgServidor, Perfil, Pose, RespostaNovoPerfil, RespostaRanking, RespostaSala, Skin } from './protocolo';
+import type { AcaoRetro, IdJogo, MsgCliente, MsgServidor, Perfil, Pose, RespostaNovoPerfil, RespostaRanking, RespostaSala, Skin } from './protocolo';
 
 /** Endereço do backend: o publicado na Cloudflare; em desenvolvimento, o local do wrangler (npm run dev no backend-soudev). */
 export const BACKEND = (import.meta.env.VITE_BACKEND_URL as string | undefined) ?? (import.meta.env.DEV ? 'http://localhost:8787' : 'https://backend-soudev.backend-soudev.workers.dev');
@@ -129,6 +129,27 @@ export class Rede {
 
   emote(e: (MsgCliente & { k: 'emote' })['e']): void {
     this.mandar({ k: 'emote', e });
+  }
+
+  entrarCarro(c: number): void {
+    this.mandar({ k: 'carro', c });
+  }
+
+  sairCarro(): void {
+    this.mandar({ k: 'sairCarro' });
+  }
+
+  /** Sprint Review: levanta (ou troca o texto da) placa. */
+  placa(t: string): void {
+    this.mandar({ k: 'placa', t });
+  }
+
+  retro(a: AcaoRetro): void {
+    this.mandar({ k: 'retro', a });
+  }
+
+  voto(r: string): void {
+    this.mandar({ k: 'voto', r });
   }
 
   iniciar(jogo: IdJogo): void {

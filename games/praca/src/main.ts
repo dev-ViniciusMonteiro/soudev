@@ -4,8 +4,11 @@
 import './estilo.css';
 import * as THREE from 'three';
 import { APARENCIA_PADRAO, type Aparencia, Boneco, CABELOS, CHAPEUS, CORES, PELES, escreverSkin, lerSkin } from './boneco';
+import { Carros } from './carros';
 import { Controles } from './controles';
+import { Halloween } from './halloween';
 import { criarMundo, resolverColisao } from './mundo';
+import { SprintUI } from './sprint';
 import { COR_JOGO, ICONE_JOGO, Portais, marca } from './portais';
 import { Anim, CONQUISTAS, EMOTES, type Emote, ENVIOS_POR_SEGUNDO, type EstadoPartida, ITENS, type IdJogo, type InfoSala, JOGOS, type Jogador, type LinhaResultado, type MotivoErro, type MsgServidor, type Perfil, type Pose, RAIO_PORTAL, VISAO_BUSCADOR, itensBloqueados, xpDoNivel } from './protocolo';
 import { Rede, atualizarPerfil, criarPerfil, meuPerfil, online, pedirRanking, pedirSala } from './rede';
@@ -53,7 +56,8 @@ const faixa = el('div', { cls: 'faixa-partida', hidden: true }); // jogo, fase e
 const painelFila = el('div', { cls: 'painel-fila', hidden: true }); // aparece ao pisar num portal
 const breu = el('div', { cls: 'breu', hidden: true }); // quem procura no esconde-esconde, enquanto os outros escondem
 const resultadoEl = el('div', { cls: 'resultado', hidden: true });
-app.append(canvas, breu, hud, faixa, painelFila, aviso, resultadoEl, tela);
+const botaoCarro = el('button', { cls: 'botao-carro', hidden: true }); // "E para dirigir" / "E para sair"
+app.append(canvas, breu, hud, faixa, painelFila, botaoCarro, aviso, resultadoEl, tela);
 
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
@@ -104,6 +108,8 @@ let filas: Partial<Record<IdJogo, string[]>> = {};
 let partida: EstadoPartida | null = null;
 let partidaRecebidaEm = 0;
 const marcas = new Map<string, THREE.Sprite>();
+let carros: Carros | null = null;
+let halloween: Halloween | null = null;
 
 /* ---------- Mundo ---------- */
 
@@ -114,6 +120,8 @@ const carregando = criarMundo().then((m) => {
   m.cena.add(telao.grupo);
   m.colisao.push({ x: 0, z: -19.7, mx: 3.3, mz: 0.35 });
   m.cena.add(portais.grupo);
+  carros = new Carros(m.cena, m.modelosCarro);
+  halloween = new Halloween(m);
   return m;
 });
 
@@ -161,6 +169,9 @@ function limparSala(): void {
   remotos.clear();
   filas = {};
   definirPartida(null);
+  sprint.fechar();
+  if (carros?.meu) carros.receber([[carros.meu.id, carros.meu.x, carros.meu.z, carros.meu.rot, '']], perfil?.id);
+  eu.boneco.mostrarCorpo(true);
 }
 
 function adicionarRemoto(j: Jogador): void {
@@ -170,6 +181,8 @@ function adicionarRemoto(j: Jogador): void {
   boneco.grupo.position.set(x, y, z);
   boneco.grupo.rotation.y = r;
   mundo.cena.add(boneco.grupo);
+  // Chegou no meio do Sprint Review: entra fantasiado.
+  boneco.fantasia(Boolean(sprint.estado));
   remotos.set(j.id, { j, boneco, alvo: new THREE.Vector3(x, y, z), rotAlvo: r, anim: a, vel: 0, antes: new THREE.Vector3(x, y, z), visto: performance.now() });
 }
 
@@ -237,7 +250,29 @@ function receber(m: MsgServidor): void {
       else mostrarAviso(m.para === perfil?.id ? '🔥 Você está pegando! Encoste em alguém.' : `${nomeDe(m.de)} pegou ${nomeDe(m.para)}!`);
       break;
     }
+    case 'carros': {
+      const dirigia = carros?.meu ?? null;
+      carros?.receber(m.l, perfil?.id);
+      if (carros?.meu && !dirigia) {
+        eu.boneco.mostrarCorpo(false);
+        controles.yaw = carros.meu.rot + Math.PI;
+        mostrarAviso('🚗 Dirigindo! W/S acelera e freia, A/D vira, Shift turbo, E para sair.');
+      } else if (!carros?.meu && dirigia) {
+        // Desce ao lado da porta.
+        eu.pos.copy(carros!.ladoDaPorta(dirigia));
+        eu.boneco.mostrarCorpo(true);
+      }
+      break;
+    }
+    case 'retro':
+      definirRetro(m.r);
+      break;
     case 'resultado':
+      if (m.jogo === 'sprint-review') {
+        sprint.resultado(m.l);
+        void meuPerfil().then((p) => p && usarPerfil(p));
+        break;
+      }
       mostrarResultado(m.jogo, m.l, m.conquistas[perfil?.id ?? ''] ?? []);
       break;
     case 'emote':
@@ -350,7 +385,7 @@ function desenharFaixa(): void {
 let portalAtual: IdJogo | null = null;
 function atualizarPainelFila(): void {
   let aqui: IdJogo | null = null;
-  if (estado === 'jogo' && !partida) for (const jogo of Object.keys(JOGOS) as IdJogo[]) if (Math.hypot(eu.pos.x - JOGOS[jogo].portal[0], eu.pos.z - JOGOS[jogo].portal[1]) <= RAIO_PORTAL) aqui = jogo;
+  if (estado === 'jogo' && !partida && !sprint.estado && !carros?.meu) for (const jogo of Object.keys(JOGOS) as IdJogo[]) if (Math.hypot(eu.pos.x - JOGOS[jogo].portal[0], eu.pos.z - JOGOS[jogo].portal[1]) <= RAIO_PORTAL) aqui = jogo;
   const fila = aqui ? filas[aqui] ?? [] : [];
   const chave = aqui ? `${aqui}:${fila.join(',')}` : '';
   if (chave === painelFila.dataset.chave) return;
@@ -593,6 +628,60 @@ function menu(erro?: string): void {
   tela.hidden = false;
 }
 
+/* ---------- Sprint Review ---------- */
+
+const sprint = new SprintUI({
+  el,
+  rede: () => rede,
+  euId: () => perfil?.id ?? '',
+  nome: (id) => (id === perfil?.id ? `${nome} (você)` : remotos.get(id)?.j.nome ?? '?'),
+  distCentro: () => Math.hypot(eu.pos.x, eu.pos.z),
+  aviso: (t) => mostrarAviso(t),
+});
+app.append(sprint.painel, sprint.relatorio);
+// Fechou o relatório: a praça volta ao normal.
+sprint.aoFechar = () => aplicarTemaRetro(null);
+
+/** Tema de Halloween e placas nas mãos conforme o estado do Sprint Review. */
+function aplicarTemaRetro(r: import('./protocolo').EstadoRetro | null): void {
+  const ligado = Boolean(r);
+  halloween?.ligar(ligado);
+  eu.boneco.fantasia(ligado);
+  for (const x of remotos.values()) x.boneco.fantasia(ligado);
+  const placas = r?.fase === 'pergunta' ? r.placas : {};
+  eu.boneco.segurarPlaca(placas[perfil?.id ?? ''] ?? null);
+  for (const [id, x] of remotos) x.boneco.segurarPlaca(placas[id] ?? null);
+}
+
+function definirRetro(r: import('./protocolo').EstadoRetro | null): void {
+  const antes = sprint.estado;
+  sprint.atualizar(r);
+  if (r && !antes) mostrarAviso('🎃 Sprint Review começou! A praça virou Halloween. Todos ao chafariz.', 4000);
+  // O relatório final fica aberto (com o tema) até a pessoa fechar.
+  if (r || !sprint.aberto) aplicarTemaRetro(r);
+  desenharFaixa();
+}
+
+/* ---------- Carros ---------- */
+
+function alternarCarro(): void {
+  if (!rede || !carros || estado !== 'jogo') return;
+  if (carros.meu) {
+    rede.sairCarro();
+    return;
+  }
+  if (souParticipante()) {
+    mostrarAviso('Durante a partida não dá para pegar carro.');
+    return;
+  }
+  const c = carros.livrePerto(eu.pos.x, eu.pos.z, 3.8);
+  if (c) rede.entrarCarro(c.id);
+}
+botaoCarro.onclick = alternarCarro;
+addEventListener('keydown', (e) => {
+  if ((e.key === 'e' || e.key === 'E') && !(e.target instanceof HTMLInputElement)) alternarCarro();
+});
+
 function entrarNoJogo(): void {
   estado = 'jogo';
   tela.hidden = true;
@@ -674,6 +763,7 @@ const CORRER = 7.5;
 const GRAVIDADE = 28;
 const PULO = 9.5;
 let ultimaFaixa = 0;
+let vistaFixa: THREE.Vector3 | null = null;
 
 function anguloPerto(de: number, para: number, k: number): number {
   let d = (para - de) % (Math.PI * 2);
@@ -688,7 +778,33 @@ function quadro(): void {
   if (!mundo) return;
   const t = relogio.elapsedTime;
 
-  if (estado === 'jogo') {
+  if (estado === 'jogo' && carros?.meu) {
+    // Dirigindo: frente/trás acelera e freia, lados viram; Shift é turbo. O boneco vai junto, escondido.
+    controles.ler();
+    const c = carros.meu;
+    carros.dirigir(dt, controles.mover.y, controles.mover.x, controles.correr, [...mundo.colisao, ...carros.caixas(c)]);
+    controles.pegarPulo();
+    eu.pos.set(c.x, 0, c.z);
+    eu.rot = c.rot;
+    eu.anim = Anim.Dirigindo;
+    eu.boneco.grupo.position.copy(eu.pos);
+    eu.boneco.grupo.rotation.y = eu.rot;
+    if (rede && t - ultimoEnvio >= 1 / ENVIOS_POR_SEGUNDO) {
+      const p: Pose = [c.x, 0, c.z, c.rot, Anim.Dirigindo];
+      const chave = p.map((v) => Math.round(v * 50)).join(',');
+      if (chave !== ultimaPoseEnviada) {
+        rede.pose(p);
+        ultimaPoseEnviada = chave;
+        ultimoEnvio = t;
+      }
+    }
+    // Câmera atrás do carro, mais longe e mais alta.
+    controles.yaw = anguloPerto(controles.yaw, c.rot + Math.PI, 1 - Math.exp(-dt * 3));
+    const alvo = new THREE.Vector3(c.x, 1.6, c.z);
+    const d = controles.distancia + 4;
+    camera.position.lerp(new THREE.Vector3(c.x + Math.sin(controles.yaw) * d, 4.5, c.z + Math.cos(controles.yaw) * d), 1 - Math.exp(-dt * 8));
+    camera.lookAt(alvo);
+  } else if (estado === 'jogo') {
     controles.ler();
     // Andar no referencial da câmera.
     const fx = -Math.sin(controles.yaw);
@@ -706,7 +822,7 @@ function quadro(): void {
     eu.vy -= GRAVIDADE * dt;
     eu.pos.y = Math.max(0, eu.pos.y + eu.vy * dt);
     if (eu.pos.y === 0) eu.vy = Math.max(0, eu.vy);
-    resolverColisao(eu.pos, 0.35, mundo.colisao);
+    resolverColisao(eu.pos, 0.35, carros ? [...mundo.colisao, ...carros.caixas(null)] : mundo.colisao);
     eu.anim = eu.pos.y > 0.05 ? Anim.NoAr : quanto > 0.05 ? (controles.correr ? Anim.Correndo : Anim.Andando) : Anim.Parado;
     eu.boneco.grupo.position.copy(eu.pos);
     eu.boneco.grupo.rotation.y = eu.rot;
@@ -753,13 +869,32 @@ function quadro(): void {
     const escondido = souBuscador() && partida?.fase === 'jogando' && !partida.achados?.includes(r.j.id) && partida.participantes.includes(r.j.id) && performance.now() - r.visto > 600;
     g.visible = !escondido;
     r.boneco.mostrarNome(!(souBuscador() && partida?.fase === 'jogando'));
+    r.boneco.mostrarCorpo(r.anim !== Anim.Dirigindo);
   }
 
-  portais.animar(t);
+  // Carros: o meu já andou na física; os outros seguem a pose (interpolada) de quem dirige.
+  carros?.animar((id) => {
+    const r = remotos.get(id);
+    return r ? { x: r.boneco.grupo.position.x, z: r.boneco.grupo.position.z, rot: r.boneco.grupo.rotation.y } : null;
+  });
+  halloween?.animar(t);
+  sprint.tick();
+  // Botão de carro: perto de um carro livre ou dirigindo.
+  const perto = estado === 'jogo' && carros && !carros.meu && !souParticipante() ? carros.livrePerto(eu.pos.x, eu.pos.z, 3.8) : null;
+  botaoCarro.hidden = !(carros?.meu || perto);
+  botaoCarro.textContent = carros?.meu ? '🚶 Sair do carro (E)' : '🚗 Dirigir (E)';
+
+  portais.animar(t, camera.position);
   if (t - ultimaFaixa > 0.2) {
     ultimaFaixa = t;
     desenharFaixa();
     atualizarPainelFila();
+  }
+
+  // Teste (só em desenvolvimento): câmera parada lá em cima para ver o mapa.
+  if (vistaFixa) {
+    camera.position.copy(vistaFixa);
+    camera.lookAt(0, 0, 0);
   }
 
   // Sombra acompanha o jogador (mapa de sombra menor = mais nítido).
@@ -769,7 +904,17 @@ function quadro(): void {
 }
 
 // Só em desenvolvimento (npm run dev do jogo): atalho para os testes no navegador levarem o boneco a um lugar.
-if (import.meta.env.DEV) Object.assign(window, { __praca: { teleportar: (x: number, z: number) => eu.pos.set(x, 0, z) } });
+if (import.meta.env.DEV)
+  Object.assign(window, {
+    __praca: {
+      teleportar: (x: number, z: number) => eu.pos.set(x, 0, z),
+      // Vista de cima para conferir o mapa nos testes.
+      vistaAerea: (altura: number) => {
+        tela.hidden = true;
+        vistaFixa = new THREE.Vector3(0, altura, altura * 0.35);
+      },
+    },
+  });
 
 menu();
 requestAnimationFrame(quadro);

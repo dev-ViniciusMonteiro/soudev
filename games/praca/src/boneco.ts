@@ -87,6 +87,8 @@ export class Boneco {
   private fase = 0;
   private emoteAtual: { e: Emote; t: number } | null = null;
   private placa: THREE.Sprite | null = null;
+  private placaMao: THREE.Group | null = null; // Sprint Review: placa levantada na mão direita
+  private bruxa: THREE.Group | null = null; // chapéu de bruxa do tema de Halloween
 
   constructor(nome: string | null, skin: string) {
     const { pele, camisa, calca, sapato } = this.mats;
@@ -170,6 +172,94 @@ export class Boneco {
     }
   }
 
+  /** Esconde o corpo (dirigindo, o boneco "está dentro" do carro; o nome continua aparecendo). */
+  mostrarCorpo(v: boolean): void {
+    this.corpo.visible = v;
+  }
+
+  /** Levanta (texto) ou baixa (null) a placa na mão, com a resposta escrita. Os outros leem de qualquer ângulo. */
+  segurarPlaca(texto: string | null): void {
+    if (this.placaMao?.userData.texto === texto) return;
+    if (this.placaMao) {
+      this.placaMao.removeFromParent();
+      this.placaMao.traverse((o) => {
+        if (o instanceof THREE.Sprite) {
+          o.material.map?.dispose();
+          o.material.dispose();
+        }
+      });
+      this.placaMao = null;
+    }
+    if (!texto) return;
+    const g = new THREE.Group();
+    g.userData.texto = texto;
+    const cabo = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.6, 0.05), mat('#78350f'));
+    cabo.position.y = -0.85;
+    // Placa: papel claro com borda laranja, texto quebrado em até 3 linhas.
+    const c = document.createElement('canvas');
+    c.width = 512;
+    c.height = 256;
+    const x = c.getContext('2d')!;
+    x.fillStyle = '#fff7ed';
+    x.fillRect(0, 0, 512, 256);
+    x.strokeStyle = '#f97316';
+    x.lineWidth = 14;
+    x.strokeRect(7, 7, 498, 242);
+    x.fillStyle = '#1c1917';
+    x.textAlign = 'center';
+    x.textBaseline = 'middle';
+    let tam = 64;
+    const linhas = (): string[] => {
+      x.font = `800 ${tam}px system-ui, sans-serif`;
+      const res: string[] = [];
+      let linha = '';
+      for (const p of texto.split(' ')) {
+        const tentativa = linha ? `${linha} ${p}` : p;
+        if (x.measureText(tentativa).width > 460 && linha) {
+          res.push(linha);
+          linha = p;
+        } else linha = tentativa;
+      }
+      res.push(linha);
+      return res;
+    };
+    let l = linhas();
+    while ((l.length > 3 || l.some((s) => x.measureText(s).width > 470)) && tam > 26) {
+      tam -= 6;
+      l = linhas();
+    }
+    l.forEach((s, i) => x.fillText(s, 256, 128 + (i - (l.length - 1) / 2) * tam * 1.1));
+    const quadro = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), depthTest: true }));
+    quadro.scale.set(2.4, 1.2, 1);
+    quadro.position.y = -1.6;
+    g.add(cabo, quadro);
+    this.bracoD.add(g);
+    this.placaMao = g;
+  }
+
+  /** Tema de Halloween: chapéu de bruxa por cima de tudo. */
+  fantasia(ligar: boolean): void {
+    if (ligar === Boolean(this.bruxa)) return;
+    if (this.bruxa) {
+      this.bruxa.removeFromParent();
+      this.bruxa = null;
+      return;
+    }
+    const g = new THREE.Group();
+    const roxo = mat('#4c1d95');
+    const aba = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.42, 0.04, 10), roxo);
+    aba.position.y = 0.45;
+    const cone = new THREE.Mesh(new THREE.ConeGeometry(0.24, 0.6, 10), roxo);
+    cone.position.set(0, 0.76, -0.04);
+    cone.rotation.x = -0.25;
+    const faixa = new THREE.Mesh(new THREE.CylinderGeometry(0.245, 0.25, 0.07, 10), mat('#f97316'));
+    faixa.position.y = 0.5;
+    for (const m of [aba, cone, faixa]) m.castShadow = true;
+    g.add(aba, cone, faixa);
+    this.cabeca.add(g);
+    this.bruxa = g;
+  }
+
   /** Esconde a placa do nome (ex.: quem procura no esconde-esconde não vê nomes de longe). */
   mostrarNome(v: boolean): void {
     if (this.placa) this.placa.visible = v;
@@ -225,6 +315,12 @@ export class Boneco {
       alvo.y = Math.sin(this.fase * 0.3) * 0.01;
       alvo.bEz = -0.06;
       alvo.bDz = 0.06;
+    }
+
+    // Placa levantada: braço direito esticado para cima, segurando o cabo.
+    if (this.placaMao) {
+      alvo.bD = 0;
+      alvo.bDz = Math.PI - 0.15;
     }
 
     const k = 1 - Math.exp(-dt * 14);
