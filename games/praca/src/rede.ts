@@ -1,38 +1,77 @@
-// Conexão com o backend (Cloudflare): pedir sala, entrar por WebSocket e reconectar se a internet piscar.
+// Conexão com o backend (Cloudflare): perfil de convidado, ranking, pedir sala, entrar por WebSocket
+// e reconectar se a internet piscar.
 
-import type { MsgCliente, MsgServidor, Pose, RespostaSala, Skin } from './protocolo';
+import type { MsgCliente, MsgServidor, Perfil, Pose, RespostaNovoPerfil, RespostaRanking, RespostaSala, Skin } from './protocolo';
 
 /** Endereço do backend: o publicado na Cloudflare; em desenvolvimento, o local do wrangler (npm run dev no backend-soudev). */
 export const BACKEND = (import.meta.env.VITE_BACKEND_URL as string | undefined) ?? (import.meta.env.DEV ? 'http://localhost:8787' : 'https://backend-soudev.backend-soudev.workers.dev');
 
-export async function pedirSala(publica: boolean): Promise<string> {
-  const r = await fetch(`${BACKEND}/${publica ? 'jogar' : 'salas'}`, { method: 'POST' });
-  if (!r.ok) throw new Error(`O servidor respondeu ${r.status}`);
-  return ((await r.json()) as RespostaSala).codigo;
-}
+/* ---------- Token do perfil (segredo deste aparelho) ---------- */
 
-export async function online(): Promise<{ salas: number; jogadores: number } | null> {
+const CHAVE_TOKEN = 'praca.token';
+
+function lerToken(): string | null {
   try {
-    const r = await fetch(`${BACKEND}/online`);
-    return r.ok ? await r.json() : null;
+    return localStorage.getItem(CHAVE_TOKEN);
   } catch {
     return null;
   }
 }
 
-/** Id do jogador convidado: criado uma vez e guardado no navegador. */
-export function meuId(): string {
+function guardarToken(t: string): void {
   try {
-    let id = localStorage.getItem('praca.id');
-    if (!id) {
-      id = crypto.randomUUID();
-      localStorage.setItem('praca.id', id);
-    }
-    return id;
+    localStorage.setItem(CHAVE_TOKEN, t);
   } catch {
-    return crypto.randomUUID();
+    /* sem armazenamento: o perfil dura só esta visita */
   }
 }
+
+let token = lerToken();
+export const temToken = (): boolean => Boolean(token);
+
+async function api<T>(caminho: string, opcoes: { metodo?: string; dados?: unknown } = {}): Promise<T> {
+  const h: Record<string, string> = {};
+  if (token) h.Authorization = `Bearer ${token}`;
+  if (opcoes.dados) h['Content-Type'] = 'application/json';
+  const r = await fetch(`${BACKEND}${caminho}`, { method: opcoes.metodo ?? 'GET', headers: h, body: opcoes.dados ? JSON.stringify(opcoes.dados) : undefined });
+  const d = (await r.json().catch(() => ({}))) as T & { erro?: string };
+  if (!r.ok) throw Object.assign(new Error(d.erro ?? `O servidor respondeu ${r.status}`), { status: r.status });
+  return d;
+}
+
+/** Perfil deste aparelho (null se ainda não criou ou se o token não vale mais). */
+export async function meuPerfil(): Promise<Perfil | null> {
+  if (!token) return null;
+  try {
+    return await api<Perfil>('/perfil');
+  } catch (e) {
+    if ((e as { status?: number }).status === 401) token = null;
+    return null;
+  }
+}
+
+export async function criarPerfil(apelido: string, skin: Skin): Promise<Perfil> {
+  const r = await api<RespostaNovoPerfil>('/perfil', { metodo: 'POST', dados: { apelido, skin } });
+  token = r.token;
+  guardarToken(r.token);
+  return r.perfil;
+}
+
+export const atualizarPerfil = (dados: { apelido?: string; skin?: Skin }): Promise<Perfil> => api<Perfil>('/perfil', { metodo: 'PATCH', dados });
+
+export const pedirRanking = (por: string): Promise<RespostaRanking> => api<RespostaRanking>(`/ranking?por=${encodeURIComponent(por)}`);
+
+export const pedirSala = async (publica: boolean): Promise<string> => (await api<RespostaSala>(publica ? '/jogar' : '/salas', { metodo: 'POST' })).codigo;
+
+export async function online(): Promise<{ salas: number; jogadores: number } | null> {
+  try {
+    return await api('/online');
+  } catch {
+    return null;
+  }
+}
+
+/* ---------- Sala ---------- */
 
 type Ouvinte = (m: MsgServidor) => void;
 
@@ -44,20 +83,14 @@ export class Rede {
   /** Avisos de estado: 'conectando' | 'conectado' | 'reconectando' | 'caiu'. */
   aoEstado: (estado: 'conectando' | 'conectado' | 'reconectando' | 'caiu') => void = () => {};
 
-  constructor(
-    readonly codigo: string,
-    private nome: string,
-    private skin: Skin,
-  ) {
+  constructor(readonly codigo: string) {
     this.abrir();
   }
 
   private abrir(): void {
     this.aoEstado(this.tentativas ? 'reconectando' : 'conectando');
     const url = new URL(`${BACKEND.replace(/^http/, 'ws')}/sala/${this.codigo}`);
-    url.searchParams.set('id', meuId());
-    url.searchParams.set('nome', this.nome);
-    url.searchParams.set('skin', this.skin);
+    url.searchParams.set('token', token ?? '');
     const ws = new WebSocket(url);
     this.ws = ws;
     ws.onopen = () => {
@@ -72,7 +105,7 @@ export class Rede {
         return;
       }
       // Sala cheia, código inválido ou aberta em outra aba: não adianta reconectar.
-      if (m.k === 'erro') this.encerrada = true;
+      if (m.k === 'erro' && m.motivo !== 'bloqueado') this.encerrada = true;
       this.aoReceber(m);
     };
     ws.onclose = () => {
@@ -99,7 +132,6 @@ export class Rede {
   }
 
   trocarSkin(s: Skin): void {
-    this.skin = s;
     this.mandar({ k: 'skin', s });
   }
 

@@ -1,13 +1,14 @@
 // Praça online: cada pessoa vira um boneco numa praça 3D e vê os outros (até 12 por sala) andando em tempo real.
-// O servidor das salas fica no backend-soudev (Cloudflare Durable Objects).
+// O servidor das salas e os perfis (nível, moedas, itens, ranking) ficam no backend-soudev (Cloudflare).
 
 import './estilo.css';
 import * as THREE from 'three';
 import { APARENCIA_PADRAO, type Aparencia, Boneco, CABELOS, CHAPEUS, CORES, PELES, escreverSkin, lerSkin } from './boneco';
 import { Controles } from './controles';
 import { criarMundo, resolverColisao } from './mundo';
-import { Anim, EMOTES, type Emote, ENVIOS_POR_SEGUNDO, type InfoSala, type Jogador, type MotivoErro, type MsgServidor, type Pose } from './protocolo';
-import { Rede, meuId, online, pedirSala } from './rede';
+import { Anim, CONQUISTAS, EMOTES, type Emote, ENVIOS_POR_SEGUNDO, ITENS, type InfoSala, type Jogador, type MotivoErro, type MsgServidor, type Perfil, type Pose, itensBloqueados, xpDoNivel } from './protocolo';
+import { Rede, atualizarPerfil, criarPerfil, meuPerfil, online, pedirRanking, pedirSala } from './rede';
+import { Telao } from './telao';
 
 /* ---------- Utilidades de tela ---------- */
 
@@ -38,6 +39,7 @@ function guardar(chave: string, v: unknown): void {
 }
 
 const NOME_EMOTE: Record<Emote, string> = { acenar: '👋', dancar: '🕺', comemorar: '🎉', joinha: '👍' };
+const rotulo = (nome: string, nivel: number): string => `${nome} · Nv ${nivel}`;
 
 /* ---------- Cena ---------- */
 
@@ -67,6 +69,7 @@ controles.ativo = false;
 
 let aparencia: Aparencia = { ...APARENCIA_PADRAO, ...lerSkin(ler('praca.skin', escreverSkin(APARENCIA_PADRAO))) };
 let nome: string = ler('praca.nome', '');
+let perfil: Perfil | null = null;
 
 /* ---------- Estado ---------- */
 
@@ -89,14 +92,45 @@ const remotos = new Map<string, Remoto>();
 const eu = { pos: new THREE.Vector3(0, 0, 9), vy: 0, rot: Math.PI, anim: Anim.Parado as Anim, boneco: new Boneco(null, escreverSkin(aparencia)) };
 let ultimoEnvio = 0;
 let ultimaPoseEnviada = '';
+const telao = new Telao();
 
 /* ---------- Mundo ---------- */
 
 const carregando = criarMundo().then((m) => {
   mundo = m;
   m.cena.add(eu.boneco.grupo);
+  telao.grupo.position.set(0, 0, -19.5);
+  m.cena.add(telao.grupo);
+  m.colisao.push({ x: 0, z: -19.7, mx: 3.3, mz: 0.35 });
   return m;
 });
+
+async function atualizarTelao(): Promise<void> {
+  try {
+    telao.desenhar(await pedirRanking('nivel'));
+  } catch {
+    /* sem rede: fica o último */
+  }
+}
+void atualizarTelao();
+setInterval(() => void atualizarTelao(), 60000);
+
+// Perfil salvo neste aparelho (se já jogou antes): traz apelido e aparência do servidor.
+const carregandoPerfil = meuPerfil().then((p) => {
+  if (p) usarPerfil(p);
+  return p;
+});
+
+function usarPerfil(p: Perfil): void {
+  perfil = p;
+  nome = p.apelido;
+  guardar('praca.nome', nome);
+  if (p.skin) {
+    aparencia = { ...APARENCIA_PADRAO, ...lerSkin(p.skin) };
+    guardar('praca.skin', escreverSkin(aparencia));
+    eu.boneco.aplicarSkin(p.skin);
+  }
+}
 
 /* ---------- Rede ---------- */
 
@@ -116,8 +150,8 @@ function limparSala(): void {
 }
 
 function adicionarRemoto(j: Jogador): void {
-  if (!mundo || j.id === meuId() || remotos.has(j.id)) return;
-  const boneco = new Boneco(j.nome, j.skin);
+  if (!mundo || j.id === perfil?.id || remotos.has(j.id)) return;
+  const boneco = new Boneco(rotulo(j.nome, j.nivel), j.skin);
   const [x, y, z, r, a] = j.pose;
   boneco.grupo.position.set(x, y, z);
   boneco.grupo.rotation.y = r;
@@ -130,6 +164,7 @@ const MENSAGEM_ERRO: Record<MotivoErro, string> = {
   fechada: 'Essa sala está no meio de uma partida. Tente daqui a pouco.',
   invalida: 'Não deu para entrar nessa sala.',
   duplicado: 'Você abriu a praça em outra aba ou aparelho. Esta aqui foi desconectada.',
+  bloqueado: 'Esse item ainda está bloqueado para você.',
 };
 
 function receber(m: MsgServidor): void {
@@ -186,6 +221,12 @@ function receber(m: MsgServidor): void {
       break;
     }
     case 'erro':
+      // Item bloqueado não derruba a conexão: só avisa e volta a aparência salva.
+      if (m.motivo === 'bloqueado') {
+        mostrarAviso(MENSAGEM_ERRO.bloqueado);
+        if (perfil) eu.boneco.aplicarSkin(perfil.skin);
+        return;
+      }
       // Sala pública lotou entre o "Jogar" e a conexão: pede outra.
       if (m.motivo === 'cheia' && publicaPedida && tentativasCheia++ < 3) {
         limparSala();
@@ -198,14 +239,22 @@ function receber(m: MsgServidor): void {
   }
 }
 
+/** Garante o perfil (cria no primeiro acesso) e acerta o apelido se mudou no menu. */
+async function garantirPerfil(): Promise<void> {
+  await carregandoPerfil;
+  if (!perfil) usarPerfil(await criarPerfil(nome, escreverSkin(aparencia)));
+  else if (perfil.apelido !== nome) usarPerfil(await atualizarPerfil({ apelido: nome }));
+}
+
 async function conectar(publica: boolean, codigo?: string): Promise<void> {
   publicaPedida = publica && !codigo;
   tela.replaceChildren(el('div', { cls: 'caixa centro' }, el('p', { textContent: 'Entrando na praça…' })));
   try {
     await carregando;
+    await garantirPerfil();
     const cod = codigo ?? (await pedirSala(publica));
     limparSala();
-    rede = new Rede(cod, nome, escreverSkin(aparencia));
+    rede = new Rede(cod);
     rede.aoReceber = receber;
     rede.aoEstado = (e) => {
       if (e === 'reconectando') mostrarAviso('Conexão caiu, reconectando…', 5000);
@@ -216,42 +265,106 @@ async function conectar(publica: boolean, codigo?: string): Promise<void> {
     };
   } catch (e) {
     console.warn(e);
-    menu('Não consegui falar com o servidor. Confira a internet e tente de novo.');
+    menu(e instanceof Error && e.message && !/fetch/i.test(e.message) ? e.message : 'Não consegui falar com o servidor. Confira a internet e tente de novo.');
   }
 }
 
-/* ---------- Telas ---------- */
+/* ---------- Perfil, ranking e aparência ---------- */
 
-function editorAparencia(aoMudar: () => void): HTMLElement {
+/** Por que um item está bloqueado ("Nível 5", "Conquista: Rei da colina") ou null se pode usar. */
+function motivoBloqueio(a: Aparencia): string | null {
+  const nivel = perfil?.nivel ?? 1;
+  const b = itensBloqueados(escreverSkin(a), nivel, perfil?.itens ?? [])[0];
+  if (!b) return null;
+  const it = ITENS.find((i) => i.id === b)!;
+  return it.nivel ? `Nível ${it.nivel}` : `Conquista: ${CONQUISTAS.find((c) => c.id === it.conquista)?.nome ?? it.conquista}`;
+}
+
+function cartaoPerfil(): HTMLElement | null {
+  if (!perfil) return null;
+  const base = xpDoNivel(perfil.nivel);
+  const prox = xpDoNivel(perfil.nivel + 1);
+  const barra = el('div', { cls: 'barra-xp' }, el('span'));
+  (barra.firstElementChild as HTMLElement).style.width = `${Math.round(((perfil.xp - base) / (prox - base)) * 100)}%`;
+  return el(
+    'div',
+    { cls: 'perfil' },
+    el('div', { cls: 'perfil-linha' }, el('strong', { textContent: `Nível ${perfil.nivel}` }), el('span', { textContent: `🪙 ${perfil.moedas.toLocaleString('pt-BR')}` })),
+    barra,
+    el('small', { textContent: `${perfil.xp - base} / ${prox - base} XP para o nível ${perfil.nivel + 1} · ${perfil.conquistas.length} conquista(s)` }),
+  );
+}
+
+function painelRanking(): HTMLElement {
+  const caixa = el('div', { cls: 'ranking' });
+  const lista = el('ol', { cls: 'ranking-lista' });
+  const abas: [string, string][] = [
+    ['nivel', 'Nível'],
+    ['moedas', 'Moedas'],
+  ];
+  const mostrar = async (por: string): Promise<void> => {
+    botoes.forEach((b) => b.classList.toggle('ativa', b.dataset.por === por));
+    lista.replaceChildren(el('li', { textContent: 'Carregando…' }));
+    try {
+      const r = await pedirRanking(por);
+      const linha = (l: (typeof r.lista)[number], minha = false) => el('li', { cls: minha ? 'eu' : '' }, el('span', { textContent: `${l.posicao}º` }), el('span', { textContent: l.apelido }), el('strong', { textContent: por === 'moedas' ? `🪙 ${l.valor.toLocaleString('pt-BR')}` : `Nv ${l.valor}` }));
+      lista.replaceChildren(...r.lista.map((l) => linha(l, l.id === perfil?.id)));
+      if (r.eu && !r.lista.some((l) => l.id === r.eu!.id)) lista.append(el('li', { cls: 'separador', textContent: '…' }), linha(r.eu, true));
+      if (!r.lista.length) lista.replaceChildren(el('li', { textContent: 'Ninguém ainda. Seja o primeiro!' }));
+    } catch {
+      lista.replaceChildren(el('li', { textContent: 'Não deu para carregar o ranking.' }));
+    }
+  };
+  const botoes = abas.map(([por, texto]) => {
+    const b = el('button', { cls: 'opcao', textContent: texto, onclick: () => void mostrar(por) });
+    b.dataset.por = por;
+    return b;
+  });
+  caixa.append(el('div', { cls: 'opcoes' }, ...botoes), lista);
+  void mostrar('nivel');
+  return caixa;
+}
+
+function editorAparencia(): HTMLElement {
   const grupo = (titulo: string, ...itens: HTMLElement[]) => el('div', { cls: 'grupo' }, el('span', { textContent: titulo }), el('div', { cls: 'opcoes' }, ...itens));
   const corBtn = (cor: string, ativa: boolean, fn: () => void) => {
     const b = el('button', { cls: ativa ? 'cor ativa' : 'cor', title: cor, onclick: fn });
     b.style.background = cor;
     return b;
   };
-  const txtBtn = (texto: string, ativa: boolean, fn: () => void) => el('button', { cls: ativa ? 'opcao ativa' : 'opcao', textContent: texto, onclick: fn });
+  // Opções de cabelo, chapéu e óculos podem estar bloqueadas por nível ou conquista.
+  const txtBtn = (texto: string, ativa: boolean, parcial: Partial<Aparencia>) => {
+    const bloqueio = motivoBloqueio({ ...aparencia, ...parcial });
+    const b = el('button', { cls: `opcao${ativa ? ' ativa' : ''}${bloqueio ? ' bloqueada' : ''}`, textContent: bloqueio ? `🔒 ${texto}` : texto, title: bloqueio ?? '', onclick: () => (bloqueio ? mostrarAviso(`${texto}: libera com ${bloqueio}`) : mudar(parcial)) });
+    return b;
+  };
   const mudar = (parcial: Partial<Aparencia>) => {
     aparencia = { ...aparencia, ...parcial };
-    guardar('praca.skin', escreverSkin(aparencia));
-    eu.boneco.aplicarSkin(escreverSkin(aparencia));
-    rede?.trocarSkin(escreverSkin(aparencia));
-    caixa.replaceWith(editorAparencia(aoMudar));
-    aoMudar();
+    const skin = escreverSkin(aparencia);
+    guardar('praca.skin', skin);
+    eu.boneco.aplicarSkin(skin);
+    // Dentro da sala a troca vai pela conexão (o servidor valida e salva); fora, direto no perfil.
+    if (rede) rede.trocarSkin(skin);
+    else if (perfil) void atualizarPerfil({ skin }).then(usarPerfil, (e: Error) => mostrarAviso(e.message));
+    if (perfil) perfil = { ...perfil, skin };
+    caixa.replaceWith(editorAparencia());
   };
   const caixa = el(
     'div',
     { cls: 'aparencia' },
     grupo('Pele', ...PELES.map((c, i) => corBtn(c, aparencia.pele === i, () => mudar({ pele: i })))),
-    grupo('Cabelo', ...CABELOS.map((c) => txtBtn(c, aparencia.cabelo === c, () => mudar({ cabelo: c })))),
+    grupo('Cabelo', ...CABELOS.map((c) => txtBtn(c, aparencia.cabelo === c, { cabelo: c }))),
     grupo('Cor do cabelo', ...['#1c1917', '#3f2a1d', '#92400e', '#facc15', '#e5e7eb', '#ec4899', '#3b82f6'].map((c) => corBtn(c, aparencia.corCabelo === c, () => mudar({ corCabelo: c })))),
     grupo('Camiseta', ...CORES.map((c) => corBtn(c, aparencia.camisa === c, () => mudar({ camisa: c })))),
     grupo('Calça', ...CORES.map((c) => corBtn(c, aparencia.calca === c, () => mudar({ calca: c })))),
     grupo('Tênis', ...CORES.map((c) => corBtn(c, aparencia.sapato === c, () => mudar({ sapato: c })))),
-    grupo('Chapéu', ...CHAPEUS.map((c) => txtBtn(c, aparencia.chapeu === c, () => mudar({ chapeu: c })))),
-    grupo('Óculos', txtBtn('sem', !aparencia.oculos, () => mudar({ oculos: false })), txtBtn('escuros', aparencia.oculos, () => mudar({ oculos: true }))),
+    grupo('Chapéu', ...CHAPEUS.map((c) => txtBtn(c, aparencia.chapeu === c, { chapeu: c }))),
+    grupo('Óculos', txtBtn('sem', !aparencia.oculos, { oculos: false }), txtBtn('escuros', aparencia.oculos, { oculos: true })),
   );
   return caixa;
 }
+
+/* ---------- Telas ---------- */
 
 function menu(erro?: string): void {
   estado = 'menu';
@@ -273,6 +386,13 @@ function menu(erro?: string): void {
     return true;
   };
   const codigoValido = (c: string) => /^[A-HJ-NP-Z2-9]{6}$/.test(c);
+  const slotPerfil = el('div');
+  const desenharPerfil = () => slotPerfil.replaceChildren(...[cartaoPerfil()].filter((x): x is HTMLElement => Boolean(x)));
+  desenharPerfil();
+  void carregandoPerfil.then(() => {
+    desenharPerfil();
+    if (perfil && !campoNome.value) campoNome.value = perfil.apelido;
+  });
   tela.replaceChildren(
     el(
       'div',
@@ -280,6 +400,7 @@ function menu(erro?: string): void {
       el('h1', { textContent: 'Praça' }),
       el('p', { cls: 'sub', textContent: 'Entre, vire um boneco e encontre gente de verdade andando pela praça. Até 12 por sala.' }),
       erro ? el('p', { cls: 'erro-msg', textContent: erro }) : null,
+      slotPerfil,
       el('label', { cls: 'campo' }, el('span', { textContent: 'Apelido' }), campoNome),
       codigoLink && codigoValido(codigoLink)
         ? el('button', { cls: 'btn forte grande', textContent: `Entrar na sala ${codigoLink}`, onclick: () => confirmarNome() && conectar(false, codigoLink) })
@@ -303,8 +424,9 @@ function menu(erro?: string): void {
         }),
       ),
       contador,
-      el('details', { cls: 'personalizar' }, el('summary', { textContent: '🎨 Personalizar boneco' }), editorAparencia(() => {})),
-      el('p', { cls: 'nota', textContent: 'WASD ou setas andam, Shift corre, Espaço pula, 1–4 fazem emotes, arraste para girar a câmera. No celular: joystick na esquerda.' }),
+      el('details', { cls: 'personalizar' }, el('summary', { textContent: '🎨 Personalizar boneco' }), editorAparencia()),
+      el('details', { cls: 'personalizar' }, el('summary', { textContent: '🏆 Ranking' }), painelRanking()),
+      el('p', { cls: 'nota', textContent: 'WASD ou setas andam, Shift corre, Espaço pula, 1–4 fazem emotes, arraste para girar a câmera. No celular: joystick na esquerda. Cada minuto na praça vale 1 XP (até 60 por dia).' }),
     ),
   );
   tela.hidden = false;
@@ -322,13 +444,18 @@ function desenharHud(): void {
   if (!sala) return;
   const convite = `${location.origin}${location.pathname}?sala=${sala.codigo}`;
   const total = remotos.size + 1;
-  const lista = el('div', { cls: 'lista', hidden: true }, el('strong', { textContent: 'Na sala' }), el('span', { textContent: `• ${nome} (você)` }), ...[...remotos.values()].map((r) => el('span', { textContent: `• ${r.j.nome}` })));
-  const painelAparencia = el('div', { cls: 'painel-aparencia', hidden: true }, editorAparencia(() => {}));
+  const lista = el('div', { cls: 'lista', hidden: true }, el('strong', { textContent: 'Na sala' }), el('span', { textContent: `• ${rotulo(nome, perfil?.nivel ?? 1)} (você)` }), ...[...remotos.values()].map((r) => el('span', { textContent: `• ${rotulo(r.j.nome, r.j.nivel)}` })));
+  const painelAparencia = el('div', { cls: 'painel-aparencia', hidden: true }, editorAparencia());
+  const painelRk = el('div', { cls: 'painel-aparencia', hidden: true });
+  const alternar = (p: HTMLElement) => {
+    for (const x of [lista, painelAparencia, painelRk]) if (x !== p) x.hidden = true;
+    p.hidden = !p.hidden;
+  };
   hud.replaceChildren(
     el(
       'div',
       { cls: 'topo' },
-      el('button', { cls: 'chip', textContent: `${sala.publica ? 'Sala pública' : 'Sala privada'} ${sala.codigo} · 👥 ${total}/${sala.max}`, onclick: () => (lista.hidden = !lista.hidden) }),
+      el('button', { cls: 'chip', textContent: `${sala.publica ? 'Sala pública' : 'Sala privada'} ${sala.codigo} · 👥 ${total}/${sala.max}`, onclick: () => alternar(lista) }),
       el('button', {
         cls: 'chip',
         textContent: '🔗 Convidar',
@@ -341,19 +468,31 @@ function desenharHud(): void {
           }
         },
       }),
-      el('button', { cls: 'chip', textContent: '🎨', title: 'Aparência', onclick: () => (painelAparencia.hidden = !painelAparencia.hidden) }),
+      el('button', { cls: 'chip', textContent: '🎨', title: 'Aparência', onclick: () => alternar(painelAparencia) }),
+      el('button', {
+        cls: 'chip',
+        textContent: '🏆',
+        title: 'Ranking',
+        onclick: () => {
+          if (painelRk.hidden) painelRk.replaceChildren(painelRanking());
+          alternar(painelRk);
+        },
+      }),
       el('button', {
         cls: 'chip',
         textContent: 'Sair',
         onclick: () => {
           limparSala();
           history.replaceState(null, '', location.pathname);
+          // Ao sair, o servidor soma o XP de presença: recarrega o perfil para mostrar.
+          setTimeout(() => void meuPerfil().then((p) => p && (usarPerfil(p), menu())), 1500);
           menu();
         },
       }),
     ),
     lista,
     painelAparencia,
+    painelRk,
     el('div', { cls: 'emotes' }, ...EMOTES.map((e, i) => el('button', { cls: 'emote', title: `${e} (${i + 1})`, textContent: NOME_EMOTE[e], onclick: () => fazerEmote(e) }))),
   );
 }
