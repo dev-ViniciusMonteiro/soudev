@@ -4,8 +4,8 @@
 import * as THREE from 'three';
 import { type IdJogo, JOGOS, RAIO_PORTAL, ZONA_REI } from './protocolo';
 
-const COR: Record<IdJogo, string> = { 'pega-pega': '#ef4444', 'rei-da-colina': '#facc15', 'esconde-esconde': '#8b5cf6', 'sprint-review': '#f97316' };
-const ICONE: Record<IdJogo, string> = { 'pega-pega': '🏃', 'rei-da-colina': '👑', 'esconde-esconde': '🙈', 'sprint-review': '🎃' };
+const COR: Record<IdJogo, string> = { 'pega-pega': '#ef4444', 'rei-da-colina': '#facc15', 'esconde-esconde': '#8b5cf6', 'sprint-retro': '#f97316' };
+const ICONE: Record<IdJogo, string> = { 'pega-pega': '🏃', 'rei-da-colina': '👑', 'esconde-esconde': '🙈', 'sprint-retro': '🎃' };
 
 function placa(texto: string, subtexto: string, cor: string): THREE.Sprite {
   const c = document.createElement('canvas');
@@ -61,7 +61,7 @@ export class Portais {
       anel.position.set(x, 0.03, z);
       const luz = new THREE.Mesh(new THREE.CylinderGeometry(RAIO_PORTAL, RAIO_PORTAL, 2.2, 32, 1, true), new THREE.MeshBasicMaterial({ color: cor, transparent: true, opacity: 0.12, side: THREE.DoubleSide, depthWrite: false }));
       luz.position.set(x, 1.1, z);
-      const p = placa(`${ICONE[jogo]} ${JOGOS[jogo].nome}`, jogo === 'sprint-review' ? 'a sala toda participa' : `fila 0/${JOGOS[jogo].min}`, cor);
+      const p = placa(`${ICONE[jogo]} ${JOGOS[jogo].nome}`, jogo === 'sprint-retro' ? 'a sala toda participa' : `fila 0/${JOGOS[jogo].min}`, cor);
       p.position.set(x, 3.4, z);
       this.grupo.add(anel, luz, p);
       this.portais.push({ jogo, anel, luz, placa: p, texto: '' });
@@ -78,7 +78,7 @@ export class Portais {
   filas(f: Partial<Record<IdJogo, string[]>>, emPartida: IdJogo | null): void {
     for (const p of this.portais) {
       const n = f[p.jogo]?.length ?? 0;
-      const texto = emPartida ? 'em partida' : p.jogo === 'sprint-review' ? 'a sala toda participa' : `fila ${n}/${JOGOS[p.jogo].min}${n >= JOGOS[p.jogo].min ? ' ✓' : ''}`;
+      const texto = emPartida ? 'em partida' : p.jogo === 'sprint-retro' ? 'a sala toda participa' : `fila ${n}/${JOGOS[p.jogo].min}${n >= JOGOS[p.jogo].min ? ' ✓' : ''}`;
       if (texto !== p.texto) {
         p.texto = texto;
         desenharPlaca(p.placa, `${ICONE[p.jogo]} ${JOGOS[p.jogo].nome}`, texto, COR[p.jogo]);

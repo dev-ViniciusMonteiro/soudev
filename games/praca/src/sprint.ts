@@ -1,4 +1,4 @@
-// Tela do Sprint Review: reunião no centro ("pronto"), perguntas com a placa (levantar/baixar), votação
+// Tela do Sprint Retro: reunião no centro ("pronto"), perguntas com a placa (levantar/baixar), votação
 // e relatório final (copiar ou baixar). O campo de texto não é recriado enquanto a pessoa digita.
 
 import { type EstadoRetro, type LinhaResultado, PERGUNTAS_RETRO, RAIO_CENTRO_RETRO, type RespostaRetro, TAMANHO_RESPOSTA, VOTOS_RETRO } from './protocolo';
@@ -100,7 +100,7 @@ export class SprintUI {
     this.campo = null;
     if (r.fase === 'reuniao') {
       this.painel.replaceChildren(
-        el('h3', { textContent: '🎃 Sprint Review' }),
+        el('h3', { textContent: '🎃 Sprint Retro' }),
         el('p', { textContent: 'Todo mundo até o chafariz no centro da praça. Quando estiver lá, clique em "Estou pronto". Quando todos estiverem prontos, começam as perguntas.' }),
         el('button', { cls: 'btn forte grande sprint-pronto', textContent: '✅ Estou pronto', onclick: () => this.c.rede()?.retro('pronto') }),
         this.corpo,
@@ -137,11 +137,25 @@ export class SprintUI {
     this.c.rede()?.placa(t);
   }
 
+  /** Saída de emergência: todos os presentes votam e a retro acaba (sem pontos, com o relatório do que deu). */
+  private botaoSair(r: EstadoRetro): HTMLElement {
+    const { el } = this.c;
+    const presentes = r.participantes.filter((p) => !r.ausentes.includes(p)).length;
+    const votei = r.querSair.includes(this.c.euId());
+    return el(
+      'div',
+      { cls: 'sprint-sair' },
+      el('button', { cls: votei ? 'btn sair ativo' : 'btn sair', textContent: votei ? '↩️ Cancelar meu voto para encerrar' : '🚪 Encerrar Sprint Retro (votação)', onclick: () => this.c.rede()?.retro('sair') }),
+      el('small', { textContent: r.querSair.length ? `${r.querSair.length} de ${presentes} querem encerrar. Quando todos votarem, acaba (sem pontos).` : 'Se algo travar, todos votam aqui para encerrar.' }),
+    );
+  }
+
   private atualizarCorpo(r: EstadoRetro): void {
     const { el } = this.c;
     if (!this.corpo) return;
     const eu = this.c.euId();
     const souAnfitriao = r.anfitriao === eu;
+    const fora = (id: string): string => (r.ausentes.includes(id) ? ' · 📴 caiu (não trava ninguém)' : '');
     if (r.fase === 'reuniao') {
       const pronto = r.prontos.includes(eu);
       const botao = this.painel.querySelector<HTMLButtonElement>('.sprint-pronto');
@@ -152,8 +166,9 @@ export class SprintUI {
       this.corpo.replaceChildren(
         ...nos(
         el('small', { textContent: `Prontos: ${r.prontos.length} de ${r.participantes.length}` }),
-        el('ul', { cls: 'sprint-lista' }, ...r.participantes.map((id) => el('li', { textContent: `${r.prontos.includes(id) ? '✅' : '⏳'} ${this.c.nome(id)}${id === r.anfitriao ? ' (conduz)' : ''}` }))),
+        el('ul', { cls: 'sprint-lista' }, ...r.participantes.map((id) => el('li', { textContent: `${r.prontos.includes(id) ? '✅' : '⏳'} ${this.c.nome(id)}${id === r.anfitriao ? ' (conduz)' : ''}${fora(id)}` }))),
         souAnfitriao ? el('button', { cls: 'btn', textContent: '⏩ Começar sem esperar todos', onclick: () => this.c.rede()?.retro('avancar') }) : null,
+          this.botaoSair(r),
         ),
       );
       return;
@@ -172,12 +187,13 @@ export class SprintUI {
         { cls: 'linha' },
         el('button', { cls: 'btn forte', textContent: levantada ? '✏️ Trocar texto da placa' : '✋ Levantar placa', onclick: () => this.levantar() }),
         levantada ? el('button', { cls: 'btn baixar', textContent: '👇 Baixar placa', onclick: () => this.c.rede()?.retro('baixar') }) : null,
-        status === 'pensando' ? el('button', { cls: 'btn', textContent: 'Passar', title: 'Não tenho nada para esta pergunta', onclick: () => this.c.rede()?.retro('passar') }) : null,
+        status !== 'baixada' ? el('button', { cls: 'btn', textContent: status === 'levantada' ? 'Terminei' : 'Passar', title: 'Não tenho (mais) nada para esta pergunta', onclick: () => this.c.rede()?.retro('passar') }) : null,
       ),
       status === 'baixada' ? el('p', { cls: 'sprint-ok', textContent: '✅ Você terminou esta pergunta. Pode levantar outra placa se lembrar de mais alguma coisa.' }) : null,
       minhas.length ? el('small', { textContent: `Suas respostas: ${minhas.map((x) => `"${x.texto}"`).join(', ')}` }) : null,
-      el('ul', { cls: 'sprint-lista' }, ...r.participantes.map((id) => el('li', { textContent: `${icone[r.status[id] ?? 'pensando']} · ${this.c.nome(id)}${r.placas[id] ? `: "${r.placas[id]}"` : ''}` }))),
+      el('ul', { cls: 'sprint-lista' }, ...r.participantes.map((id) => el('li', { textContent: `${icone[r.status[id] ?? 'pensando']} · ${this.c.nome(id)}${r.placas[id] ? `: "${r.placas[id]}"` : ''}${fora(id)}` }))),
       souAnfitriao ? el('button', { cls: 'btn', textContent: '⏩ Próxima pergunta (quem conduz)', onclick: () => this.c.rede()?.retro('avancar') }) : null,
+        this.botaoSair(r),
       ),
     );
   }
@@ -210,7 +226,8 @@ export class SprintUI {
     });
     const topo = fim
       ? [
-          el('h2', { textContent: '🎃 Relatório do Sprint Review' }),
+          el('h2', { textContent: r.cancelada ? '🎃 Sprint Retro encerrada por votação' : '🎃 Relatório do Sprint Retro' }),
+          r.cancelada ? el('p', { cls: 'nota', textContent: 'Todos votaram para encerrar: aqui está o que foi respondido até agora (sem pontos desta vez).' }) : null,
           r.premiadas.length
             ? el(
                 'ol',
@@ -242,7 +259,8 @@ export class SprintUI {
           { cls: 'linha' },
           terminei ? null : el('button', { cls: 'btn forte', textContent: '✅ Terminei de votar', onclick: () => this.c.rede()?.retro('terminarVoto') }),
           r.anfitriao === eu ? el('button', { cls: 'btn', textContent: '⏩ Encerrar votação (quem conduz)', onclick: () => this.c.rede()?.retro('avancar') }) : null,
-          el('small', { textContent: `Terminaram: ${r.terminaramVoto.length} de ${r.participantes.length}` }),
+          el('small', { textContent: `Terminaram: ${r.terminaramVoto.length} de ${r.participantes.filter((p) => !r.ausentes.includes(p)).length}` }),
+          this.botaoSair(r),
         );
     const caixa = el('div', { cls: 'caixa relatorio-caixa' }, ...topo, ...grupos, rodape);
     this.relatorio.replaceChildren(caixa);
@@ -269,7 +287,7 @@ export class SprintUI {
   /** Relatório em Markdown (para colar no Confluence, Slack, e-mail…). */
   texto(r: EstadoRetro): string {
     const data = new Date().toLocaleDateString('pt-BR');
-    const l: string[] = [`# 🎃 Sprint Review · SuperApp · ${data}`, '', `Participantes: ${r.participantes.map((id) => this.c.nome(id)).join(', ')}`, ''];
+    const l: string[] = [`# 🎃 Sprint Retro · SuperApp · ${data}`, '', `Participantes: ${r.participantes.map((id) => this.c.nome(id)).join(', ')}`, ''];
     if (r.premiadas.length) {
       l.push('## 🏆 Mais votadas', '');
       r.premiadas.forEach((id, i) => {
@@ -300,7 +318,7 @@ export class SprintUI {
   private baixar(r: EstadoRetro): void {
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([this.texto(r)], { type: 'text/markdown' }));
-    a.download = `sprint-review-${new Date().toISOString().slice(0, 10)}.md`;
+    a.download = `sprint-retro-${new Date().toISOString().slice(0, 10)}.md`;
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   }

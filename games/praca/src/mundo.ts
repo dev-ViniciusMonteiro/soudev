@@ -51,7 +51,7 @@ async function carregarPecas(nomes: string[]): Promise<Map<string, THREE.Object3
   return mapa;
 }
 
-/** Placa grande do Sprint Review SuperApp (momentânea, para o evento). */
+/** Placa grande do Sprint Retro SuperApp (momentânea, para o evento). */
 function placaSprint(): THREE.Group {
   const g = new THREE.Group();
   const c = document.createElement('canvas');
@@ -69,7 +69,7 @@ function placaSprint(): THREE.Group {
   x.textAlign = 'center';
   x.fillStyle = '#fde68a';
   x.font = '900 120px system-ui, sans-serif';
-  x.fillText('SPRINT REVIEW', 512, 190);
+  x.fillText('SPRINT RETRO', 512, 190);
   x.fillStyle = '#fb923c';
   x.font = '800 96px system-ui, sans-serif';
   x.fillText('🎃 SuperApp 🦇', 512, 320);
@@ -115,7 +115,7 @@ export async function criarMundo(): Promise<Mundo> {
   sol.shadow.bias = -0.0005;
   cena.add(sol, sol.target);
 
-  // Chão: grama, calçada da praça e o círculo do centro (zona do rei da colina e ponto de encontro do Sprint Review).
+  // Chão: grama, calçada da praça e o círculo do centro (zona do rei da colina e ponto de encontro do Sprint Retro).
   const plano = (larg: number, cor: string, y: number): THREE.Mesh => {
     const m = new THREE.Mesh(new THREE.PlaneGeometry(larg, larg), new THREE.MeshStandardMaterial({ color: cor, roughness: 1 }));
     m.rotation.x = -Math.PI / 2;
@@ -327,7 +327,7 @@ export async function criarMundo(): Promise<Mundo> {
   por('trash_A', 11, 9.5, 0);
   por('watertower', 55, -55, 0, [1, 1]);
 
-  // Placa do Sprint Review na diagonal da praça, de frente para o chafariz.
+  // Placa do Sprint Retro na diagonal da praça, de frente para o chafariz.
   const placa = placaSprint();
   placa.position.set(-17, 0, -17);
   placa.rotation.y = Math.PI / 4;

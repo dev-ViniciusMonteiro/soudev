@@ -181,7 +181,7 @@ function adicionarRemoto(j: Jogador): void {
   boneco.grupo.position.set(x, y, z);
   boneco.grupo.rotation.y = r;
   mundo.cena.add(boneco.grupo);
-  // Chegou no meio do Sprint Review: entra fantasiado.
+  // Chegou no meio do Sprint Retro: entra fantasiado.
   boneco.fantasia(Boolean(sprint.estado));
   remotos.set(j.id, { j, boneco, alvo: new THREE.Vector3(x, y, z), rotAlvo: r, anim: a, vel: 0, antes: new THREE.Vector3(x, y, z), visto: performance.now() });
 }
@@ -268,7 +268,7 @@ function receber(m: MsgServidor): void {
       definirRetro(m.r);
       break;
     case 'resultado':
-      if (m.jogo === 'sprint-review') {
+      if (m.jogo === 'sprint-retro') {
         sprint.resultado(m.l);
         void meuPerfil().then((p) => p && usarPerfil(p));
         break;
@@ -628,7 +628,7 @@ function menu(erro?: string): void {
   tela.hidden = false;
 }
 
-/* ---------- Sprint Review ---------- */
+/* ---------- Sprint Retro ---------- */
 
 const sprint = new SprintUI({
   el,
@@ -642,7 +642,7 @@ app.append(sprint.painel, sprint.relatorio);
 // Fechou o relatório: a praça volta ao normal.
 sprint.aoFechar = () => aplicarTemaRetro(null);
 
-/** Tema de Halloween e placas nas mãos conforme o estado do Sprint Review. */
+/** Tema de Halloween e placas nas mãos conforme o estado do Sprint Retro. */
 function aplicarTemaRetro(r: import('./protocolo').EstadoRetro | null): void {
   const ligado = Boolean(r);
   halloween?.ligar(ligado);
@@ -656,7 +656,7 @@ function aplicarTemaRetro(r: import('./protocolo').EstadoRetro | null): void {
 function definirRetro(r: import('./protocolo').EstadoRetro | null): void {
   const antes = sprint.estado;
   sprint.atualizar(r);
-  if (r && !antes) mostrarAviso('🎃 Sprint Review começou! A praça virou Halloween. Todos ao chafariz.', 4000);
+  if (r && !antes) mostrarAviso('🎃 Sprint Retro começou! A praça virou Halloween. Todos ao chafariz.', 4000);
   // O relatório final fica aberto (com o tema) até a pessoa fechar.
   if (r || !sprint.aberto) aplicarTemaRetro(r);
   desenharFaixa();

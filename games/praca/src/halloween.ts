@@ -1,4 +1,4 @@
-// Tema de Halloween da sala (Sprint Review): noite roxa, abóboras acesas em volta do chafariz e nos bancos,
+// Tema de Halloween da sala (Sprint Retro): noite roxa, abóboras acesas em volta do chafariz e nos bancos,
 // morcegos voando, água verde no chafariz. Liga e desliga sem recarregar o mundo.
 
 import * as THREE from 'three';

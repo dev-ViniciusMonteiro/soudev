@@ -728,3 +728,21 @@ input.codigo {
     right: 100px;
   }
 }
+
+.sprint-sair {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 8px;
+  margin-top: 4px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.2);
+}
+
+.btn.sair {
+  border-color: rgba(239, 68, 68, 0.6);
+  font-size: 0.85rem;
+}
+
+.btn.sair.ativo {
+  background: rgba(239, 68, 68, 0.25);
+}

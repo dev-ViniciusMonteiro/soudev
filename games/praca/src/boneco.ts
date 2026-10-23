@@ -87,7 +87,7 @@ export class Boneco {
   private fase = 0;
   private emoteAtual: { e: Emote; t: number } | null = null;
   private placa: THREE.Sprite | null = null;
-  private placaMao: THREE.Group | null = null; // Sprint Review: placa levantada na mão direita
+  private placaMao: THREE.Group | null = null; // Sprint Retro: placa levantada na mão direita
   private bruxa: THREE.Group | null = null; // chapéu de bruxa do tema de Halloween
 
   constructor(nome: string | null, skin: string) {

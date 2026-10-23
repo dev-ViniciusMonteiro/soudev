@@ -139,7 +139,7 @@ export class Rede {
     this.mandar({ k: 'sairCarro' });
   }
 
-  /** Sprint Review: levanta (ou troca o texto da) placa. */
+  /** Sprint Retro: levanta (ou troca o texto da) placa. */
   placa(t: string): void {
     this.mandar({ k: 'placa', t });
   }
