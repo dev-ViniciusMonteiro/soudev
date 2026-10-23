@@ -2094,6 +2094,9 @@ textarea {
   display: flex;
   flex-direction: column;
   min-width: 220px;
+  width: min(360px, calc(100vw - 32px));
+  max-height: calc(100vh - 90px);
+  overflow-y: auto;
   padding: 8px;
   border-radius: var(--radius);
   border: 1px solid var(--line-strong);
@@ -2116,6 +2119,122 @@ textarea {
 
 .menu-mobile-lista a.ativo {
   color: var(--accent);
+}
+
+/* ---------- Busca do topo ---------- */
+
+.busca {
+  position: relative;
+  margin-left: 6px;
+}
+
+.busca-botao {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  background: var(--panel);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.busca-botao:hover,
+.busca-botao[aria-expanded='true'] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.busca-painel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 10px);
+  z-index: 40;
+  width: min(420px, calc(100vw - 32px));
+  padding: 10px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line-strong);
+  background: var(--bg-2);
+  box-shadow: var(--shadow);
+}
+
+.busca-entrada {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line-strong);
+  background: var(--bg);
+  color: var(--muted);
+}
+
+.busca-entrada:focus-within {
+  border-color: var(--accent);
+}
+
+.busca-entrada input {
+  flex: 1;
+  min-width: 0;
+  padding: 11px 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 1rem;
+}
+
+.busca-resultados {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  max-height: min(60vh, 420px);
+  overflow-y: auto;
+}
+
+.nav .busca-resultados a,
+.menu-mobile-lista .busca-resultados a,
+.busca-resultados a {
+  display: grid;
+  gap: 2px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 0.95rem;
+  text-decoration: none;
+}
+
+.busca-resultados a.ativo {
+  background: var(--panel);
+  outline: 1px solid var(--line);
+}
+
+.busca-resultados small {
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.busca-secao {
+  color: var(--accent);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.busca-vazio {
+  padding: 10px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.menu-mobile-lista .busca-campo {
+  padding: 4px 4px 8px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--line);
 }
 
 /* ---------- Responsive ---------- */

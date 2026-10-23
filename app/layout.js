@@ -3,7 +3,9 @@ import Link from 'next/link'
 import Script from 'next/script'
 import Analytics from '@/components/Analytics'
 import CookieConsent, { CookiePreferencesButton } from '@/components/CookieConsent'
+import Busca from '@/components/Busca'
 import MenuMobile from '@/components/MenuMobile'
+import { montarIndice } from '@/lib/busca-indice'
 import { GA_ID, gaInitScript } from '@/lib/analytics'
 import { SITE_URL, site } from '@/lib/site'
 import './globals.css'
@@ -46,6 +48,8 @@ export const viewport = {
   initialScale: 1,
 }
 
+const indiceBusca = montarIndice()
+
 const menu = [
   ['/ferramentas', 'Ferramentas'],
   ['/sistemas', 'Sistemas'],
@@ -75,8 +79,9 @@ export default function RootLayout({ children }) {
               <Link href="/jogos">Jogos</Link>
               <Link href="/curriculo">Currículo</Link>
               <Link href="/#contato" className="nav-cta">Contato</Link>
+              <Busca indice={indiceBusca} />
             </nav>
-            <MenuMobile links={menu} />
+            <MenuMobile links={menu} indiceBusca={indiceBusca} />
           </div>
         </header>
 
