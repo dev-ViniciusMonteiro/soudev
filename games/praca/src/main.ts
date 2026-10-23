@@ -170,7 +170,7 @@ function limparSala(): void {
   filas = {};
   definirPartida(null);
   sprint.fechar();
-  if (carros?.meu) carros.receber([[carros.meu.id, carros.meu.x, carros.meu.z, carros.meu.rot, '']], perfil?.id);
+  if (carros?.meu) carros.receber([[carros.meu.id, carros.meu.x, carros.meu.z, carros.meu.rot, '', []]], perfil?.id);
   eu.boneco.mostrarCorpo(true);
 }
 
@@ -256,7 +256,7 @@ function receber(m: MsgServidor): void {
       if (carros?.meu && !dirigia) {
         eu.boneco.mostrarCorpo(false);
         controles.yaw = carros.meu.rot + Math.PI;
-        mostrarAviso('🚗 Dirigindo! W/S acelera e freia, A/D vira, Shift turbo, E para sair.');
+        mostrarAviso(carros.souMotorista ? '🚗 Dirigindo! W/S acelera e freia, A/D vira, Shift turbo, E para sair.' : '🚗 Você está de passageiro. E para descer.');
       } else if (!carros?.meu && dirigia) {
         // Desce ao lado da porta.
         eu.pos.copy(carros!.ladoDaPorta(dirigia));
@@ -320,9 +320,9 @@ function definirPartida(p: EstadoPartida | null): void {
     mostrarAviso(souParticipante() ? `${ICONE_JOGO[p.jogo]} ${JOGOS[p.jogo].nome} vai começar!` : `Partida de ${JOGOS[p.jogo].nome} começou. Assista!`, 3500);
   }
   if (p?.jogo === 'esconde-esconde' && antes?.fase === 'esconder' && p.fase === 'jogando') mostrarAviso(souBuscador() ? '🔦 Valendo! Procure com a lanterna.' : 'Valendo! Fique escondido.');
-  // Lanterna de quem procura: a praça escurece e só dá para ver perto.
+  // Esconde-esconde: a praça escurece para todos que estão jogando (quem procura ainda tem a lanterna curta).
   if (mundo) {
-    const escuro = souBuscador() && p?.fase === 'jogando';
+    const escuro = p?.jogo === 'esconde-esconde' && p.fase !== 'contagem' && souParticipante();
     mundo.cena.fog = escuro ? new THREE.Fog('#05070d', 1, VISAO_BUSCADOR) : new THREE.Fog('#9fd3f5', 60, 150);
     mundo.cena.background = new THREE.Color(escuro ? '#05070d' : '#9fd3f5');
   }
@@ -779,17 +779,17 @@ function quadro(): void {
   const t = relogio.elapsedTime;
 
   if (estado === 'jogo' && carros?.meu) {
-    // Dirigindo: frente/trás acelera e freia, lados viram; Shift é turbo. O boneco vai junto, escondido.
+    // No carro: quem dirige controla (frente/trás acelera e freia, lados viram, Shift turbo); passageiro só vai junto.
     controles.ler();
     const c = carros.meu;
-    carros.dirigir(dt, controles.mover.y, controles.mover.x, controles.correr, [...mundo.colisao, ...carros.caixas(c)]);
+    if (carros.souMotorista) carros.dirigir(dt, controles.mover.y, controles.mover.x, controles.correr, [...mundo.colisao, ...carros.caixas(c)]);
     controles.pegarPulo();
     eu.pos.set(c.x, 0, c.z);
     eu.rot = c.rot;
     eu.anim = Anim.Dirigindo;
     eu.boneco.grupo.position.copy(eu.pos);
     eu.boneco.grupo.rotation.y = eu.rot;
-    if (rede && t - ultimoEnvio >= 1 / ENVIOS_POR_SEGUNDO) {
+    if (rede && carros.souMotorista && t - ultimoEnvio >= 1 / ENVIOS_POR_SEGUNDO) {
       const p: Pose = [c.x, 0, c.z, c.rot, Anim.Dirigindo];
       const chave = p.map((v) => Math.round(v * 50)).join(',');
       if (chave !== ultimaPoseEnviada) {
@@ -870,6 +870,13 @@ function quadro(): void {
     g.visible = !escondido;
     r.boneco.mostrarNome(!(souBuscador() && partida?.fase === 'jogando'));
     r.boneco.mostrarCorpo(r.anim !== Anim.Dirigindo);
+    // Passageiro de outro carro: o boneco (só o nome aparece) vai junto com o carro.
+    const carona = carros?.deQuemEPassageiro(r.j.id);
+    if (carona) {
+      g.position.set(carona.x, 0.4, carona.z);
+      r.alvo.copy(g.position);
+      r.boneco.mostrarCorpo(false);
+    }
   }
 
   // Carros: o meu já andou na física; os outros seguem a pose (interpolada) de quem dirige.
@@ -882,7 +889,7 @@ function quadro(): void {
   // Botão de carro: perto de um carro livre ou dirigindo.
   const perto = estado === 'jogo' && carros && !carros.meu && !souParticipante() ? carros.livrePerto(eu.pos.x, eu.pos.z, 3.8) : null;
   botaoCarro.hidden = !(carros?.meu || perto);
-  botaoCarro.textContent = carros?.meu ? '🚶 Sair do carro (E)' : '🚗 Dirigir (E)';
+  botaoCarro.textContent = carros?.meu ? '🚶 Sair do carro (E)' : perto?.motorista ? '🚗 Entrar de passageiro (E)' : '🚗 Dirigir (E)';
 
   portais.animar(t, camera.position);
   if (t - ultimaFaixa > 0.2) {
