@@ -1441,3 +1441,330 @@ input.codigo {
 .encoberta {
   font-size: 0.85rem;
 }
+
+/* Mapa: minimapa no canto e mapa grande (M) */
+.minimapa {
+  position: fixed;
+  left: 12px;
+  bottom: 12px;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  z-index: 3;
+}
+
+.mapa-grande {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 8;
+}
+
+.mapa-caixa {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(1000px, 100%);
+  max-height: 100%;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid var(--linha);
+  background: var(--fundo);
+}
+
+.mapa-topo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mapa-topo h3 {
+  flex: 1;
+}
+
+.mapa-corpo {
+  display: flex;
+  gap: 14px;
+  min-height: 0;
+}
+
+.mapa-tela {
+  width: min(70vh, 62vw);
+  height: min(70vh, 62vw);
+  border-radius: 12px;
+  cursor: crosshair;
+  flex-shrink: 0;
+}
+
+.mapa-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow-y: auto;
+  min-width: 0;
+}
+
+.mapa-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 2px solid var(--cor, #fff);
+  background: rgba(255, 255, 255, 0.06);
+  color: inherit;
+  text-align: left;
+  font-weight: 700;
+  font-size: 0.88rem;
+}
+
+.mapa-icone {
+  font-size: 1.3rem;
+}
+
+@media (max-width: 700px) {
+  .minimapa {
+    width: 110px;
+    height: 110px;
+    bottom: auto;
+    top: 100px;
+  }
+
+  .mapa-corpo {
+    flex-direction: column;
+  }
+
+  .mapa-tela {
+    width: min(92vw, 55vh);
+    height: min(92vw, 55vh);
+    align-self: center;
+  }
+}
+
+.modo-fps .minimapa {
+  display: none;
+}
+
+/* Poker */
+.poker-centro {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.poker-pote {
+  color: #fde68a;
+  font-size: 1.1rem;
+}
+
+.carta.vazia {
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: none;
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+}
+
+.poker-lugares {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 6px;
+}
+
+.poker-lugar {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 2px solid transparent;
+  font-size: 0.85rem;
+}
+
+.poker-lugar.vez {
+  border-color: #facc15;
+}
+
+.poker-lugar.eu {
+  background: rgba(34, 197, 94, 0.15);
+}
+
+.poker-lugar.fora {
+  opacity: 0.5;
+}
+
+.poker-aposta {
+  color: #fde68a;
+}
+
+.cartas.pequenas .carta {
+  width: 34px;
+  height: 48px;
+  font-size: 0.85rem;
+}
+
+.cartas.pequenas .carta .naipe {
+  font-size: 1rem;
+}
+
+.poker-minha {
+  align-items: center;
+}
+
+.poker-aumento {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.poker-aumento .ficha {
+  width: 40px;
+  height: 40px;
+  font-size: 0.8rem;
+}
+
+.poker-valor {
+  min-width: 48px;
+  text-align: center;
+  color: #fde68a;
+}
+
+.btn.allin {
+  border-color: #dc2626;
+  color: #fecaca;
+}
+
+/* Roleta */
+.roleta-historico {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.bola {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.bola.vermelho,
+.roleta-b.vermelho {
+  background: #b91c1c;
+}
+
+.bola.preto,
+.roleta-b.preto {
+  background: #111827;
+}
+
+.bola.verde,
+.roleta-b.verde {
+  background: #15803d;
+}
+
+.roleta-numeros {
+  display: grid;
+  grid-template-columns: repeat(13, 1fr);
+  grid-template-rows: repeat(3, 32px);
+  gap: 3px;
+}
+
+.roleta-b {
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.8rem;
+  padding: 0;
+}
+
+.roleta-b:disabled {
+  opacity: 0.5;
+}
+
+.roleta-b.zero {
+  grid-row: 1 / 4;
+  grid-column: 1;
+}
+
+.roleta-fora {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+
+.roleta-fora .roleta-b {
+  height: 34px;
+}
+
+.roleta-apostas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.chip-aposta {
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 0.8rem;
+}
+
+.chip-aposta.ganhou {
+  background: rgba(34, 197, 94, 0.4);
+}
+
+.chip-aposta.perdeu {
+  opacity: 0.5;
+}
+
+/* Caça-níquel */
+.slot-rolos {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 14px;
+  background: linear-gradient(#7f1d1d, #450a0a);
+  border: 3px solid #facc15;
+}
+
+.slot-rolo {
+  display: grid;
+  place-items: center;
+  width: 84px;
+  height: 96px;
+  border-radius: 10px;
+  background: #fff7ed;
+  font-size: 3rem;
+  box-shadow: inset 0 6px 10px rgba(0, 0, 0, 0.3);
+}
+
+.slot-rolos.girando .slot-rolo {
+  filter: blur(1px);
+}
+
+.slot-tabela {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: 0.85rem;
+  opacity: 0.85;
+}

@@ -602,9 +602,8 @@ export class FPS {
     // Câmera nos olhos (o coice sobe a mira e volta).
     this.coice = Math.max(0, this.coice - dt * 2.5);
     cam.position.set(this.pos.x, this.pos.y + ALTURA_OLHO, this.pos.z);
-    cam.rotation.order = 'YXZ';
-    cam.rotation.y = ctl.yaw;
-    cam.rotation.x = -(ctl.pitch - this.coice);
+    // Ângulos inteiros (com roll 0): o lookAt da terceira pessoa pode deixar rotation.z = π e virar a tela.
+    cam.rotation.set(-(ctl.pitch - this.coice), ctl.yaw, 0, 'YXZ');
     const fovAlvo = this.zoom ? 18 : 75;
     if (Math.abs(cam.fov - fovAlvo) > 0.5) {
       cam.fov += (fovAlvo - cam.fov) * Math.min(1, dt * 14);

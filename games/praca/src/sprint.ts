@@ -1,7 +1,7 @@
 // Tela do Sprint Retro: reunião no centro ("pronto"), perguntas com a placa (levantar/baixar), votação
 // e relatório final (copiar ou baixar). O campo de texto não é recriado enquanto a pessoa digita.
 
-import { type EstadoRetro, type LinhaResultado, PERGUNTAS_RETRO, RAIO_CENTRO_RETRO, type RespostaRetro, TAMANHO_RESPOSTA, VOTOS_RETRO } from './protocolo';
+import { type EstadoRetro, type LinhaResultado, PERGUNTAS_RETRO, type RespostaRetro, TAMANHO_RESPOSTA, VOTOS_RETRO } from './protocolo';
 import type { Rede } from './rede';
 
 type El = <K extends keyof HTMLElementTagNameMap>(tag: K, props?: Partial<HTMLElementTagNameMap[K]> & { cls?: string }, ...filhos: (Node | string | null | false)[]) => HTMLElementTagNameMap[K];
@@ -11,8 +11,8 @@ interface Contexto {
   rede: () => Rede | null;
   euId: () => string;
   nome: (id: string) => string;
-  /** Distância do meu boneco ao chafariz. */
-  distCentro: () => number;
+  /** Meu boneco está dentro da Sala Sprint Retro? */
+  naSala: () => boolean;
   aviso: (texto: string) => void;
 }
 
@@ -89,9 +89,9 @@ export class SprintUI {
     if (r?.fase !== 'reuniao' || !this.corpo) return;
     const botao = this.painel.querySelector<HTMLButtonElement>('.sprint-pronto');
     if (!botao || r.prontos.includes(this.c.euId())) return;
-    const perto = this.c.distCentro() <= RAIO_CENTRO_RETRO - 0.5;
+    const perto = this.c.naSala();
     botao.disabled = !perto;
-    botao.textContent = perto ? '✅ Estou pronto' : '🚶 Vá até o chafariz para ficar pronto';
+    botao.textContent = perto ? '✅ Estou pronto' : '🚶 Entre na Sala Sprint Retro para ficar pronto';
   }
 
   private montar(r: EstadoRetro): void {
@@ -101,7 +101,7 @@ export class SprintUI {
     if (r.fase === 'reuniao') {
       this.painel.replaceChildren(
         el('h3', { textContent: '🎃 Sprint Retro' }),
-        el('p', { textContent: 'Todo mundo até o chafariz no centro da praça. Quando estiver lá, clique em "Estou pronto". Quando todos estiverem prontos, começam as perguntas.' }),
+        el('p', { textContent: 'Todo mundo dentro da Sala Sprint Retro. Clique em "Estou pronto"; quando todos estiverem prontos, começam as perguntas.' }),
         el('button', { cls: 'btn forte grande sprint-pronto', textContent: '✅ Estou pronto', onclick: () => this.c.rede()?.retro('pronto') }),
         this.corpo,
       );

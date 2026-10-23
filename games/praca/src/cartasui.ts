@@ -1,8 +1,8 @@
-// Mesas de cartas na praça: 21 (contra a casa) e truco paulista, apostando moedas do jogo.
+// Mesas de cartas do Cassino: 21 (contra a casa), truco paulista e poker (Texas Hold'em), apostando moedas do jogo.
 // Chegou perto da mesa → "Sentar". Sentado, o painel mostra as cartas e os botões; o servidor embaralha,
-// distribui e confere tudo (cada um só recebe a própria mão do truco).
+// distribui e confere tudo (cada um só recebe a própria mão do truco e do poker).
 
-import { APOSTAS_TRUCO, type Carta, type EstadoBJ, type EstadoTruco, MESAS, type MsgClienteCartas, type TipoMesa } from './protocolo';
+import { APOSTAS_TRUCO, BLINDS_POKER, type Carta, type EstadoBJ, type EstadoPoker, type EstadoTruco, LIMITE_POKER, MESAS, type MsgClienteCartas, type TipoMesa } from './protocolo';
 
 type El = <K extends keyof HTMLElementTagNameMap>(tag: K, props?: Partial<HTMLElementTagNameMap[K]> & { cls?: string }, ...filhos: (Node | string | null | false)[]) => HTMLElementTagNameMap[K];
 
@@ -39,7 +39,10 @@ export function pontos21(cartas: Carta[]): number {
 export class CartasUI {
   bj: EstadoBJ | null = null;
   truco: EstadoTruco | null = null;
+  poker: EstadoPoker | null = null;
   private mao: Carta[] = [];
+  private maoPoker: Carta[] = [];
+  private aumento = 0;
   private painel: HTMLElement;
   private botaoSentar: HTMLButtonElement;
   private aposta21 = 50;
@@ -57,6 +60,7 @@ export class CartasUI {
     const eu = this.c.euId();
     if (this.bj?.lugares.includes(eu)) return '21';
     if (this.truco?.lugares.includes(eu)) return 'truco';
+    if (this.poker?.lugares.includes(eu)) return 'poker';
     return null;
   }
 
@@ -76,6 +80,24 @@ export class CartasUI {
     this.desenhar();
   }
 
+  receberPoker(e: EstadoPoker | null): void {
+    const antes = this.poker;
+    this.poker = e;
+    const eu = this.c.euId();
+    if (e?.fase === 'fim' && antes?.fase !== 'fim' && e.jogadores[eu]) {
+      const g = e.jogadores[eu].ganho ?? 0;
+      if (g > 0) this.c.aviso(`♠ Você levou o pote: +${g} moedas`);
+    }
+    if (e?.vez !== antes?.vez) this.aumento = 0;
+    this.desenhar();
+  }
+
+  receberMaoPoker(cartas: Carta[]): void {
+    if (JSON.stringify(cartas) === JSON.stringify(this.maoPoker)) return;
+    this.maoPoker = cartas;
+    this.desenhar();
+  }
+
   receberMao(cartas: Carta[]): void {
     this.mao = cartas;
     this.desenhar();
@@ -88,7 +110,7 @@ export class CartasUI {
     const mostrar = ativo && !this.sentado && perto;
     this.botaoSentar.hidden = !mostrar;
     if (mostrar && perto) {
-      this.botaoSentar.textContent = perto === '21' ? '🃏 Sentar na mesa de 21' : '🂡 Sentar na mesa de truco';
+      this.botaoSentar.textContent = { '21': '🃏 Sentar na mesa de 21', truco: '🂡 Sentar na mesa de truco', poker: '♠ Sentar na mesa de poker' }[perto];
       this.botaoSentar.onclick = () => this.c.mandar({ k: 'mesa', mesa: perto, a: 'sentar' });
     }
   }
@@ -112,6 +134,87 @@ export class CartasUI {
     this.painel.hidden = !mesa;
     if (mesa === '21') this.desenhar21();
     else if (mesa === 'truco') this.desenharTruco();
+    else if (mesa === 'poker') this.desenharPoker();
+  }
+
+  private desenharPoker(): void {
+    const e = this.poker!;
+    const { el } = this.c;
+    const eu = this.c.euId();
+    const meuLugar = e.lugares.indexOf(eu);
+    const eu_ = e.jogadores[eu];
+    const emMao = e.fase !== 'esperando' && e.fase !== 'fim';
+    const minhaVez = emMao && e.vez === meuLugar && eu_?.status === 'ativo';
+    const nomeFase = {
+      esperando: e.lugares.filter(Boolean).length < 2 ? 'Esperando mais alguém sentar…' : `Próxima mão em ${this.tempo(e.restanteMs)}`,
+      preflop: 'Antes do flop',
+      flop: 'Flop',
+      turn: 'Turn',
+      river: 'River',
+      fim: `Fim da mão · próxima em ${this.tempo(e.restanteMs)}`,
+    }[e.fase];
+    const lugar = (id: string | null, i: number) => {
+      if (!id) return null;
+      const j = e.jogadores[id];
+      const dealer = e.dealer === i && e.fase !== 'esperando';
+      const status = !j ? 'entra na próxima mão' : j.status === 'desistiu' ? 'desistiu' : j.status === 'fora' ? (j.acao ?? 'fora') : (j.acao ?? '');
+      return el(
+        'div',
+        { cls: `poker-lugar${e.vez === i && emMao ? ' vez' : ''}${id === eu ? ' eu' : ''}${j?.status === 'desistiu' ? ' fora' : ''}` },
+        el('div', { cls: 'mao-topo' }, el('strong', { textContent: `${dealer ? 'Ⓓ ' : ''}${id === eu ? 'Você' : this.c.nome(id)}` }), j ? el('small', { textContent: `🪙 ${j.pilha}` }) : null),
+        el('small', { textContent: status }),
+        j?.aposta ? el('small', { cls: 'poker-aposta', textContent: `aposta ${j.aposta}` }) : null,
+        j?.cartas ? el('div', { cls: 'cartas pequenas' }, ...j.cartas.map((c) => this.carta(c))) : null,
+        j?.jogo ? el('small', { textContent: j.jogo }) : null,
+        e.fase === 'fim' && j?.ganho ? el('small', { cls: 'ganhou', textContent: `+${j.ganho}` }) : null,
+      );
+    };
+    const controles: (HTMLElement | null)[] = [];
+    if (minhaVez && eu_) {
+      const falta = e.maiorAposta - eu_.aposta;
+      const tudo = eu_.aposta + eu_.pilha;
+      const minimo = Math.min(tudo, e.maiorAposta + e.minimoAumento);
+      if (!this.aumento || this.aumento < minimo) this.aumento = minimo;
+      this.aumento = Math.min(this.aumento, tudo);
+      const valor = el('strong', { cls: 'poker-valor', textContent: String(this.aumento) });
+      const ajustar = (v: number) => {
+        this.aumento = Math.max(minimo, Math.min(tudo, v));
+        valor.textContent = String(this.aumento);
+      };
+      controles.push(
+        el('button', { cls: 'btn', textContent: 'Desistir', onclick: () => this.c.mandar({ k: 'poker', a: 'desistir' }) }),
+        el('button', { cls: 'btn forte', textContent: falta > 0 ? `Pagar ${Math.min(falta, eu_.pilha)}` : 'Passar', onclick: () => this.c.mandar({ k: 'poker', a: falta > 0 ? 'pagar' : 'passar' }) }),
+        tudo > e.maiorAposta
+          ? el(
+              'div',
+              { cls: 'poker-aumento' },
+              el('button', { cls: 'ficha', textContent: '−', onclick: () => ajustar(this.aumento - BLINDS_POKER[1]) }),
+              valor,
+              el('button', { cls: 'ficha', textContent: '+', onclick: () => ajustar(this.aumento + BLINDS_POKER[1]) }),
+              el('button', { cls: 'ficha', textContent: 'pote', title: 'Aumentar o tamanho do pote', onclick: () => ajustar(e.maiorAposta + e.pote + falta) }),
+              el('button', { cls: 'btn', textContent: 'Aumentar', onclick: () => this.c.mandar({ k: 'poker', a: 'aumentar', v: this.aumento }) }),
+            )
+          : null,
+        el('button', { cls: 'btn allin', textContent: `All-in (${eu_.pilha})`, onclick: () => this.c.mandar({ k: 'poker', a: 'allin' }) }),
+      );
+    }
+    const vazio = Array.from({ length: 5 - e.mesa.length }, () => el('div', { cls: 'carta vazia' }));
+    this.painel.replaceChildren(
+      ...nos(
+        el(
+          'div',
+          { cls: 'mesa-topo' },
+          el('h3', { textContent: '♠ Poker' }),
+          el('span', { textContent: minhaVez ? `Sua vez · ${this.tempo(e.restanteMs)}` : nomeFase }),
+          el('button', { cls: 'btn', textContent: 'Levantar', title: emMao ? 'Sair no meio desiste da mão' : '', onclick: () => this.c.mandar({ k: 'mesa', mesa: 'poker', a: 'levantar' }) }),
+        ),
+        el('div', { cls: 'poker-centro' }, el('div', { cls: 'cartas' }, ...e.mesa.map((c) => this.carta(c)), ...vazio), el('strong', { cls: 'poker-pote', textContent: `Pote 🪙 ${e.pote}` })),
+        el('div', { cls: 'poker-lugares' }, ...nos(...e.lugares.map(lugar))),
+        emMao && eu_ && eu_.status !== 'fora' ? el('div', { cls: 'linha poker-minha' }, el('small', { textContent: 'Sua mão' }), el('div', { cls: 'cartas mao-truco' }, ...this.maoPoker.map((c) => this.carta(c)))) : null,
+        controles.length ? el('div', { cls: 'linha controles-mesa' }, ...nos(...controles)) : null,
+        el('p', { cls: 'nota', textContent: `Texas Hold'em, blinds ${BLINDS_POKER[0]}/${BLINDS_POKER[1]}. A cada mão você entra com até ${LIMITE_POKER} moedas do seu saldo; o que sobrar e o que ganhar voltam no fim da mão.` }),
+      ),
+    );
   }
 
   private desenhar21(): void {

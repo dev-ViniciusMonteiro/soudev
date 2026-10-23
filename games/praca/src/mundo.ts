@@ -4,7 +4,7 @@
 
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { LIMITE_MUNDO, MESAS } from './protocolo';
+import { LIMITE_MUNDO } from './protocolo';
 
 /** As peças vêm em escala de maquete (rua = 2 unidades): ×4 deixa um banco com ~1,6 m. */
 const ESCALA = 4;
@@ -51,46 +51,6 @@ async function carregarPecas(nomes: string[]): Promise<Map<string, THREE.Object3
     }),
   );
   return mapa;
-}
-
-/** Mesa de cartas redonda com feltro verde, cadeiras em volta e placa em cima. */
-function mesaCartas(titulo: string, lugares: number): THREE.Group {
-  const g = new THREE.Group();
-  const madeira = new THREE.MeshStandardMaterial({ color: '#78350f', flatShading: true });
-  const tampo = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 1.5, 0.12, 24), madeira);
-  tampo.position.y = 0.95;
-  const feltro = new THREE.Mesh(new THREE.CylinderGeometry(1.35, 1.35, 0.02, 24), new THREE.MeshStandardMaterial({ color: '#166534', roughness: 1 }));
-  feltro.position.y = 1.02;
-  const pe = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.4, 0.95, 8), madeira);
-  pe.position.y = 0.47;
-  for (const m of [tampo, feltro, pe]) {
-    m.castShadow = true;
-    m.receiveShadow = true;
-    g.add(m);
-  }
-  for (let i = 0; i < lugares; i++) {
-    const a = (i / lugares) * Math.PI * 2;
-    const cadeira = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), new THREE.MeshStandardMaterial({ color: '#7f1d1d', flatShading: true }));
-    cadeira.position.set(Math.sin(a) * 2.1, 0.25, Math.cos(a) * 2.1);
-    cadeira.castShadow = true;
-    g.add(cadeira);
-  }
-  const c = document.createElement('canvas');
-  c.width = 256;
-  c.height = 96;
-  const x = c.getContext('2d')!;
-  x.fillStyle = 'rgba(20,83,45,0.9)';
-  x.fillRect(0, 0, 256, 96);
-  x.fillStyle = '#fde68a';
-  x.font = '900 52px system-ui, sans-serif';
-  x.textAlign = 'center';
-  x.textBaseline = 'middle';
-  x.fillText(titulo, 128, 52);
-  const placa = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c) }));
-  placa.scale.set(2.6, 1, 1);
-  placa.position.y = 3;
-  g.add(placa);
-  return g;
 }
 
 /** Barraca da loja: balcão, toldo listrado e placa. */
@@ -144,31 +104,29 @@ function barracaLoja(): THREE.Group {
   return g;
 }
 
-/** Placa grande do Sprint Retro SuperApp (momentânea, para o evento). */
-function placaSprint(): THREE.Group {
+/** Banner grande da praça. */
+function bannerPraca(): THREE.Group {
   const g = new THREE.Group();
   const c = document.createElement('canvas');
   c.width = 1024;
   c.height = 448;
   const x = c.getContext('2d')!;
   const fundo = x.createLinearGradient(0, 0, 1024, 448);
-  fundo.addColorStop(0, '#2e1065');
-  fundo.addColorStop(1, '#7c2d12');
+  fundo.addColorStop(0, '#0c4a6e');
+  fundo.addColorStop(1, '#065f46');
   x.fillStyle = fundo;
   x.fillRect(0, 0, 1024, 448);
-  x.strokeStyle = '#fb923c';
+  x.strokeStyle = '#fde047';
   x.lineWidth = 14;
   x.strokeRect(14, 14, 996, 420);
   x.textAlign = 'center';
-  x.fillStyle = '#fde68a';
-  x.font = '900 120px system-ui, sans-serif';
-  x.fillText('SPRINT RETRO', 512, 190);
-  x.fillStyle = '#fb923c';
-  x.font = '800 96px system-ui, sans-serif';
-  x.fillText('🎃 SuperApp 🦇', 512, 320);
-  x.fillStyle = '#e9d5ff';
-  x.font = '600 38px system-ui, sans-serif';
-  x.fillText('portal laranja ao lado do chafariz', 512, 400);
+  x.fillStyle = '#fff';
+  x.font = '900 112px system-ui, sans-serif';
+  x.fillText('PRAÇA DO', 512, 160);
+  x.fillText('VINICIUS', 512, 280);
+  x.fillStyle = '#fde047';
+  x.font = '900 100px system-ui, sans-serif';
+  x.fillText('019', 512, 395);
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
   const tela = new THREE.Mesh(new THREE.PlaneGeometry(11, 4.8), new THREE.MeshBasicMaterial({ map: tex }));
@@ -395,6 +353,7 @@ export async function criarMundo(): Promise<Mundo> {
   // Parques: um bosque em cada quarteirão entre as duas ruas.
   for (const sx of [-1, 1])
     for (const sz of [-1, 1]) {
+      if (sx > 0 && sz > 0) continue; // nesse canto fica a Sala Sprint Retro
       for (let i = 0; i < 9; i++) {
         const x = sx * (45 + (i % 3) * 6 + ((i * 7) % 3));
         const z = sz * (45 + Math.floor(i / 3) * 6 + ((i * 5) % 3));
@@ -420,17 +379,6 @@ export async function criarMundo(): Promise<Mundo> {
   por('trash_A', 11, 9.5, 0);
   por('watertower', 55, -55, 0, [1, 1]);
 
-  // Mesas de cartas.
-  for (const [tipo, titulo, lugares] of [
-    ['21', '🃏 21', 5],
-    ['truco', '🂡 Truco', 4],
-  ] as const) {
-    const mesa = mesaCartas(titulo, lugares);
-    mesa.position.set(MESAS[tipo][0], 0, MESAS[tipo][1]);
-    cena.add(mesa);
-    colisao.push({ x: MESAS[tipo][0], z: MESAS[tipo][1], mx: 1.5, mz: 1.5 });
-  }
-
   // Barraca da loja, de frente para o chafariz.
   const barraca = barracaLoja();
   barraca.position.set(POS_LOJA[0], 0, POS_LOJA[1]);
@@ -438,8 +386,8 @@ export async function criarMundo(): Promise<Mundo> {
   cena.add(barraca);
   colisao.push({ x: POS_LOJA[0], z: POS_LOJA[1], mx: 1.4, mz: 1.4 });
 
-  // Placa do Sprint Retro na diagonal da praça, de frente para o chafariz.
-  const placa = placaSprint();
+  // Banner da praça na diagonal, de frente para o chafariz.
+  const placa = bannerPraca();
   placa.position.set(-17, 0, -17);
   placa.rotation.y = Math.PI / 4;
   cena.add(placa);

@@ -9,14 +9,16 @@ import { Carros } from './carros';
 import { FPS } from './fps';
 import { CorridaUI } from './corridaui';
 import { CartasUI } from './cartasui';
+import { CassinoUI } from './cassinoui';
+import { Mapa } from './mapa';
+import { Predios } from './predios';
 import { criarPista } from './pista';
 import { Controles } from './controles';
-import { Halloween } from './halloween';
 import { Loja } from './loja';
 import { POS_LOJA, criarMundo, resolverColisao } from './mundo';
 import { SprintUI } from './sprint';
 import { COR_JOGO, ICONE_JOGO, Portais, marca } from './portais';
-import { Anim, CONQUISTAS, EMOTES, type Emote, ENVIOS_POR_SEGUNDO, type EstadoPartida, ITENS, type IdJogo, type InfoSala, JOGOS, type Jogador, type LinhaResultado, type MotivoErro, type MsgServidor, type Perfil, type Pose, RAIO_PORTAL, VISAO_BUSCADOR, itensBloqueados, xpDoNivel } from './protocolo';
+import { Anim, CONQUISTAS, EMOTES, type Emote, ENVIOS_POR_SEGUNDO, type EstadoPartida, ITENS, type IdJogo, type InfoSala, JOGOS, JOGOS_NA_PRACA, type Jogador, type LinhaResultado, type MotivoErro, type MsgServidor, type Perfil, type Pose, RAIO_PORTAL, VISAO_BUSCADOR, dentroDoPredio, itensBloqueados, posInicialPraca, predioDoJogo, xpDoNivel } from './protocolo';
 import { Rede, atualizarPerfil, comprarItem, criarPerfil, meuPerfil, online, pedirRanking, pedirSala } from './rede';
 import { Telao } from './telao';
 
@@ -122,7 +124,8 @@ let partida: EstadoPartida | null = null;
 let partidaRecebidaEm = 0;
 const marcas = new Map<string, THREE.Sprite>();
 let carros: Carros | null = null;
-let halloween: Halloween | null = null;
+let predios: Predios | null = null;
+let mapa: Mapa | null = null;
 let fps: FPS | null = null;
 let corridaUI: CorridaUI | null = null;
 const cartasUI = new CartasUI({
@@ -134,6 +137,16 @@ const cartasUI = new CartasUI({
   pos: () => ({ x: eu.pos.x, z: eu.pos.z }),
   aviso: (t) => mostrarAviso(t, 3500),
 });
+const cassinoUI = new CassinoUI({
+  el,
+  app,
+  euId: () => perfil?.id ?? '',
+  nome: (id) => remotos.get(id)?.j.nome ?? (id === perfil?.id ? nome : '?'),
+  mandar: (msg) => rede?.mandarCartas(msg),
+  pos: () => ({ x: eu.pos.x, z: eu.pos.z }),
+  aviso: (t) => mostrarAviso(t, 3500),
+});
+const salaRetro = predioDoJogo('sprint-retro')!;
 
 /* ---------- Mundo ---------- */
 
@@ -145,7 +158,18 @@ const carregando = criarMundo().then((m) => {
   m.colisao.push({ x: 0, z: -19.7, mx: 3.3, mz: 0.35 });
   m.cena.add(portais.grupo);
   carros = new Carros(m.cena, m.modelosCarro);
-  halloween = new Halloween(m);
+  predios = new Predios(m.colisao);
+  m.cena.add(predios.grupo);
+  mapa = new Mapa({
+    el,
+    app,
+    cena: m.cena,
+    colisao: () => m.colisao,
+    predios,
+    eu: () => ({ x: eu.pos.x, z: eu.pos.z, rot: eu.rot }),
+    outros: () => [...remotos.values()].map((r) => ({ x: r.boneco.grupo.position.x, z: r.boneco.grupo.position.z })),
+    aviso: (t) => mostrarAviso(t, 3500),
+  });
   criarArena(m.cena);
   criarPista(m.cena);
   corridaUI = new CorridaUI({
@@ -352,8 +376,21 @@ function receber(m: MsgServidor): void {
     case 'trucoMao':
       cartasUI.receberMao(m.cartas);
       break;
+    case 'poker':
+      cartasUI.receberPoker(m.e);
+      break;
+    case 'pokerMao':
+      cartasUI.receberMaoPoker(m.cartas);
+      break;
+    case 'roleta':
+      cassinoUI.receberRoleta(m.e);
+      break;
+    case 'slot':
+      cassinoUI.resultadoSlot(m.rolos, m.aposta, m.ganho);
+      break;
     case 'mesaErro':
       mostrarAviso(m.texto, 3000);
+      if (m.mesa === 'slot' || m.mesa === 'roleta') cassinoUI.erro();
       break;
     case 'tiro':
       fps?.tiroDeOutro(m.de, m.o, m.p, m.arma);
@@ -414,6 +451,14 @@ function definirPartida(p: EstadoPartida | null): void {
   portais.filas(p ? {} : filas, p?.jogo ?? null);
   if (p && !antes) {
     resultadoEl.hidden = true;
+    const i = perfil ? p.participantes.indexOf(perfil.id) : -1;
+    if (i >= 0 && JOGOS_NA_PRACA.includes(p.jogo)) {
+      const [x, z] = posInicialPraca(i);
+      eu.pos.set(x, 0, z);
+      eu.rot = Math.atan2(-x, -z);
+      controles.yaw = eu.rot + Math.PI;
+      mapa?.marcar(null);
+    }
     mostrarAviso(souParticipante() ? `${ICONE_JOGO[p.jogo]} ${JOGOS[p.jogo].nome} vai começar!` : `Partida de ${JOGOS[p.jogo].nome} começou. Assista!`, 3500);
   }
   if (p?.jogo === 'esconde-esconde' && antes?.fase === 'esconder' && p.fase === 'jogando') mostrarAviso(souBuscador() ? '🔦 Valendo! Procure com a lanterna.' : 'Valendo! Fique escondido.');
@@ -482,9 +527,13 @@ function desenharFaixa(): void {
 let portalAtual: IdJogo | null = null;
 function atualizarPainelFila(): void {
   let aqui: IdJogo | null = null;
-  if (estado === 'jogo' && !partida && !sprint.estado && !carros?.meu) for (const jogo of Object.keys(JOGOS) as IdJogo[]) if (Math.hypot(eu.pos.x - JOGOS[jogo].portal[0], eu.pos.z - JOGOS[jogo].portal[1]) <= RAIO_PORTAL) aqui = jogo;
+  if (estado === 'jogo' && !partida && !sprint.estado && !carros?.meu) {
+    for (const jogo of Object.keys(JOGOS) as IdJogo[]) if (Math.hypot(eu.pos.x - JOGOS[jogo].portal[0], eu.pos.z - JOGOS[jogo].portal[1]) <= RAIO_PORTAL) aqui = jogo;
+    if (dentroDoPredio(salaRetro, eu.pos.x, eu.pos.z)) aqui = 'sprint-retro';
+  }
   const fila = aqui ? filas[aqui] ?? [] : [];
-  const chave = aqui ? `${aqui}:${fila.join(',')}` : '';
+  const total = remotos.size + 1;
+  const chave = aqui ? `${aqui}:${fila.join(',')}:${total}` : '';
   if (chave === painelFila.dataset.chave) return;
   painelFila.dataset.chave = chave;
   portalAtual = aqui;
@@ -494,13 +543,16 @@ function atualizarPainelFila(): void {
   }
   const info = JOGOS[aqui];
   const nomes = fila.map((id) => (id === perfil?.id ? 'você' : remotos.get(id)?.j.nome ?? '?'));
-  const pronto = fila.length >= info.min && fila.includes(perfil?.id ?? '');
+  const retro = aqui === 'sprint-retro';
+  const precisa = retro ? total : info.min;
+  const pronto = fila.length >= precisa && fila.includes(perfil?.id ?? '');
+  const fora = retro ? [...remotos.values()].filter((r) => !fila.includes(r.j.id)).map((r) => r.j.nome) : [];
   painelFila.style.setProperty('--cor', COR_JOGO[aqui]);
   painelFila.replaceChildren(
     el('strong', { textContent: `${ICONE_JOGO[aqui]} ${info.nome}` }),
     el('p', { textContent: info.descricao }),
-    el('small', { textContent: `Na fila (${fila.length}/${info.min} para começar): ${nomes.join(', ') || '—'}` }),
-    el('button', { cls: 'btn forte', textContent: pronto ? '▶ Iniciar partida' : `Esperando mais ${Math.max(0, info.min - fila.length)}…`, disabled: !pronto, onclick: () => portalAtual && rede?.iniciar(portalAtual) }),
+    el('small', { textContent: retro ? `Na sala: ${fila.length}/${total}${fora.length ? ` · faltam: ${fora.join(', ')}` : ' · todo mundo aqui!'}` : `Na fila (${fila.length}/${info.min} para começar): ${nomes.join(', ') || '—'}` }),
+    el('button', { cls: 'btn forte', textContent: pronto ? '▶ Iniciar' : retro ? `Esperando ${total - fila.length} entrar na sala…` : `Esperando mais ${Math.max(0, info.min - fila.length)}…`, disabled: !pronto, onclick: () => portalAtual && rede?.iniciar(portalAtual) }),
     el('small', { cls: 'nota', textContent: 'Ao iniciar, a sala fecha para gente nova até a partida acabar.' }),
   );
   painelFila.hidden = false;
@@ -771,7 +823,7 @@ const sprint = new SprintUI({
   rede: () => rede,
   euId: () => perfil?.id ?? '',
   nome: (id) => (id === perfil?.id ? `${nome} (você)` : remotos.get(id)?.j.nome ?? '?'),
-  distCentro: () => Math.hypot(eu.pos.x, eu.pos.z),
+  naSala: () => dentroDoPredio(salaRetro, eu.pos.x, eu.pos.z),
   aviso: (t) => mostrarAviso(t),
 });
 app.append(sprint.painel, sprint.relatorio);
@@ -781,7 +833,6 @@ sprint.aoFechar = () => aplicarTemaRetro(null);
 /** Tema de Halloween e placas nas mãos conforme o estado do Sprint Retro. */
 function aplicarTemaRetro(r: import('./protocolo').EstadoRetro | null): void {
   const ligado = Boolean(r);
-  halloween?.ligar(ligado);
   eu.boneco.fantasia(ligado);
   for (const x of remotos.values()) x.boneco.fantasia(ligado);
   const placas = r?.fase === 'pergunta' ? r.placas : {};
@@ -792,7 +843,7 @@ function aplicarTemaRetro(r: import('./protocolo').EstadoRetro | null): void {
 function definirRetro(r: import('./protocolo').EstadoRetro | null): void {
   const antes = sprint.estado;
   sprint.atualizar(r);
-  if (r && !antes) mostrarAviso('🎃 Sprint Retro começou! A praça virou Halloween. Todos ao chafariz.', 4000);
+  if (r && !antes) mostrarAviso('🗂️ Sprint Retro começou na Sala Sprint Retro!', 4000);
   // O relatório final fica aberto (com o tema) até a pessoa fechar.
   if (r || !sprint.aberto) aplicarTemaRetro(r);
   desenharFaixa();
@@ -815,7 +866,10 @@ function alternarCarro(): void {
 }
 botaoCarro.onclick = alternarCarro;
 addEventListener('keydown', (e) => {
-  if ((e.key === 'e' || e.key === 'E') && !(e.target instanceof HTMLInputElement)) alternarCarro();
+  if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+  if (e.key === 'e' || e.key === 'E') alternarCarro();
+  if (e.code === 'KeyM' && estado === 'jogo' && !fps?.ativo && !corridaUI?.ativo) mapa?.alternar();
+  if (e.key === 'Escape' && mapa?.estaAberto) mapa.alternar(false);
 });
 
 function entrarNoJogo(): void {
@@ -1014,6 +1068,12 @@ function quadro(): void {
     const d = controles.distancia;
     const alvo = new THREE.Vector3(eu.pos.x, eu.pos.y + 1.4, eu.pos.z);
     const desejada = new THREE.Vector3(alvo.x + Math.sin(controles.yaw) * d * Math.cos(controles.pitch), alvo.y + Math.sin(controles.pitch) * d + 0.6, alvo.z + Math.cos(controles.yaw) * d * Math.cos(controles.pitch));
+    // Dentro de um prédio a câmera fica do lado de dentro das paredes (o teto some).
+    const dentro = predios?.dentro(eu.pos.x, eu.pos.z);
+    if (dentro) {
+      desejada.x = Math.max(dentro.x - dentro.larg / 2 + 0.6, Math.min(dentro.x + dentro.larg / 2 - 0.6, desejada.x));
+      desejada.z = Math.max(dentro.z - dentro.prof / 2 + 0.6, Math.min(dentro.z + dentro.prof / 2 - 0.6, desejada.z));
+    }
     camera.position.lerp(desejada, 1 - Math.exp(-dt * 12));
     camera.lookAt(alvo);
   } else {
@@ -1055,7 +1115,10 @@ function quadro(): void {
     const r = remotos.get(id);
     return r ? { x: r.boneco.grupo.position.x, z: r.boneco.grupo.position.z, rot: r.boneco.grupo.rotation.y } : null;
   });
-  halloween?.animar(t);
+  predios?.animar(t, dt, eu.pos.x, eu.pos.z);
+  if (predios) predios.velocidadeRoda = cassinoUI.roleta?.fase === 'girando' ? 9 : 0.4;
+  mapa?.tick(t, estado === 'jogo' && !fps?.ativo && !corridaUI?.ativo && !fps?.espectador && !corridaUI?.espectador);
+  cassinoUI.tick(estado === 'jogo' && !fps?.ativo && !corridaUI?.ativo && !carros?.meu && !cartasUI.sentado, performance.now());
   corridaUI?.animar(dt);
   cartasUI.tick(estado === 'jogo' && !fps?.ativo && !corridaUI?.ativo && !carros?.meu);
   sprint.tick();
@@ -1093,7 +1156,10 @@ function quadro(): void {
 if (import.meta.env.DEV)
   Object.assign(window, {
     __praca: {
-      teleportar: (x: number, z: number) => eu.pos.set(x, 0, z),
+      teleportar: (x: number, z: number, yaw?: number) => {
+        eu.pos.set(x, 0, z);
+        if (yaw !== undefined) controles.yaw = yaw;
+      },
       arena: (x: number, z: number, yaw: number) => fps?.teleportarTeste(x, z, yaw),
       // Vista de cima para conferir o mapa nos testes.
       vistaAerea: (altura: number) => {
