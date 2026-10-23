@@ -4,7 +4,9 @@
 import './estilo.css';
 import * as THREE from 'three';
 import { ACESSORIOS, APARENCIA_PADRAO, ARMAS, type Aparencia, Boneco, CABELOS, CHAPEUS, CORES, PELES, PETS, ROUPAS, escreverSkin, lerSkin } from './boneco';
+import { criarArena } from './arena';
 import { Carros } from './carros';
+import { FPS } from './fps';
 import { Controles } from './controles';
 import { Halloween } from './halloween';
 import { Loja } from './loja';
@@ -58,7 +60,13 @@ const painelFila = el('div', { cls: 'painel-fila', hidden: true }); // aparece a
 const breu = el('div', { cls: 'breu', hidden: true }); // quem procura no esconde-esconde, enquanto os outros escondem
 const resultadoEl = el('div', { cls: 'resultado', hidden: true });
 const botaoCarro = el('button', { cls: 'botao-carro', hidden: true }); // "E para dirigir" / "E para sair"
-app.append(canvas, breu, hud, faixa, painelFila, botaoCarro, aviso, resultadoEl, tela);
+const botaoAssistir = el('button', { cls: 'chip botao-assistir', hidden: true, textContent: '👀 Assistir mata-mata' });
+app.append(canvas, breu, hud, faixa, painelFila, botaoCarro, botaoAssistir, aviso, resultadoEl, tela);
+botaoAssistir.onclick = () => {
+  if (!fps) return;
+  fps.espectador = !fps.espectador;
+  botaoAssistir.textContent = fps.espectador ? '↩️ Voltar para a praça' : '👀 Assistir mata-mata';
+};
 
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
@@ -111,6 +119,7 @@ let partidaRecebidaEm = 0;
 const marcas = new Map<string, THREE.Sprite>();
 let carros: Carros | null = null;
 let halloween: Halloween | null = null;
+let fps: FPS | null = null;
 
 /* ---------- Mundo ---------- */
 
@@ -123,6 +132,21 @@ const carregando = criarMundo().then((m) => {
   m.cena.add(portais.grupo);
   carros = new Carros(m.cena, m.modelosCarro);
   halloween = new Halloween(m);
+  criarArena(m.cena);
+  fps = new FPS({
+    el,
+    app,
+    canvas,
+    cena: m.cena,
+    camera,
+    controles,
+    rede: () => rede,
+    euId: () => perfil?.id ?? '',
+    minhaArma: () => aparencia.arma,
+    remotos: () => [...remotos.values()].map((r) => ({ id: r.j.id, nome: r.j.nome, boneco: r.boneco, skin: r.j.skin })),
+    meuBoneco: () => eu.boneco,
+    aviso: (t) => mostrarAviso(t, 3500),
+  });
   return m;
 });
 
@@ -268,6 +292,29 @@ function receber(m: MsgServidor): void {
     }
     case 'retro':
       definirRetro(m.r);
+      break;
+    case 'mm':
+      fps?.receberEstado(m.e);
+      controles.limitePitch = fps?.ativo ? [-1.45, 1.45] : [-0.1, 1.2];
+      if (!m.e) {
+        // Fim do mata-mata: quem jogou volta para a praça.
+        if (fps?.voltarPraca) {
+          fps.voltarPraca = false;
+          eu.pos.set((Math.random() - 0.5) * 6, 0, -10);
+          controles.yaw = 0;
+          controles.pitch = 0.35;
+        }
+        botaoAssistir.hidden = true;
+      }
+      break;
+    case 'tiro':
+      fps?.tiroDeOutro(m.de, m.o, m.p, m.arma);
+      break;
+    case 'dano':
+      fps?.dano(m.para, m.hp, m.cabeca, m.de);
+      break;
+    case 'abate':
+      fps?.abate(m.de, m.para, m.arma, m.cabeca);
       break;
     case 'resultado':
       if (m.jogo === 'sprint-retro') {
@@ -790,7 +837,7 @@ function desenharHud(): void {
 }
 
 function fazerEmote(e: Emote): void {
-  if (estado !== 'jogo') return;
+  if (estado !== 'jogo' || fps?.ativo) return;
   eu.boneco.emote(e);
   rede?.emote(e);
 }
@@ -820,7 +867,25 @@ function quadro(): void {
   if (!mundo) return;
   const t = relogio.elapsedTime;
 
-  if (estado === 'jogo' && carros?.meu) {
+  if (estado === 'jogo' && fps?.ativo) {
+    // Mata-mata em primeira pessoa: o FPS cuida de andar, mirar, atirar e da câmera.
+    const p = fps.quadro(dt);
+    if (p) {
+      eu.pos.set(p[0], p[1], p[2]);
+      eu.rot = p[3];
+      if (rede && t - ultimoEnvio >= 1 / ENVIOS_POR_SEGUNDO) {
+        const pose: Pose = [p[0], p[1], p[2], p[3], p[4] as Anim];
+        const chave = pose.map((v) => Math.round(v * 50)).join(',');
+        if (chave !== ultimaPoseEnviada) {
+          rede.pose(pose);
+          ultimaPoseEnviada = chave;
+          ultimoEnvio = t;
+        }
+      }
+    }
+  } else if (estado === 'jogo' && fps?.espectador && fps.estado) {
+    fps.quadroEspectador(dt);
+  } else if (estado === 'jogo' && carros?.meu) {
     // No carro: quem dirige controla (frente/trás acelera e freia, lados viram, Shift turbo); passageiro só vai junto.
     controles.ler();
     const c = carros.meu;
@@ -909,7 +974,7 @@ function quadro(): void {
     r.boneco.atualizar(dt, r.anim, r.vel);
     // Quem procura: escondido fora do alcance da lanterna some (o servidor parou de mandar a posição).
     const escondido = souBuscador() && partida?.fase === 'jogando' && !partida.achados?.includes(r.j.id) && partida.participantes.includes(r.j.id) && performance.now() - r.visto > 600;
-    g.visible = !escondido;
+    g.visible = !escondido && !fps?.oculto(r.j.id);
     r.boneco.mostrarNome(!(souBuscador() && partida?.fase === 'jogando'));
     r.boneco.mostrarCorpo(r.anim !== Anim.Dirigindo);
     // Passageiro de outro carro: o boneco (só o nome aparece) vai junto com o carro.
@@ -933,6 +998,9 @@ function quadro(): void {
   botaoCarro.hidden = !(carros?.meu || perto);
   botaoCarro.textContent = carros?.meu ? '🚶 Sair do carro (E)' : perto?.motorista ? '🚗 Entrar de passageiro (E)' : '🚗 Dirigir (E)';
 
+  botaoAssistir.hidden = !(estado === 'jogo' && fps?.estado && !fps.ativo);
+  // No mata-mata em primeira pessoa, só fica o que é do jogo na tela.
+  document.body.classList.toggle('modo-fps', Boolean(fps?.ativo));
   botaoLoja.hidden = !(estado === 'jogo' && !carros?.meu && !loja.aberta && Math.hypot(eu.pos.x - POS_LOJA[0], eu.pos.z - POS_LOJA[1]) < 4.5);
   portais.animar(t, camera.position);
   if (t - ultimaFaixa > 0.2) {
@@ -958,6 +1026,7 @@ if (import.meta.env.DEV)
   Object.assign(window, {
     __praca: {
       teleportar: (x: number, z: number) => eu.pos.set(x, 0, z),
+      arena: (x: number, z: number, yaw: number) => fps?.teleportarTeste(x, z, yaw),
       // Vista de cima para conferir o mapa nos testes.
       vistaAerea: (altura: number) => {
         tela.hidden = true;

@@ -4,8 +4,8 @@
 import * as THREE from 'three';
 import { type IdJogo, JOGOS, RAIO_PORTAL, ZONA_REI } from './protocolo';
 
-const COR: Record<IdJogo, string> = { 'pega-pega': '#ef4444', 'rei-da-colina': '#facc15', 'esconde-esconde': '#8b5cf6', 'sprint-retro': '#f97316' };
-const ICONE: Record<IdJogo, string> = { 'pega-pega': '🏃', 'rei-da-colina': '👑', 'esconde-esconde': '🙈', 'sprint-retro': '🎃' };
+const COR: Record<IdJogo, string> = { 'pega-pega': '#ef4444', 'rei-da-colina': '#facc15', 'esconde-esconde': '#8b5cf6', 'sprint-retro': '#f97316', 'mata-mata': '#dc2626' };
+const ICONE: Record<IdJogo, string> = { 'pega-pega': '🏃', 'rei-da-colina': '👑', 'esconde-esconde': '🙈', 'sprint-retro': '🎃', 'mata-mata': '🔫' };
 
 function placa(texto: string, subtexto: string, cor: string): THREE.Sprite {
   const c = document.createElement('canvas');

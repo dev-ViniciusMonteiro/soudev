@@ -11,6 +11,8 @@ export class Controles {
   yaw = 0; // câmera atrás do boneco, olhando para o chafariz
   pitch = 0.35;
   distancia = 7;
+  /** Quanto dá para inclinar a câmera (o mata-mata em primeira pessoa usa mais). */
+  limitePitch: [number, number] = [-0.1, 1.2];
   aoEmote: (e: Emote) => void = () => {};
   private _ativo = true;
 
@@ -54,7 +56,12 @@ export class Controles {
         this.base.style.top = `${e.clientY - 60}px`;
         this.base.classList.add('ativo');
       } else if (this.arrasto.id < 0) Object.assign(this.arrasto, { id: e.pointerId, x: e.clientX, y: e.clientY });
-      canvas.setPointerCapture(e.pointerId);
+      // Com o mouse travado (mata-mata) o navegador recusa a captura: tudo bem, o movimento vem de movementX/Y.
+      try {
+        canvas.setPointerCapture(e.pointerId);
+      } catch {
+        /* ponteiro travado */
+      }
     });
     canvas.addEventListener('pointermove', (e) => {
       if (e.pointerId === this.joy.id) {
@@ -67,7 +74,7 @@ export class Controles {
         (this.base.firstElementChild as HTMLElement).style.transform = `translate(${dx * k}px, ${dy * k}px)`;
       } else if (e.pointerId === this.arrasto.id) {
         this.yaw -= (e.clientX - this.arrasto.x) * 0.006;
-        this.pitch = Math.min(1.2, Math.max(-0.1, this.pitch + (e.clientY - this.arrasto.y) * 0.005));
+        this.pitch = Math.min(this.limitePitch[1], Math.max(this.limitePitch[0], this.pitch + (e.clientY - this.arrasto.y) * 0.005));
         this.arrasto.x = e.clientX;
         this.arrasto.y = e.clientY;
       }
