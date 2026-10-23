@@ -535,6 +535,7 @@ export class FPS {
         const skin = /arma:([a-z]+)/.exec(r.skin)?.[1] ?? 'padrao';
         const g = modeloArma(id, skin);
         g.scale.setScalar(1.3);
+        g.rotation.y = Math.PI; // o modelo aponta para -z; o boneco olha para +z
         g.position.set(0.28, 1.15, 0.35);
         r.boneco.grupo.add(g);
         this.armasRemotas.set(r.id, { id, g });
