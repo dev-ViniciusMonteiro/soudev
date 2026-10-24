@@ -144,3 +144,6 @@ vite.config.ts.timestamp-*
 
 # Build do jogo (gerado por npm run build:game)
 /public/jogar/
+
+# Banners gerados: telas capturadas e HTML intermediário (scripts/banners)
+/.banners/

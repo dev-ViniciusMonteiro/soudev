@@ -1,9 +1,11 @@
 import Link from 'next/link'
 import { SITE_URL, jsonLd } from '@/lib/site'
-import { games } from '@/lib/games'
+import { MODOS, games } from '@/lib/games'
+import { bannerDoJogo } from '@/lib/banners'
+import JogosPorModo from '@/components/JogosPorModo'
 
 const title = 'Jogos Online Grátis no Navegador'
-const description = 'Jogos grátis para jogar direto no navegador, sem baixar nada: mundo aberto 3D, corrida e mais. Funcionam no PC e no celular.'
+const description = 'Jogos grátis direto no navegador, sem baixar nada: online com amigos, com o corpo pela câmera e clássicos em 3D. Funcionam no PC e no celular.'
 
 export const metadata = {
   title,
@@ -41,28 +43,11 @@ export default function GamesIndex() {
       </nav>
       <header className="index-header">
         <h1>Jogos online grátis</h1>
-        <p className="lead">Jogue direto no navegador, sem baixar nada e sem cadastro. Funciona no computador e no celular.</p>
+        <p className="lead">Jogue direto no navegador, sem baixar nada. Escolha o modo: online com amigos, com o corpo pela câmera ou clássico, no teclado e no toque.</p>
       </header>
 
       <section className="tool-info">
-        <div className="game-grid">
-          {games.map((game) => (
-            <Link key={game.slug} href={`/jogos/${game.slug}`} className="game-card">
-              <span className="game-card-art" aria-hidden="true">
-                <span>{game.name}</span>
-              </span>
-              <span className="game-card-body">
-                <strong>{game.name}</strong>
-                <span>{game.short}</span>
-                <span className="game-tags">
-                  {game.genre.map((g) => (
-                    <span key={g}>{g}</span>
-                  ))}
-                </span>
-              </span>
-            </Link>
-          ))}
-        </div>
+        <JogosPorModo jogos={games.map((g) => ({ slug: g.slug, name: g.name, short: g.short, modos: g.modos, banner: bannerDoJogo(g.slug) }))} modos={MODOS} />
         <p className="muted small see-all">Mais jogos em breve.</p>
       </section>
 

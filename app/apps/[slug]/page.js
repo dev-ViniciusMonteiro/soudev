@@ -1,6 +1,8 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { apps, getApp } from '@/lib/apps'
+import { bannerDoApp } from '@/lib/banners'
 import { SITE_URL, jsonLd } from '@/lib/site'
 
 export const dynamicParams = false
@@ -56,6 +58,8 @@ export default async function AppPage({ params }) {
         <span aria-hidden="true">/</span>
         <span>{app.nome}</span>
       </nav>
+
+      <Image src={bannerDoApp(app.slug)} alt={`${app.nome}: ${app.curto}`} width={1920} height={768} priority className="pagina-banner" sizes="(max-width: 1192px) 100vw, 1160px" />
       <header className="ap-hero">
         <span className="ap-hero-icone" aria-hidden="true">
           {app.icone}

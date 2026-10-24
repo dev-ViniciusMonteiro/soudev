@@ -1,9 +1,11 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import AdSlot from '@/components/AdSlot'
 import GamePlayer from '@/components/GamePlayer'
 import { SITE_URL, jsonLd, site } from '@/lib/site'
 import { games, getGame } from '@/lib/games'
+import { bannerDoJogo } from '@/lib/banners'
 
 export const dynamicParams = false
 
@@ -77,6 +79,8 @@ export default async function GamePage({ params }) {
         <span aria-hidden="true">/</span>
         <Link href="/jogos">Jogos</Link>
       </nav>
+
+      <Image src={bannerDoJogo(game.slug)} alt={`${game.name}: ${game.short}`} width={1920} height={768} priority className="pagina-banner" sizes="(max-width: 1192px) 100vw, 1160px" />
 
       <header className="tool-header">
         <span className="tool-badge tool-badge-lg" aria-hidden="true">{game.badge}</span>

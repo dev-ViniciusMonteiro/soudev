@@ -1,7 +1,9 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { SITE_URL, jsonLd, site } from '@/lib/site'
 import { getNicho, modulos, nichos } from '@/lib/sistemas/nichos'
+import { bannerDoSistema } from '@/lib/banners'
 
 export const dynamicParams = false
 
@@ -82,6 +84,8 @@ export default async function NichoPage({ params }) {
         <span aria-hidden="true">/</span>
         <span>{n.nome}</span>
       </nav>
+
+      <Image src={bannerDoSistema(n.slug)} alt={`${n.nome}: ${n.curto}`} width={1920} height={768} priority className="pagina-banner" sizes="(max-width: 1192px) 100vw, 1160px" />
 
       <header className="sx-hero" style={{ '--sx-cor': n.cor }}>
         <span className="sx-nicho-icone grande" aria-hidden="true">

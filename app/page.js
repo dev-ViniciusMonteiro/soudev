@@ -1,10 +1,12 @@
 import Link from 'next/link'
 import Carrossel from '@/components/Carrossel'
 import ContactForm from '@/components/ContactForm'
+import JogosPorModo from '@/components/JogosPorModo'
+import { bannerDoJogo, bannersDaHome } from '@/lib/banners'
 import { SITE_URL, jsonLd, site } from '@/lib/site'
 import { categories, tools } from '@/lib/tools'
 import { nichos } from '@/lib/sistemas/nichos'
-import { games } from '@/lib/games'
+import { MODOS, games } from '@/lib/games'
 import { apps } from '@/lib/apps'
 
 export const metadata = {
@@ -32,32 +34,6 @@ const structured = [
     sameAs: [site.instagram],
     knowsAbout: ['Desenvolvimento web', 'E-commerce', 'Inteligência artificial', 'Next.js', 'React'],
   },
-]
-
-// Destaques: os projetos maiores (apps e sistemas). As ferramentas menores ficam no índice logo abaixo.
-const sistemasEmDestaque = ['mei-na-mao', 'restaurante-delivery', 'mercadinho-pdv']
-const destaques = [
-  ...apps.map((a) => ({ href: `/apps/${a.slug}`, nome: a.nome, texto: a.curto, tag: 'App' })),
-  ...sistemasEmDestaque
-    .map((slug) => nichos.find((n) => n.slug === slug))
-    .filter(Boolean)
-    .map((n) => ({ href: `/sistemas/${n.slug}`, nome: n.nome, texto: n.curto, tag: 'Sistema de gestão' })),
-]
-
-// Banners do topo (carrossel): primeiro o pessoal (currículo); os outros levam para o jogo ou a ferramenta que mostram.
-const banners = [
-  { href: '/curriculo', titulo: 'Vinicius Monteiro Orlandi', imagem: '/banner-vinicius.jpg', largura: 1983, altura: 793, alt: 'Vinicius Monteiro Orlandi: “Nós só podemos ver um pouco do futuro, mas o suficiente para perceber que há muito a fazer.”' },
-  { href: '/jogos/praca', titulo: 'Praça', imagem: '/banners/praca.webp', largura: 1920, altura: 768, alt: 'Praça: reúna seus amigos online e jogue grátis. Jogue com amigos, online e grátis, converse e se divirta.' },
-  { href: '/jogos/corte-neon', titulo: 'Corte Neon', imagem: '/banners/corte-neon.webp', largura: 1920, altura: 768, alt: 'Corte Neon: o modo de jogar mudou! Corte os blocos, acompanhe o ritmo, novo modo de jogo, supere seus recordes.' },
-  {
-    href: '/ferramentas/correcao-exercicios-camera',
-    titulo: 'Correção de exercícios pela câmera',
-    imagem: '/banners/correcao-exercicios.webp',
-    largura: 1920,
-    altura: 768,
-    alt: 'Correção de exercícios pela câmera: a câmera acompanha seus movimentos, conta as repetições e corrige a sua postura em tempo real.',
-  },
-  { href: '/jogos/corte-neon', titulo: 'Corte Neon pela câmera', imagem: '/banners/corte-neon-camera.webp', largura: 1920, altura: 768, alt: 'Corte Neon: movimente seu corpo e jogue pela câmera. Novo modo de jogo, supere seus recordes.' },
 ]
 
 const servicos = [
@@ -95,9 +71,12 @@ const indice = [
     nome: 'Jogos',
     descricao: 'Direto no navegador, no PC ou no celular, sem baixar nada.',
     verTodos: '/jogos',
-    itens: games.map((g) => ({ href: `/jogos/${g.slug}`, nome: g.name, texto: g.short })),
+    itens: games.map((g) => ({ href: `/jogos/${g.slug}`, nome: g.name, texto: g.short, icones: g.modos.map((m) => MODOS.find(([id]) => id === m)?.[2]).join('') })),
   },
 ]
+
+// Jogos para o filtro por modo (só o que o componente do navegador precisa).
+const jogos = games.map((g) => ({ slug: g.slug, name: g.name, short: g.short, modos: g.modos, banner: bannerDoJogo(g.slug) }))
 
 export default function Home() {
   const total = indice.reduce((s, c) => s + c.itens.length, 0)
@@ -105,7 +84,7 @@ export default function Home() {
   return (
     <main>
       <section className="container intro">
-        <Carrossel slides={banners} />
+        <Carrossel slides={bannersDaHome()} />
         <h1>Oi, eu sou o Vinicius. Faço ferramentas que resolvem as partes chatas do dia a dia, de graça.</h1>
         <p className="intro-acoes">
           <Link href="/ferramentas" className="btn btn-primary">
@@ -116,19 +95,14 @@ export default function Home() {
         </p>
       </section>
 
-      <section className="container secao">
-        <h2 className="rotulo">Destaques</h2>
-        <ul className="lista">
-          {destaques.map((item) => (
-            <li key={item.href}>
-              <Link href={item.href}>
-                <span className="lista-nome">{item.nome}</span>
-                <span className="lista-texto">{item.texto}</span>
-                <span className="lista-tag">{item.tag}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+      <section id="jogos" className="container secao">
+        <div className="secao-cabeca">
+          <h2>Jogos</h2>
+          <p className="muted">
+            Direto no navegador, sem baixar nada. Jogue online com amigos, com o corpo pela câmera ou no modo clássico. <Link href="/jogos">Ver todos os jogos</Link>.
+          </p>
+        </div>
+        <JogosPorModo jogos={jogos} modos={MODOS} />
       </section>
 
       <section id="categorias" className="container secao">
@@ -150,6 +124,7 @@ export default function Home() {
                   <li key={item.href}>
                     <Link href={item.href} title={item.texto}>
                       {item.nome}
+                      {item.icones && <span className="jogo-modos"> {item.icones}</span>}
                     </Link>
                   </li>
                 ))}

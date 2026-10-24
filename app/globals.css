@@ -3079,3 +3079,127 @@ textarea {
     display: none;
   }
 }
+
+.carrossel-contador {
+  margin: 10px 0 0;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.carrossel-contador strong {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Banner no topo das páginas (jogo, app, sistema) ---------- */
+
+.pagina-banner {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 5 / 2;
+  margin: 8px 0 24px;
+  border-radius: var(--radius);
+  object-fit: cover;
+}
+
+/* ---------- Jogos por modo (home e /jogos) ---------- */
+
+.jogos-filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.jogos-filtros button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.jogos-filtros button span {
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.jogos-filtros button.ativo {
+  background: var(--text);
+  border-color: var(--text);
+  color: var(--bg);
+}
+
+.jogos-filtros button.ativo span {
+  color: inherit;
+  opacity: 0.75;
+}
+
+.jogos-grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+  gap: 18px;
+}
+
+.jogo-cartao {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  overflow: hidden;
+  color: inherit;
+  text-decoration: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.jogo-cartao:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.14);
+}
+
+.jogo-cartao img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 5 / 2;
+  object-fit: cover;
+}
+
+.jogo-cartao-corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px 14px;
+}
+
+.jogo-cartao-modos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.jogo-cartao-modos span {
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.jogo-cartao-texto {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.jogo-modos {
+  font-size: 0.85em;
+}

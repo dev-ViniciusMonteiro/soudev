@@ -74,7 +74,15 @@ export default function Carrossel({ slides, intervalo = 6000 }) {
           </>
         )}
       </div>
-      {slides.length > 1 && (
+      {slides.length > 8 && (
+        <p className="carrossel-contador" aria-live="polite">
+          <strong>
+            {atual + 1} / {slides.length}
+          </strong>{' '}
+          · {slides[atual]?.titulo}
+        </p>
+      )}
+      {slides.length > 1 && slides.length <= 8 && (
         <div className="carrossel-bolinhas">
           {slides.map((s, i) => (
             <button key={s.href + s.imagem} type="button" aria-label={`Ir para o banner ${i + 1}: ${s.titulo}`} aria-current={i === atual} className={i === atual ? 'ativa' : ''} onClick={() => ir(i)} />
