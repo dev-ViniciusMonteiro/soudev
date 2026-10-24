@@ -1,7 +1,9 @@
+import Image from 'next/image'
 import Link from 'next/link'
+import { ALTURA_BANNER, LARGURA_BANNER, bannerDaFerramenta } from '@/lib/banners'
 import { notFound } from 'next/navigation'
 import AdSlot from '@/components/AdSlot'
-import ToolCard from '@/components/ToolCard'
+import CartaoBanner from '@/components/CartaoBanner'
 import ToolRenderer from '@/components/ToolRenderer'
 import { SITE_URL, jsonLd, site } from '@/lib/site'
 import { categories, getTool, tools } from '@/lib/tools'
@@ -86,6 +88,8 @@ export default async function ToolPage({ params }) {
         <Link href={`/ferramentas#${category.id}`}>{category.name}</Link>
       </nav>
 
+      <Image src={bannerDaFerramenta(tool.slug)} alt={`${tool.name}: ${tool.short}`} width={LARGURA_BANNER} height={ALTURA_BANNER} className="pagina-banner" priority sizes="(max-width: 1192px) 100vw, 1160px" />
+
       <header className="tool-header">
         <span className="tool-badge tool-badge-lg" aria-hidden="true">{tool.badge}</span>
         <div>
@@ -136,9 +140,9 @@ export default async function ToolPage({ params }) {
 
       <section className="tool-info">
         <h2>Outras ferramentas grátis</h2>
-        <div className="tool-grid">
+        <div className="cartoes-grade">
           {related.map((item) => (
-            <ToolCard key={item.slug} tool={item} />
+            <CartaoBanner key={item.slug} href={`/ferramentas/${item.slug}`} banner={bannerDaFerramenta(item.slug)} nome={item.name} texto={item.short} />
           ))}
         </div>
         <p className="see-all">

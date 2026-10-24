@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import { SITE_URL, jsonLd } from '@/lib/site'
 import { nichos } from '@/lib/sistemas/nichos'
+import { bannerDoSistema } from '@/lib/banners'
+import CartaoBanner from '@/components/CartaoBanner'
 
 const title = 'Sistemas de Gestão: PDV, Cardápio Online, Agenda e OS'
 const description =
@@ -51,16 +53,9 @@ export default function SistemasIndex() {
       </header>
 
       <section className="tool-info">
-        <div className="sx-nichos">
+        <div className="cartoes-grade">
           {nichos.map((n) => (
-            <Link key={n.slug} href={`/sistemas/${n.slug}`} className="sx-nicho-card">
-              <span className="sx-nicho-icone" aria-hidden="true">
-                {n.badge}
-              </span>
-              <strong>{n.nome}</strong>
-              <span>{n.curto}</span>
-              <span className="sx-nicho-mais">Ver o sistema →</span>
-            </Link>
+            <CartaoBanner key={n.slug} href={`/sistemas/${n.slug}`} banner={bannerDoSistema(n.slug)} nome={n.nome} texto={n.curto} />
           ))}
         </div>
       </section>

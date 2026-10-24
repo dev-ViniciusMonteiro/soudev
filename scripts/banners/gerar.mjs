@@ -12,7 +12,10 @@ import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import sharp from 'sharp';
-import { banners } from './conteudo.mjs';
+import { banners as outros } from './conteudo.mjs';
+import { ferramentas } from './ferramentas.mjs';
+
+const banners = [...outros, ...ferramentas];
 
 const RAIZ = resolve(import.meta.dirname, '../..');
 const CACHE = join(RAIZ, '.banners');
@@ -53,14 +56,20 @@ async function abrirChrome(largura, altura) {
 
 /* ---------- Captura das telas (apps, sistemas e jogos com "tela") ---------- */
 
-const ENDERECO = { apps: (s) => `/apps/${s}/app`, sistemas: (s) => `/sistemas/${s}/app?beta=1`, jogos: (s) => `/jogar/${s}/index.html` };
+const ENDERECO = { apps: (s) => `/apps/${s}/app`, sistemas: (s) => `/sistemas/${s}/app?beta=1`, jogos: (s) => `/jogar/${s}/index.html`, ferramentas: (s) => `/ferramentas/${s}` };
 
-async function capturar(base) {
+async function capturar(base, so = []) {
   const c = await abrirChrome(1600, 900);
   await c.cdp('Page.addScriptToEvaluateOnNewDocument', { source: "try{localStorage.setItem('consentimento', JSON.stringify({analytics:false,ads:false,em:Date.now()}))}catch(e){}" });
-  for (const b of banners.filter((x) => x.tela)) {
+  for (const b of banners.filter((x) => x.tela && (!so.length || so.includes(x.slug)))) {
     await c.cdp('Page.navigate', { url: base + ENDERECO[b.tipo](b.slug) });
-    await esperar(9000);
+    await esperar(b.tipo === 'ferramentas' ? 5000 : 9000);
+    // Nas ferramentas, a tela começa no quadro da ferramenta (sem o cabeçalho do site).
+    if (b.tipo === 'ferramentas') {
+      const rolar = "document.querySelector('.pagina-banner')?.remove(); document.documentElement.style.scrollBehavior = 'auto'; scrollTo(0, document.querySelector('.tool-card-main').getBoundingClientRect().top + scrollY - 88)";
+      await c.cdp('Runtime.evaluate', { expression: rolar });
+      await esperar(800);
+    }
     // Tira o aviso de cookies e o selo do modo de desenvolvimento do Next (quando capturado do "next dev").
     await c.cdp('Runtime.evaluate', { expression: "document.querySelectorAll('nextjs-portal, .cookie-banner').forEach((e) => e.remove())" });
     writeFileSync(join(TELAS, `${b.tela}.png`), await c.foto());
@@ -171,6 +180,6 @@ async function gerar(lista) {
 }
 
 const args = process.argv.slice(2);
-if (args[0] === '--capturar') await capturar(args[1] ?? 'http://localhost:3000');
+if (args[0] === '--capturar') await capturar(args[1] ?? 'http://localhost:3000', args.slice(2));
 else await gerar(args.length ? banners.filter((b) => args.includes(b.slug)) : banners);
 process.exit(0);

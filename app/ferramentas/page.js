@@ -1,5 +1,6 @@
 import Link from 'next/link'
-import ToolCard from '@/components/ToolCard'
+import CartaoBanner from '@/components/CartaoBanner'
+import { bannerDaFerramenta } from '@/lib/banners'
 import { SITE_URL, jsonLd } from '@/lib/site'
 import { categories, tools } from '@/lib/tools'
 
@@ -58,11 +59,11 @@ export default function ToolsIndex() {
         <section key={category.id} id={category.id} className="tool-info category-section">
           <h2>{category.name}</h2>
           <p className="muted category-desc">{category.description}</p>
-          <div className="tool-grid">
+          <div className="cartoes-grade">
             {tools
               .filter((tool) => tool.category === category.id)
               .map((tool) => (
-                <ToolCard key={tool.slug} tool={tool} />
+                <CartaoBanner key={tool.slug} href={`/ferramentas/${tool.slug}`} banner={bannerDaFerramenta(tool.slug)} nome={tool.name} texto={tool.short} />
               ))}
           </div>
         </section>

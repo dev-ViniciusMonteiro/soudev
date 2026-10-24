@@ -1,5 +1,7 @@
 import Link from 'next/link'
+import CartaoBanner from '@/components/CartaoBanner'
 import { apps } from '@/lib/apps'
+import { bannerDoApp } from '@/lib/banners'
 import { SITE_URL, jsonLd } from '@/lib/site'
 
 const title = 'Apps no navegador: treino, editor de vídeo, globo ao vivo e baixador'
@@ -38,16 +40,9 @@ export default function AppsIndex() {
         <p className="lead">Aplicativos completos que abrem direto no navegador. Sem instalar, sem cadastro e sem limite: seus arquivos e dados ficam no seu aparelho.</p>
       </header>
       <section className="tool-info">
-        <div className="ap-cards">
+        <div className="cartoes-grade">
           {apps.map((a) => (
-            <Link key={a.slug} href={`/apps/${a.slug}`} className="ap-card">
-              <span className="ap-card-icone" aria-hidden="true">
-                {a.icone}
-              </span>
-              <strong>{a.nome}</strong>
-              <span>{a.curto}</span>
-              <span className="ap-card-mais">Conhecer →</span>
-            </Link>
+            <CartaoBanner key={a.slug} href={`/apps/${a.slug}`} banner={bannerDoApp(a.slug)} nome={a.nome} texto={a.curto} />
           ))}
         </div>
       </section>

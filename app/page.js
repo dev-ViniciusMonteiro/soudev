@@ -1,8 +1,10 @@
+import Image from 'next/image'
 import Link from 'next/link'
-import Carrossel from '@/components/Carrossel'
+import CartaoBanner from '@/components/CartaoBanner'
 import ContactForm from '@/components/ContactForm'
+import Fileira from '@/components/Fileira'
 import JogosPorModo from '@/components/JogosPorModo'
-import { bannerDoJogo, bannersDaHome } from '@/lib/banners'
+import { DESTAQUES, bannerDaFerramenta, bannerDoApp, bannerDoJogo, bannerDoSistema, bannerPessoal } from '@/lib/banners'
 import { SITE_URL, jsonLd, site } from '@/lib/site'
 import { categories, tools } from '@/lib/tools'
 import { nichos } from '@/lib/sistemas/nichos'
@@ -43,98 +45,96 @@ const servicos = [
   ['Aulas e mentoria', 'Programação e IA aplicada, para pessoas e times.'],
 ]
 
-// Índice: as categorias de ferramentas mais os sistemas, os apps e os jogos, cada uma com os seus itens.
-const indice = [
-  ...categories.map((c) => ({
-    id: c.id,
-    nome: c.name,
-    descricao: c.description,
-    verTodos: `/ferramentas#${c.id}`,
-    itens: tools.filter((t) => t.category === c.id).map((t) => ({ href: `/ferramentas/${t.slug}`, nome: t.name, texto: t.short })),
-  })),
-  {
-    id: 'sistemas',
-    nome: 'Sistemas de gestão',
-    descricao: 'PDV, cardápio online, agenda, ordem de serviço, academia e CRM.',
-    verTodos: '/sistemas',
-    itens: nichos.map((n) => ({ href: `/sistemas/${n.slug}`, nome: n.nome, texto: n.curto })),
-  },
-  {
-    id: 'apps',
-    nome: 'Apps',
-    descricao: 'Apps completos que abrem no navegador e guardam os dados no seu aparelho.',
-    verTodos: '/apps',
-    itens: apps.map((a) => ({ href: `/apps/${a.slug}`, nome: a.nome, texto: a.curto })),
-  },
-  {
-    id: 'jogos',
-    nome: 'Jogos',
-    descricao: 'Direto no navegador, no PC ou no celular, sem baixar nada.',
-    verTodos: '/jogos',
-    itens: games.map((g) => ({ href: `/jogos/${g.slug}`, nome: g.name, texto: g.short, icones: g.modos.map((m) => MODOS.find(([id]) => id === m)?.[2]).join('') })),
-  },
-]
+// Todos os itens do site com o banner de cada um, por tipo.
+const itens = {
+  jogos: games.map((g) => ({ slug: g.slug, href: `/jogos/${g.slug}`, nome: g.name, texto: g.short, banner: bannerDoJogo(g.slug) })),
+  apps: apps.map((a) => ({ slug: a.slug, href: `/apps/${a.slug}`, nome: a.nome, texto: a.curto, banner: bannerDoApp(a.slug) })),
+  sistemas: nichos.map((n) => ({ slug: n.slug, href: `/sistemas/${n.slug}`, nome: n.nome, texto: n.curto, banner: bannerDoSistema(n.slug) })),
+  ferramentas: tools.map((t) => ({ slug: t.slug, href: `/ferramentas/${t.slug}`, nome: t.name, texto: t.short, banner: bannerDaFerramenta(t.slug), categoria: t.category })),
+}
+const destaques = DESTAQUES.map((d) => ({ ...itens[d.tipo].find((i) => i.slug === d.slug), selo: d.selo }))
 
 // Jogos para o filtro por modo (só o que o componente do navegador precisa).
 const jogos = games.map((g) => ({ slug: g.slug, name: g.name, short: g.short, modos: g.modos, banner: bannerDoJogo(g.slug) }))
 
-export default function Home() {
-  const total = indice.reduce((s, c) => s + c.itens.length, 0)
+const total = Object.values(itens).reduce((s, l) => s + l.length, 0)
 
+function Cabeca({ titulo, qtd, texto, href }) {
+  return (
+    <div className="secao-cabeca secao-cabeca-linha">
+      <div>
+        <h2>
+          {titulo} <span className="secao-qtd">{qtd}</span>
+        </h2>
+        <p className="muted">{texto}</p>
+      </div>
+      <Link href={href} className="secao-ver">
+        Ver todos →
+      </Link>
+    </div>
+  )
+}
+
+const cartoes = (lista) => lista.map((i) => <CartaoBanner key={i.href} href={i.href} banner={i.banner} nome={i.nome} texto={i.texto} sizes="(max-width: 720px) 80vw, 340px" />)
+
+export default function Home() {
   return (
     <main>
       <section className="container intro">
-        <Carrossel slides={bannersDaHome()} />
+        <Link href={bannerPessoal.href} className="banner-pessoal">
+          <Image src={bannerPessoal.imagem} alt={bannerPessoal.alt} width={bannerPessoal.largura} height={bannerPessoal.altura} priority sizes="(max-width: 1192px) 100vw, 1160px" />
+        </Link>
         <h1>Oi, eu sou o Vinicius. Faço ferramentas que resolvem as partes chatas do dia a dia, de graça.</h1>
         <p className="intro-acoes">
-          <Link href="/ferramentas" className="btn btn-primary">
-            Ver as ferramentas
+          <Link href="#destaques" className="btn btn-primary">
+            Ver os projetos
           </Link>
           <Link href="/curriculo">Meu currículo</Link>
           <Link href="#contato">Fale comigo</Link>
         </p>
       </section>
 
-      <section id="jogos" className="container secao">
+      <section id="destaques" className="container secao">
         <div className="secao-cabeca">
-          <h2>Jogos</h2>
+          <h2>Destaques</h2>
           <p className="muted">
-            Direto no navegador, sem baixar nada. Jogue online com amigos, com o corpo pela câmera ou no modo clássico. <Link href="/jogos">Ver todos os jogos</Link>.
+            {total} projetos no ar, todos grátis e direto no navegador. Comece pelos que mais impressionam.
           </p>
         </div>
-        <JogosPorModo jogos={jogos} modos={MODOS} />
-      </section>
-
-      <section id="categorias" className="container secao">
-        <div className="secao-cabeca">
-          <h2>Tudo o que tem aqui</h2>
-          <p className="muted">
-            {total} itens, organizados como um índice. Precisa de algo que não está na lista? <Link href="#contato">Me conte</Link>.
-          </p>
-        </div>
-        <div className="indice">
-          {indice.map((c) => (
-            <section key={c.id} id={`cat-${c.id}`} className="indice-grupo" aria-labelledby={`titulo-${c.id}`}>
-              <h3 id={`titulo-${c.id}`}>
-                {c.nome} <span className="indice-qtd">{c.itens.length}</span>
-              </h3>
-              <p className="indice-descricao">{c.descricao}</p>
-              <ul>
-                {c.itens.map((item) => (
-                  <li key={item.href}>
-                    <Link href={item.href} title={item.texto}>
-                      {item.nome}
-                      {item.icones && <span className="jogo-modos"> {item.icones}</span>}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-              <Link href={c.verTodos} className="indice-ver">
-                Ver todos →
-              </Link>
-            </section>
+        <div className="destaques">
+          {destaques.map((i, n) => (
+            <div key={i.href} className={`destaque${n === 0 ? ' destaque-principal' : ''}`}>
+              <CartaoBanner href={i.href} banner={i.banner} nome={i.nome} texto={i.texto} etiquetas={[i.selo]} grande={n === 0} priority={n === 0} sizes={n === 0 ? '(max-width: 1192px) 100vw, 1160px' : n < 3 ? '(max-width: 720px) 100vw, 570px' : '(max-width: 720px) 100vw, 380px'} />
+            </div>
           ))}
         </div>
+      </section>
+
+      <section id="jogos" className="container secao">
+        <Cabeca titulo="Jogos" qtd={jogos.length} texto="Online com amigos, com o corpo pela câmera ou no modo clássico. Sem baixar nada." href="/jogos" />
+        <JogosPorModo jogos={jogos} modos={MODOS} variante="fileira" />
+      </section>
+
+      <section id="apps" className="container secao">
+        <Cabeca titulo="Apps" qtd={itens.apps.length} texto="Apps completos que abrem no navegador e guardam os dados no seu aparelho." href="/apps" />
+        <Fileira rotulo="Apps">{cartoes(itens.apps)}</Fileira>
+      </section>
+
+      <section id="sistemas" className="container secao">
+        <Cabeca titulo="Sistemas de gestão" qtd={itens.sistemas.length} texto="PDV, cardápio online, agenda, ordem de serviço, academia e CRM, grátis para a sua equipe." href="/sistemas" />
+        <Fileira rotulo="Sistemas">{cartoes(itens.sistemas)}</Fileira>
+      </section>
+
+      <section id="ferramentas" className="container secao">
+        <Cabeca titulo="Ferramentas" qtd={itens.ferramentas.length} texto="Resolvem na hora, sem cadastro e sem enviar seus arquivos para a internet." href="/ferramentas" />
+        {categories.map((cat) => (
+          <div key={cat.id} id={`cat-${cat.id}`} className="ferramentas-categoria">
+            <h3>
+              <Link href={`/ferramentas#${cat.id}`}>{cat.name}</Link>
+            </h3>
+            <Fileira rotulo={cat.name}>{cartoes(itens.ferramentas.filter((t) => t.categoria === cat.id))}</Fileira>
+          </div>
+        ))}
       </section>
 
       <section className="container secao">

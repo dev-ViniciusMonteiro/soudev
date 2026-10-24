@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import CartaoBanner from '@/components/CartaoBanner'
 import { SITE_URL, jsonLd, site } from '@/lib/site'
 import { getNicho, modulos, nichos } from '@/lib/sistemas/nichos'
 import { bannerDoSistema } from '@/lib/banners'
@@ -182,15 +183,9 @@ export default async function NichoPage({ params }) {
 
       <section className="tool-info">
         <h2>Outros sistemas</h2>
-        <div className="sx-nichos">
+        <div className="cartoes-grade">
           {outros.map((o) => (
-            <Link key={o.slug} href={`/sistemas/${o.slug}`} className="sx-nicho-card" style={{ '--sx-cor': o.cor }}>
-              <span className="sx-nicho-icone" aria-hidden="true">
-                {o.badge}
-              </span>
-              <strong>{o.nome}</strong>
-              <span>{o.curto}</span>
-            </Link>
+            <CartaoBanner key={o.slug} href={`/sistemas/${o.slug}`} banner={bannerDoSistema(o.slug)} nome={o.nome} texto={o.curto} />
           ))}
         </div>
       </section>

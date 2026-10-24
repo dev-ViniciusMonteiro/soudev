@@ -38,40 +38,6 @@ html.sx-tela-cheia .site-footer {
 
 /* ---------- Páginas de apresentação ---------- */
 
-.sx-nichos {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 14px;
-}
-
-.sx-nicho-card {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 20px;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--line);
-  background: var(--panel);
-  color: var(--text);
-  transition: border-color 0.15s ease, transform 0.15s ease;
-}
-
-.sx-nicho-card:hover {
-  text-decoration: none;
-  border-color: var(--sx-cor);
-}
-
-.sx-nicho-card > span:not(.sx-nicho-icone) {
-  color: var(--muted);
-  font-size: 0.92rem;
-}
-
-.sx-nicho-card .sx-nicho-mais {
-  margin-top: auto;
-  color: var(--sx-cor) !important;
-  font-weight: 600;
-}
-
 .sx-nicho-icone {
   display: grid;
   place-items: center;
