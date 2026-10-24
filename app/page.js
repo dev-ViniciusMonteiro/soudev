@@ -1,5 +1,5 @@
-import Image from 'next/image'
 import Link from 'next/link'
+import Carrossel from '@/components/Carrossel'
 import ContactForm from '@/components/ContactForm'
 import { SITE_URL, jsonLd, site } from '@/lib/site'
 import { categories, tools } from '@/lib/tools'
@@ -42,6 +42,22 @@ const destaques = [
     .map((slug) => nichos.find((n) => n.slug === slug))
     .filter(Boolean)
     .map((n) => ({ href: `/sistemas/${n.slug}`, nome: n.nome, texto: n.curto, tag: 'Sistema de gestão' })),
+]
+
+// Banners do topo (carrossel): cada um leva para o jogo ou a ferramenta que mostra.
+const banners = [
+  { href: '/jogos/praca', titulo: 'Praça', imagem: '/banners/praca.webp', largura: 1920, altura: 768, alt: 'Praça: reúna seus amigos online e jogue grátis. Jogue com amigos, online e grátis, converse e se divirta.' },
+  { href: '/jogos/corte-neon', titulo: 'Corte Neon', imagem: '/banners/corte-neon.webp', largura: 1920, altura: 768, alt: 'Corte Neon: o modo de jogar mudou! Corte os blocos, acompanhe o ritmo, novo modo de jogo, supere seus recordes.' },
+  {
+    href: '/ferramentas/correcao-exercicios-camera',
+    titulo: 'Correção de exercícios pela câmera',
+    imagem: '/banners/correcao-exercicios.webp',
+    largura: 1920,
+    altura: 768,
+    alt: 'Correção de exercícios pela câmera: a câmera acompanha seus movimentos, conta as repetições e corrige a sua postura em tempo real.',
+  },
+  { href: '/jogos/corte-neon', titulo: 'Corte Neon pela câmera', imagem: '/banners/corte-neon-camera.webp', largura: 1920, altura: 768, alt: 'Corte Neon: movimente seu corpo e jogue pela câmera. Novo modo de jogo, supere seus recordes.' },
+  { href: '/curriculo', titulo: 'Vinicius Monteiro Orlandi', imagem: '/banner-vinicius.jpg', largura: 1983, altura: 793, alt: 'Vinicius Monteiro Orlandi: “Nós só podemos ver um pouco do futuro, mas o suficiente para perceber que há muito a fazer.”' },
 ]
 
 const servicos = [
@@ -89,16 +105,7 @@ export default function Home() {
   return (
     <main>
       <section className="container intro">
-        <Link href="/curriculo" className="intro-banner" aria-label="Ver o currículo de Vinicius Monteiro Orlandi">
-          <Image
-            src="/banner-vinicius.jpg"
-            alt="Vinicius Monteiro Orlandi: “Nós só podemos ver um pouco do futuro, mas o suficiente para perceber que há muito a fazer.”"
-            width={1983}
-            height={793}
-            priority
-            sizes="(max-width: 1192px) 100vw, 1160px"
-          />
-        </Link>
+        <Carrossel slides={banners} />
         <h1>Oi, eu sou o Vinicius. Faço ferramentas que resolvem as partes chatas do dia a dia, de graça.</h1>
         <p className="intro-acoes">
           <Link href="/ferramentas" className="btn btn-primary">
