@@ -7,6 +7,13 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 
+/** Seta desenhada (o caractere ‹ › fica fora do centro do botão, dependendo da fonte). */
+const Seta = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M15 5l-7 7 7 7" />
+  </svg>
+)
+
 export default function Carrossel({ slides, intervalo = 6000 }) {
   const trilho = useRef(null)
   const [atual, setAtual] = useState(0)
@@ -59,10 +66,10 @@ export default function Carrossel({ slides, intervalo = 6000 }) {
         {slides.length > 1 && (
           <>
             <button type="button" className="carrossel-seta anterior" aria-label="Banner anterior" onClick={() => ir(atual - 1)}>
-              ‹
+              <Seta />
             </button>
             <button type="button" className="carrossel-seta proxima" aria-label="Próximo banner" onClick={() => ir(atual + 1)}>
-              ›
+              <Seta />
             </button>
           </>
         )}

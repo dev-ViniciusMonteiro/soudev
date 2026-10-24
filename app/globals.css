@@ -3027,12 +3027,15 @@ textarea {
   border-radius: 50%;
   border: 1px solid rgba(255, 255, 255, 0.35);
   background: rgba(2, 6, 23, 0.55);
+  padding: 0;
   color: #fff;
-  font-size: 1.8rem;
-  line-height: 1;
   cursor: pointer;
   opacity: 0;
   transition: opacity 0.2s ease;
+}
+
+.carrossel-seta.proxima svg {
+  transform: scaleX(-1);
 }
 
 .carrossel-janela:hover .carrossel-seta,
