@@ -14,6 +14,11 @@ export const metadata = {
   openGraph: { title, description, url: '/apps' },
 }
 
+// Apps com rota própria (fora de /apps/[slug]) que também aparecem na listagem.
+const extras = [
+  { slug: 'vinicut', nome: 'Vinicut', href: '/vinicut', curto: 'A rede social do site, com a cara do Orkut: perfil, recados, comunidades e depoimentos.' },
+]
+
 export default function AppsIndex() {
   const structured = {
     '@context': 'https://schema.org',
@@ -24,8 +29,11 @@ export default function AppsIndex() {
     inLanguage: 'pt-BR',
     mainEntity: {
       '@type': 'ItemList',
-      numberOfItems: apps.length,
-      itemListElement: apps.map((a, i) => ({ '@type': 'ListItem', position: i + 1, name: a.nome, url: `${SITE_URL}/apps/${a.slug}` })),
+      numberOfItems: apps.length + extras.length,
+      itemListElement: [
+        ...apps.map((a, i) => ({ '@type': 'ListItem', position: i + 1, name: a.nome, url: `${SITE_URL}/apps/${a.slug}` })),
+        ...extras.map((a, i) => ({ '@type': 'ListItem', position: apps.length + i + 1, name: a.nome, url: `${SITE_URL}${a.href}` })),
+      ],
     },
   }
   return (
@@ -43,6 +51,9 @@ export default function AppsIndex() {
         <div className="cartoes-grade">
           {apps.map((a) => (
             <CartaoBanner key={a.slug} href={`/apps/${a.slug}`} banner={bannerDoApp(a.slug)} nome={a.nome} texto={a.curto} />
+          ))}
+          {extras.map((a) => (
+            <CartaoBanner key={a.slug} href={a.href} banner={bannerDoApp(a.slug)} nome={a.nome} texto={a.curto} />
           ))}
         </div>
       </section>

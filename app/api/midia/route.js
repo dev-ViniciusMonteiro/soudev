@@ -3,8 +3,11 @@
 // A chave vem de TMDB_BEARER (token v4, preferido) ou TMDB_API_KEY (v3). Configure na Vercel.
 
 const BASE = 'https://api.themoviedb.org/3'
-const BEARER = process.env.TMDB_BEARER
-const KEY = process.env.TMDB_API_KEY
+// Token de leitura da TMDB (v4). Fica embutido como padrão para funcionar sem configuração;
+// a variável de ambiente TMDB_BEARER, se definida, tem prioridade. É uma chave só de leitura.
+const BEARER = process.env.TMDB_BEARER ||
+  'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJkMzM2MjEwMzM0OGFlNzVhYjU1ZTUxZjE0M2YwOGYwZSIsIm5iZiI6MTc5MzAzNTg3Ni40NTgsInN1YiI6IjZhZGY4ZTY0YTgzNjE1MGQ1ODI1MTdiNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.cze51NCDtbI8L8qd0FH8vHr6CgLH-Luqo8k5MV_mFek'
+const KEY = process.env.TMDB_API_KEY || 'd3362103348ae75ab55e51f143f08f0e'
 const REGION = 'BR'
 
 const num = (v, min, max) => {

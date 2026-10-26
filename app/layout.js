@@ -55,7 +55,6 @@ const menu = [
   ['/sistemas', 'Sistemas'],
   ['/apps', 'Apps'],
   ['/jogos', 'Jogos'],
-  ['/vinicut', 'Vinicut'],
   ['/curriculo', 'Currículo'],
   ['/#contato', 'Contato'],
 ]
@@ -78,7 +77,6 @@ export default function RootLayout({ children }) {
               <Link href="/sistemas">Sistemas</Link>
               <Link href="/apps">Apps</Link>
               <Link href="/jogos">Jogos</Link>
-              <Link href="/vinicut">Vinicut</Link>
               <Link href="/curriculo">Currículo</Link>
               <Link href="/#contato" className="nav-cta">Contato</Link>
               <Busca indice={indiceBusca} />
