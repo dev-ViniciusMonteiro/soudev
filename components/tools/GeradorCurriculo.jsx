@@ -455,7 +455,8 @@ const CSS = `
 .cvgen .cvg-modelo.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
 .cvgen .cvg-modelo-top{height:10px;border-radius:999px}
 .cvgen .cvg-modelo small{color:var(--muted);font-size:12px}
-.cvgen .cvg-badge{font-size:10px;border-radius:4px;padding:1px 5px;margin-left:6px;vertical-align:middle;color:#fff}
+.cvgen .cvg-modelo b{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:14px}
+.cvgen .cvg-badge{font-size:10px;line-height:1.5;border-radius:4px;padding:1px 6px;color:#fff;white-space:nowrap}
 .cvgen .cvg-badge.ats{background:var(--green)}
 .cvgen .cvg-badge.rec{background:var(--accent);color:var(--on-accent)}
 .cvgen .cvg-cores{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
