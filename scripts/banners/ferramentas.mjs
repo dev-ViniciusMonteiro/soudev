@@ -10,6 +10,7 @@ const CORES = {
   dia: ['#38bdf8', '#a78bfa'],
   texto: ['#a78bfa', '#22d3ee'],
   geradores: ['#22d3ee', '#facc15'],
+  cultura: ['#f43f5e', '#8b5cf6'],
 };
 
 const TAG = {
@@ -21,6 +22,7 @@ const TAG = {
   dia: 'DIA A DIA · GRÁTIS',
   texto: 'TEXTO E SEGURANÇA',
   geradores: 'GERADOR GRÁTIS',
+  cultura: 'FILMES, SÉRIES E LIVROS',
 };
 
 const f = (categoria, slug, titulo, chamada, selos) => ({
@@ -81,6 +83,7 @@ export const ferramentas = [
   f('dia', 'consulta-isbn', 'Consulta ISBN', ['Tudo sobre o livro', '*pelo ISBN*'], [['📖', 'Título'], ['✍️', 'Autor'], ['🏢', 'Editora'], ['📝', 'Sinopse']]),
   f('dia', 'simulador-urna-eletronica', 'Urna Simulada', ['Veja o voto virar', '*dado, hash e boletim*'], [['🗳️', 'Fluxo do voto'], ['📊', 'Contabilização'], ['🔀', 'RDV embaralhado'], ['🔐', 'Hash e assinatura']]),
   f('trabalho', 'gerador-de-curriculo', 'Gerador de Currículo', ['Seu currículo pronto', '*com modelos e dicas*'], [['📄', 'Vários modelos'], ['💡', 'Dica em cada campo'], ['🤖', 'Melhore com IA'], ['⬇️', 'PDF e Word']]),
+  f('cultura', 'buscar-filmes-series-livros', 'Filmes, Séries e Livros', ['Busque e descubra', '*e veja onde assistir*'], [['🎬', 'Filmes'], ['📺', 'Séries'], ['📚', 'Livros'], ['🍿', 'Onde assistir']]),
 
   /* Texto e segurança */
   f('texto', 'contador-caracteres', 'Contador', ['Caracteres e palavras', '*contados na hora*'], [['🔤', 'Caracteres'], ['📝', 'Palavras'], ['📏', 'Linhas'], ['🔁', 'Transforma o texto']]),

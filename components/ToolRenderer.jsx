@@ -52,6 +52,7 @@ const components = {
   'consulta-isbn': dynamic(() => import('./tools/ConsultaIsbn'), { loading }),
   'simulador-urna-eletronica': dynamic(() => import('./tools/UrnaSimulada'), { loading }),
   'gerador-de-curriculo': dynamic(() => import('./tools/GeradorCurriculo'), { loading }),
+  'buscar-filmes-series-livros': dynamic(() => import('./tools/BuscadorMidia'), { loading }),
 }
 
 export default function ToolRenderer({ slug }) {
