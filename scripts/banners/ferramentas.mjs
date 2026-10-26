@@ -80,6 +80,7 @@ export const ferramentas = [
   f('dia', 'feriados', 'Feriados', ['Planeje o ano', '*e os feriadões*'], [['📅', 'Todos do ano'], ['🏖️', 'Feriadões'], ['⏭️', 'Próximo feriado'], ['🇧🇷', 'Nacionais']]),
   f('dia', 'consulta-isbn', 'Consulta ISBN', ['Tudo sobre o livro', '*pelo ISBN*'], [['📖', 'Título'], ['✍️', 'Autor'], ['🏢', 'Editora'], ['📝', 'Sinopse']]),
   f('dia', 'simulador-urna-eletronica', 'Urna Simulada', ['Veja o voto virar', '*dado, hash e boletim*'], [['🗳️', 'Fluxo do voto'], ['📊', 'Contabilização'], ['🔀', 'RDV embaralhado'], ['🔐', 'Hash e assinatura']]),
+  f('trabalho', 'gerador-de-curriculo', 'Gerador de Currículo', ['Seu currículo pronto', '*com modelos e dicas*'], [['📄', 'Vários modelos'], ['💡', 'Dica em cada campo'], ['🤖', 'Melhore com IA'], ['⬇️', 'PDF e Word']]),
 
   /* Texto e segurança */
   f('texto', 'contador-caracteres', 'Contador', ['Caracteres e palavras', '*contados na hora*'], [['🔤', 'Caracteres'], ['📝', 'Palavras'], ['📏', 'Linhas'], ['🔁', 'Transforma o texto']]),

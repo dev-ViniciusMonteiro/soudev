@@ -51,6 +51,7 @@ const components = {
   feriados: dynamic(() => import('./tools/Feriados'), { loading }),
   'consulta-isbn': dynamic(() => import('./tools/ConsultaIsbn'), { loading }),
   'simulador-urna-eletronica': dynamic(() => import('./tools/UrnaSimulada'), { loading }),
+  'gerador-de-curriculo': dynamic(() => import('./tools/GeradorCurriculo'), { loading }),
 }
 
 export default function ToolRenderer({ slug }) {
