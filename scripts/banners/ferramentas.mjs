@@ -83,7 +83,7 @@ export const ferramentas = [
   f('dia', 'consulta-isbn', 'Consulta ISBN', ['Tudo sobre o livro', '*pelo ISBN*'], [['📖', 'Título'], ['✍️', 'Autor'], ['🏢', 'Editora'], ['📝', 'Sinopse']]),
   f('dia', 'simulador-urna-eletronica', 'Urna Simulada', ['Veja o voto virar', '*dado, hash e boletim*'], [['🗳️', 'Fluxo do voto'], ['📊', 'Contabilização'], ['🔀', 'RDV embaralhado'], ['🔐', 'Hash e assinatura']]),
   f('trabalho', 'gerador-de-curriculo', 'Gerador de Currículo', ['Seu currículo pronto', '*com modelos e dicas*'], [['📄', 'Vários modelos'], ['💡', 'Dica em cada campo'], ['🤖', 'Melhore com IA'], ['⬇️', 'PDF e Word']]),
-  f('cultura', 'buscar-filmes-series-livros', 'Filmes, Séries e Livros', ['Busque e descubra', '*e veja onde assistir*'], [['🎬', 'Filmes'], ['📺', 'Séries'], ['📚', 'Livros'], ['🍿', 'Onde assistir']]),
+  f('cultura', 'buscar-filmes-e-series', 'Filmes e Séries', ['Busque e descubra', '*e veja onde assistir*'], [['🎬', 'Filmes'], ['📺', 'Séries'], ['🍿', 'Onde assistir'], ['⭐', 'Recomendações']]),
 
   /* Texto e segurança */
   f('texto', 'contador-caracteres', 'Contador', ['Caracteres e palavras', '*contados na hora*'], [['🔤', 'Caracteres'], ['📝', 'Palavras'], ['📏', 'Linhas'], ['🔁', 'Transforma o texto']]),

@@ -1,8 +1,8 @@
 'use client'
 
-// Buscador de filmes, séries e livros. Filmes/séries vêm da TMDB (via /api/midia, que esconde a
-// chave) com busca por texto, filtros avançados (gênero, década, nota, "onde assistir" por streaming
-// no Brasil), detalhes, elenco, trailer e recomendações. Livros vêm do Google Books (sem chave).
+// Buscador de filmes e séries (TMDB via /api/midia, que esconde a chave): busca por texto, filtros
+// avançados (gênero, década, nota, "onde assistir" por streaming no Brasil), detalhes com elenco,
+// trailer, onde assistir e recomendações.
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { track } from '@/lib/analytics'
@@ -32,7 +32,7 @@ function normalizarTmdb(x, tipoForcado) {
 }
 
 export default function BuscadorMidia() {
-  const [tipo, setTipo] = useState('filme') // filme | serie | livro
+  const [tipo, setTipo] = useState('filme') // filme | serie
   const [query, setQuery] = useState('')
   const [busca, setBusca] = useState('') // termo efetivamente buscado
   const [filtros, setFiltros] = useState({ genero: '', decada: '', notaMin: '', sort: 'popularity.desc', providers: [] })
@@ -45,12 +45,10 @@ export default function BuscadorMidia() {
   const [erro, setErro] = useState('')
   const [semChave, setSemChave] = useState(false)
   const [sel, setSel] = useState(null)
-  const [selLoad, setSelLoad] = useState(false)
   const reqId = useRef(0)
 
   const generosDoTipo = tipo === 'serie' ? generos.tv : generos.movie
 
-  /* carrega gêneros e provedores uma vez */
   useEffect(() => {
     fetchJson('/api/midia?action=genres').then(setGeneros).catch(() => {})
     fetchJson('/api/midia?action=providers').then((d) => Array.isArray(d) && setProviders(d)).catch(() => {})
@@ -61,29 +59,22 @@ export default function BuscadorMidia() {
     const page = reset ? 1 : pagina + 1
     setCarregando(true); setErro(''); if (reset) setSemChave(false)
     try {
-      if (tipo === 'livro') {
-        const data = await buscarLivros(busca || 'mais vendidos', page)
-        if (id !== reqId.current) return
-        setItens((prev) => (reset ? data.itens : [...prev, ...data.itens]))
-        setTotalPag(data.total); setPagina(page)
-      } else {
-        let url
-        if (busca.trim()) url = `/api/midia?action=search&q=${encodeURIComponent(busca)}&page=${page}`
-        else {
-          const f = filtros
-          const prov = f.providers.join('|')
-          url = `/api/midia?action=discover&type=${tipo}&page=${page}` +
-            (f.genero ? `&genero=${f.genero}` : '') + (f.decada ? `&decada=${f.decada}` : '') +
-            (f.notaMin ? `&notaMin=${f.notaMin}` : '') + (prov ? `&provider=${encodeURIComponent(prov)}` : '') +
-            `&sort=${encodeURIComponent(f.sort)}`
-        }
-        const data = await fetchJson(url)
-        if (id !== reqId.current) return
-        let lista = (data.results || []).filter((x) => busca.trim() ? (x.media_type === 'movie' || x.media_type === 'tv') : true)
-        lista = lista.map((x) => normalizarTmdb(x, busca.trim() ? undefined : tipo))
-        setItens((prev) => (reset ? lista : [...prev, ...lista]))
-        setTotalPag(data.total_pages || 1); setPagina(page)
+      let url
+      if (busca.trim()) url = `/api/midia?action=search&q=${encodeURIComponent(busca)}&page=${page}`
+      else {
+        const f = filtros
+        const prov = f.providers.join('|')
+        url = `/api/midia?action=discover&type=${tipo}&page=${page}` +
+          (f.genero ? `&genero=${f.genero}` : '') + (f.decada ? `&decada=${f.decada}` : '') +
+          (f.notaMin ? `&notaMin=${f.notaMin}` : '') + (prov ? `&provider=${encodeURIComponent(prov)}` : '') +
+          `&sort=${encodeURIComponent(f.sort)}`
       }
+      const data = await fetchJson(url)
+      if (id !== reqId.current) return
+      let lista = (data.results || []).filter((x) => (busca.trim() ? x.media_type === 'movie' || x.media_type === 'tv' : true))
+      lista = lista.map((x) => normalizarTmdb(x, busca.trim() ? undefined : tipo))
+      setItens((prev) => (reset ? lista : [...prev, ...lista]))
+      setTotalPag(data.total_pages || 1); setPagina(page)
     } catch (e) {
       if (id !== reqId.current) return
       if (e?.status === 503) { setSemChave(true); setItens([]) }
@@ -93,7 +84,6 @@ export default function BuscadorMidia() {
     }
   }, [tipo, busca, filtros, pagina])
 
-  /* busca inicial e quando muda tipo/filtros/termo */
   useEffect(() => { carregar(true) /* eslint-disable-next-line */ }, [tipo, busca, filtros])
 
   const submit = (e) => { e.preventDefault(); setBusca(query.trim()); track('midia_buscar', { tipo, q: query.slice(0, 40) }) }
@@ -102,12 +92,11 @@ export default function BuscadorMidia() {
   const limparFiltros = () => { setFiltros({ genero: '', decada: '', notaMin: '', sort: 'popularity.desc', providers: [] }); setQuery(''); setBusca('') }
 
   const abrir = async (item) => {
-    if (item.tipo === 'livro') { setSel(item); return }
-    setSelLoad(true); setSel({ ...item, _carregando: true })
+    setSel({ ...item, _carregando: true })
     try {
       const d = await fetchJson(`/api/midia?action=details&type=${item.tipo}&id=${item.id}`)
       setSel({ ...normalizarTmdb(d, item.tipo), raw: d, tipo: item.tipo })
-    } catch { setSel({ ...item, erro: true }) } finally { setSelLoad(false) }
+    } catch { setSel({ ...item, erro: true }) }
   }
 
   const mudarTipo = (t) => { setTipo(t); setQuery(''); setBusca(''); setItens([]); setPagina(1) }
@@ -116,69 +105,67 @@ export default function BuscadorMidia() {
     <div className="bm">
       <style>{CSS}</style>
 
-      <Tabs value={tipo} onChange={mudarTipo} tabs={[['filme', '🎬 Filmes'], ['serie', '📺 Séries'], ['livro', '📚 Livros']]} />
+      <Tabs value={tipo} onChange={mudarTipo} tabs={[['filme', '🎬 Filmes'], ['serie', '📺 Séries']]} />
 
       <form className="bm-busca" onSubmit={submit}>
-        <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={tipo === 'livro' ? 'Buscar por título, autor ou assunto…' : 'Buscar por nome do filme ou série…'} aria-label="Buscar" />
+        <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={tipo === 'serie' ? 'Buscar por nome da série…' : 'Buscar por nome do filme…'} aria-label="Buscar" />
         <button type="submit" className="btn btn-primary">Buscar</button>
         {busca && <button type="button" className="btn btn-ghost" onClick={() => { setQuery(''); setBusca('') }}>Limpar</button>}
       </form>
 
-      {tipo !== 'livro' && (
-        <div className="bm-filtros">
-          <p className="bm-filtros-ttl">Descobrir por filtros {busca && <span className="muted">(ignorados enquanto há uma busca por nome)</span>}</p>
-          <div className="bm-filtros-row">
-            <label>Gênero
-              <select value={filtros.genero} onChange={(e) => setF('genero', e.target.value)}>
-                <option value="">Todos</option>
-                {generosDoTipo.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
-              </select>
-            </label>
-            <label>Década
-              <select value={filtros.decada} onChange={(e) => setF('decada', e.target.value)}>
-                <option value="">Qualquer</option>
-                {DECADAS.map((d) => <option key={d} value={d}>{d}s</option>)}
-              </select>
-            </label>
-            <label>Nota mínima
-              <select value={filtros.notaMin} onChange={(e) => setF('notaMin', e.target.value)}>
-                <option value="">Qualquer</option>
-                {[9, 8, 7, 6, 5].map((n) => <option key={n} value={n}>{n}+</option>)}
-              </select>
-            </label>
-            <label>Ordenar
-              <select value={filtros.sort} onChange={(e) => setF('sort', e.target.value)}>
-                {SORTS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-              </select>
-            </label>
-          </div>
-          {providers.length > 0 && (
-            <div className="bm-prov">
-              <span className="bm-prov-lbl">Onde assistir:</span>
-              {providers.map((p) => (
-                <button key={p.id} type="button" className={'bm-prov-chip' + (filtros.providers.includes(p.id) ? ' sel' : '')} onClick={() => toggleProv(p.id)} title={p.nome}>
-                  {p.logo ? <img src={IMG(p.logo, 'w45')} alt={p.nome} /> : p.nome}
-                </button>
-              ))}
-            </div>
-          )}
-          {(filtros.genero || filtros.decada || filtros.notaMin || filtros.providers.length > 0 || filtros.sort !== 'popularity.desc') &&
-            <button type="button" className="btn btn-ghost btn-sm bm-limpar" onClick={limparFiltros}>Limpar filtros</button>}
+      <div className="bm-filtros">
+        <p className="bm-filtros-ttl">Descobrir por filtros {busca && <span className="muted">(ignorados enquanto há uma busca por nome)</span>}</p>
+        <div className="bm-filtros-row">
+          <label>Gênero
+            <select value={filtros.genero} onChange={(e) => setF('genero', e.target.value)}>
+              <option value="">Todos</option>
+              {generosDoTipo.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
+            </select>
+          </label>
+          <label>Década
+            <select value={filtros.decada} onChange={(e) => setF('decada', e.target.value)}>
+              <option value="">Qualquer</option>
+              {DECADAS.map((d) => <option key={d} value={d}>{d}s</option>)}
+            </select>
+          </label>
+          <label>Nota mínima
+            <select value={filtros.notaMin} onChange={(e) => setF('notaMin', e.target.value)}>
+              <option value="">Qualquer</option>
+              {[9, 8, 7, 6, 5].map((n) => <option key={n} value={n}>{n}+</option>)}
+            </select>
+          </label>
+          <label>Ordenar
+            <select value={filtros.sort} onChange={(e) => setF('sort', e.target.value)}>
+              {SORTS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+            </select>
+          </label>
         </div>
-      )}
+        {providers.length > 0 && (
+          <div className="bm-prov">
+            <span className="bm-prov-lbl">Onde assistir:</span>
+            {providers.map((p) => (
+              <button key={p.id} type="button" className={'bm-prov-chip' + (filtros.providers.includes(p.id) ? ' sel' : '')} onClick={() => toggleProv(p.id)} title={p.nome}>
+                {p.logo ? <img src={IMG(p.logo, 'w45')} alt={p.nome} /> : p.nome}
+              </button>
+            ))}
+          </div>
+        )}
+        {(filtros.genero || filtros.decada || filtros.notaMin || filtros.providers.length > 0 || filtros.sort !== 'popularity.desc') &&
+          <button type="button" className="btn btn-ghost btn-sm bm-limpar" onClick={limparFiltros}>Limpar filtros</button>}
+      </div>
 
-      {semChave && <Notice kind="warning">A busca de filmes e séries precisa da chave da TMDB configurada no servidor (variável <b>TMDB_BEARER</b>). A busca de livros funciona normalmente.</Notice>}
+      {semChave && <Notice kind="warning">A busca de filmes e séries precisa da chave da TMDB configurada no servidor (variável <b>TMDB_BEARER</b>).</Notice>}
       {erro && <Notice kind="error">{erro}</Notice>}
 
       <div className="bm-grid" aria-busy={carregando}>
         {itens.map((x) => (
           <button className="bm-card" key={x.tipo + x.id} onClick={() => abrir(x)}>
             <span className="bm-poster">
-              {x.poster ? <img src={x.poster} alt={x.titulo} loading="lazy" /> : <span className="bm-noposter">{x.tipo === 'livro' ? '📚' : '🎬'}</span>}
+              {x.poster ? <img src={x.poster} alt={x.titulo} loading="lazy" /> : <span className="bm-noposter">{x.tipo === 'serie' ? '📺' : '🎬'}</span>}
               {x.nota ? <span className="bm-nota">★ {x.nota}</span> : null}
             </span>
             <span className="bm-tit">{x.titulo}</span>
-            <span className="bm-meta">{x.ano}{x.tipo === 'livro' && x.autor ? ` · ${x.autor}` : ''}</span>
+            <span className="bm-meta">{x.ano}</span>
           </button>
         ))}
       </div>
@@ -192,24 +179,6 @@ export default function BuscadorMidia() {
   )
 }
 
-/* ---------- livros (Google Books, sem chave) ---------- */
-async function buscarLivros(q, page) {
-  const start = (page - 1) * 20
-  const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&maxResults=20&startIndex=${start}&langRestrict=pt&country=BR`
-  const data = await fetchJson(url)
-  const itens = (data.items || []).map((it) => {
-    const v = it.volumeInfo || {}
-    const img = (v.imageLinks?.thumbnail || v.imageLinks?.smallThumbnail || '').replace('http://', 'https://')
-    return {
-      id: it.id, tipo: 'livro', titulo: v.title || 'Sem título', ano: ano(v.publishedDate),
-      autor: (v.authors || []).join(', '), nota: v.averageRating || null, poster: img || null,
-      overview: v.description || '', editora: v.publisher || '', paginas: v.pageCount || null,
-      categorias: v.categories || [], link: v.infoLink || v.previewLink || '',
-    }
-  })
-  return { itens, total: Math.min(Math.ceil((data.totalItems || 0) / 20), 50) }
-}
-
 /* ---------- modal de detalhes ---------- */
 function Modal({ item, onClose, onAbrir }) {
   useEffect(() => {
@@ -219,7 +188,6 @@ function Modal({ item, onClose, onAbrir }) {
   }, [onClose])
 
   const d = item.raw
-  const livro = item.tipo === 'livro'
   const trailer = d?.videos?.results?.find((v) => v.site === 'YouTube' && v.type === 'Trailer') || d?.videos?.results?.find((v) => v.site === 'YouTube')
   const wp = d?.['watch/providers']?.results?.BR
   const elenco = (d?.credits?.cast || []).slice(0, 8)
@@ -236,18 +204,16 @@ function Modal({ item, onClose, onAbrir }) {
         {d?.backdrop_path && <div className="bm-backdrop" style={{ backgroundImage: `url(${IMG(d.backdrop_path, 'w780')})` }} />}
         <div className="bm-modal-body">
           <div className="bm-modal-head">
-            {item.poster ? <img className="bm-modal-poster" src={item.poster} alt="" /> : <div className="bm-modal-poster bm-noposter">{livro ? '📚' : '🎬'}</div>}
+            {item.poster ? <img className="bm-modal-poster" src={item.poster} alt="" /> : <div className="bm-modal-poster bm-noposter">{item.tipo === 'serie' ? '📺' : '🎬'}</div>}
             <div className="bm-modal-info">
               <h3>{item.titulo} {item.ano && <span className="bm-ano">({item.ano})</span>}</h3>
               <p className="bm-sub">
                 {item.nota ? <b className="bm-nota-inline">★ {item.nota}</b> : null}
-                {livro ? item.autor : [duracao, ...generos].filter(Boolean).join(' · ')}
+                {[duracao, ...generos].filter(Boolean).join(' · ')}
               </p>
-              {livro && <p className="bm-sub muted">{[item.editora, item.paginas && `${item.paginas} págs.`, (item.categorias || []).join(', ')].filter(Boolean).join(' · ')}</p>}
               <div className="bm-modal-acoes">
                 {trailer && <a className="btn btn-primary btn-sm" href={`https://www.youtube.com/watch?v=${trailer.key}`} target="_blank" rel="noopener">▶ Trailer</a>}
                 {wp?.link && <a className="btn btn-ghost btn-sm" href={wp.link} target="_blank" rel="noopener">Onde assistir (JustWatch)</a>}
-                {livro && item.link && <a className="btn btn-ghost btn-sm" href={item.link} target="_blank" rel="noopener">Ver no Google Books</a>}
               </div>
             </div>
           </div>
@@ -255,7 +221,7 @@ function Modal({ item, onClose, onAbrir }) {
           {item._carregando && <p className="muted bm-info"><span className="spinner" aria-hidden="true" /> Carregando detalhes…</p>}
           {(item.overview || d?.overview) && <p className="bm-overview">{item.overview || d.overview}</p>}
 
-          {!livro && wp && <OndeAssistir wp={wp} />}
+          {wp && <OndeAssistir wp={wp} />}
 
           {elenco.length > 0 && (
             <section className="bm-sec">
