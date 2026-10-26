@@ -61,18 +61,24 @@ export async function GET(request) {
         watch_region: REGION,
         'vote_count.gte': 40,
       }
-      const genero = num(p.get('genero'), 1, 100000)
+      const campo = type === 'tv' ? 'first_air_date' : 'primary_release_date'
+      // gênero e provedor aceitam lista com | (OU) ou , (E)
+      const genero = (p.get('genero') || '').replace(/[^0-9|,]/g, '')
       if (genero) params.with_genres = genero
+      const prov = (p.get('provider') || '').replace(/[^0-9|]/g, '')
+      if (prov) { params.with_watch_providers = prov; params.with_watch_monetization_types = 'flatrate|free|ads|rent|buy' }
       const voteMin = num(p.get('notaMin'), 0, 10)
       if (voteMin) params['vote_average.gte'] = voteMin
-      const prov = num(p.get('provider'), 1, 100000)
-      if (prov) { params.with_watch_providers = prov; params.with_watch_monetization_types = 'flatrate|free|ads|rent|buy' }
+      const vcMin = num(p.get('voteCountMin'), 0, 1000000)
+      if (vcMin != null) params['vote_count.gte'] = vcMin
       const dec = num(p.get('decada'), 1900, 2100)
-      if (dec) {
-        const campo = type === 'tv' ? 'first_air_date' : 'primary_release_date'
-        params[`${campo}.gte`] = `${dec}-01-01`
-        params[`${campo}.lte`] = `${dec + 9}-12-31`
-      }
+      if (dec) { params[`${campo}.gte`] = `${dec}-01-01`; params[`${campo}.lte`] = `${dec + 9}-12-31` }
+      const anoDe = num(p.get('anoDe'), 1900, 2100)
+      if (anoDe) params[`${campo}.gte`] = `${anoDe}-01-01`
+      const anoAte = num(p.get('anoAte'), 1900, 2100)
+      if (anoAte) params[`${campo}.lte`] = `${anoAte}-12-31`
+      const runtimeMax = num(p.get('runtimeMax'), 1, 600)
+      if (runtimeMax) params['with_runtime.lte'] = runtimeMax
       // ordenações por data precisam do tipo certo de campo
       if (params.sort_by === 'primary_release_date.desc' && type === 'tv') params.sort_by = 'first_air_date.desc'
       dados = await tmdb(`/discover/${type}`, params)

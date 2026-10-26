@@ -32,6 +32,7 @@ function normalizarTmdb(x, tipoForcado) {
 }
 
 export default function BuscadorMidia() {
+  const [modo, setModo] = useState('explorar') // explorar | quiz
   const [tipo, setTipo] = useState('filme') // filme | serie
   const [query, setQuery] = useState('')
   const [busca, setBusca] = useState('') // termo efetivamente buscado
@@ -105,6 +106,15 @@ export default function BuscadorMidia() {
     <div className="bm">
       <style>{CSS}</style>
 
+      <div className="bm-modo">
+        <button className={'bm-modo-b' + (modo === 'explorar' ? ' sel' : '')} onClick={() => setModo('explorar')}>🔎 Explorar</button>
+        <button className={'bm-modo-b' + (modo === 'quiz' ? ' sel' : '')} onClick={() => setModo('quiz')}>✨ Me recomende</button>
+      </div>
+
+      {modo === 'quiz' ? (
+        <Quiz providers={providers} onAbrir={abrir} />
+      ) : (
+      <>
       <Tabs value={tipo} onChange={mudarTipo} tabs={[['filme', '🎬 Filmes'], ['serie', '📺 Séries']]} />
 
       <form className="bm-busca" onSubmit={submit}>
@@ -173,8 +183,161 @@ export default function BuscadorMidia() {
       {carregando && <p className="muted bm-info"><span className="spinner" aria-hidden="true" /> Carregando…</p>}
       {!carregando && !semChave && itens.length === 0 && <p className="muted bm-info">Nada encontrado. Tente outro termo ou ajuste os filtros.</p>}
       {!carregando && itens.length > 0 && pagina < totalPag && <div className="bm-mais"><button className="btn" onClick={() => carregar(false)}>Carregar mais</button></div>}
+      </>
+      )}
 
       {sel && <Modal item={sel} onClose={() => setSel(null)} onAbrir={abrir} />}
+    </div>
+  )
+}
+
+/* ---------- quiz de recomendação ---------- */
+const ANO_ATUAL = new Date().getFullYear()
+const MOODS = [
+  { id: 'acao', label: 'Ação e aventura', emoji: '💥', g: { movie: '28|12', tv: '10759' } },
+  { id: 'rir', label: 'Dar risada', emoji: '😂', g: { movie: '35', tv: '35' } },
+  { id: 'romance', label: 'Romance', emoji: '💘', g: { movie: '10749', tv: '18' } },
+  { id: 'medo', label: 'Medo e suspense', emoji: '😱', g: { movie: '27|53', tv: '9648' } },
+  { id: 'emocao', label: 'Me emocionar', emoji: '😢', g: { movie: '18', tv: '18' } },
+  { id: 'ficcao', label: 'Ficção e fantasia', emoji: '🚀', g: { movie: '878|14', tv: '10765' } },
+  { id: 'familia', label: 'Para a família', emoji: '👨‍👩‍👧', g: { movie: '10751', tv: '10751|10762' } },
+  { id: 'animacao', label: 'Animação', emoji: '🎨', g: { movie: '16', tv: '16' } },
+  { id: 'documentario', label: 'Documentário', emoji: '🎥', g: { movie: '99', tv: '99' } },
+  { id: 'surpresa', label: 'Me surpreenda', emoji: '🎲', g: { movie: '', tv: '' } },
+]
+const EPOCAS = [
+  ['tanto', 'Tanto faz'], ['novo', 'Lançamentos'], ['d2010', 'Dos anos 2010'], ['d2000', 'Dos anos 2000'], ['classico', 'Clássicos (até 1999)'],
+]
+const DURACOES = [['tanto', 'Tanto faz'], ['curto', 'Curtinho (até 100 min)'], ['longo', 'Pode ser longo']]
+const FAMAS = [['populares', 'Populares, do momento'], ['aclamados', 'Aclamados pela crítica'], ['cult', 'Joias escondidas']]
+
+function Quiz({ providers, onAbrir }) {
+  const [tipo, setTipo] = useState('filme')
+  const [resp, setResp] = useState({ mood: null, epoca: 'tanto', dur: 'tanto', fama: 'populares', provs: [] })
+  const [step, setStep] = useState(0)
+  const [fase, setFase] = useState('perguntas') // perguntas | carregando | resultado | vazio | erro | semchave
+  const [pool, setPool] = useState([])
+  const [idx, setIdx] = useState(0)
+  const paginaRef = useRef({ page: 1, tot: 1 })
+
+  const steps = tipo === 'filme' ? ['tipo', 'mood', 'epoca', 'dur', 'fama', 'prov'] : ['tipo', 'mood', 'epoca', 'fama', 'prov']
+  const atual = steps[step]
+  const avancar = () => setStep((s) => Math.min(s + 1, steps.length - 1))
+  const voltar = () => setStep((s) => Math.max(s - 1, 0))
+  const responder = (k, v, auto = true) => { setResp((r) => ({ ...r, [k]: v })); if (auto) setTimeout(avancar, 120) }
+
+  const construir = (page) => {
+    const key = tipo === 'serie' ? 'tv' : 'movie'
+    const m = MOODS.find((x) => x.id === resp.mood)
+    const p = new URLSearchParams({ action: 'discover', type: tipo, page: String(page) })
+    const g = m?.g[key]
+    if (g) p.set('genero', g)
+    if (resp.epoca === 'novo') p.set('anoDe', String(ANO_ATUAL - 2))
+    else if (resp.epoca === 'd2010') { p.set('anoDe', '2010'); p.set('anoAte', '2019') }
+    else if (resp.epoca === 'd2000') { p.set('anoDe', '2000'); p.set('anoAte', '2009') }
+    else if (resp.epoca === 'classico') p.set('anoAte', '1999')
+    if (tipo === 'filme' && resp.dur === 'curto') p.set('runtimeMax', '100')
+    if (resp.fama === 'populares') p.set('sort', 'popularity.desc')
+    else if (resp.fama === 'aclamados') { p.set('sort', 'vote_average.desc'); p.set('notaMin', '7'); p.set('voteCountMin', '300') }
+    else if (resp.fama === 'cult') { p.set('sort', 'vote_average.desc'); p.set('notaMin', '7'); p.set('voteCountMin', '50') }
+    if (resp.provs.length) p.set('provider', resp.provs.join('|'))
+    return p
+  }
+
+  const recomendar = async (reset = true) => {
+    if (reset) setFase('carregando')
+    const page = reset ? (1 + Math.floor(Math.random() * 2)) : paginaRef.current.page + 1 // varia um pouco o começo
+    try {
+      const d = await fetchJson('/api/midia?' + construir(page).toString())
+      const lista = (d.results || []).filter((x) => x.poster_path).map((x) => normalizarTmdb(x, tipo))
+      paginaRef.current = { page, tot: d.total_pages || 1 }
+      if (reset) { setPool(lista); setIdx(0); setFase(lista.length ? 'resultado' : 'vazio') }
+      else { setPool((prev) => { const base = prev.length; setIdx(base); return [...prev, ...lista] }) }
+    } catch (e) { setFase(e?.status === 503 ? 'semchave' : 'erro') }
+  }
+
+  const outro = () => {
+    if (idx + 1 < pool.length) setIdx(idx + 1)
+    else if (paginaRef.current.page < paginaRef.current.tot) recomendar(false)
+    else setIdx(0)
+  }
+  const refazer = () => { setFase('perguntas'); setStep(0); setPool([]); setIdx(0) }
+
+  if (fase !== 'perguntas') {
+    const pick = pool[idx]
+    return (
+      <div className="bm-quiz">
+        {fase === 'carregando' && <p className="muted bm-info"><span className="spinner" aria-hidden="true" /> Procurando a recomendação certa…</p>}
+        {fase === 'semchave' && <Notice kind="warning">A recomendação precisa da chave da TMDB configurada no servidor (<b>TMDB_BEARER</b>).</Notice>}
+        {fase === 'erro' && <Notice kind="error">Não consegui buscar agora. Tente de novo.</Notice>}
+        {fase === 'vazio' && <><Notice kind="info">Não achei nada com essa combinação. Afrouxe um filtro e tente de novo.</Notice><button className="btn btn-primary" onClick={refazer}>Refazer</button></>}
+        {fase === 'resultado' && pick && (
+          <div className="bm-pick">
+            <button className="bm-pick-poster" onClick={() => onAbrir(pick)}>
+              {pick.poster ? <img src={pick.poster} alt={pick.titulo} /> : <span className="bm-noposter">🎬</span>}
+            </button>
+            <div className="bm-pick-info">
+              <span className="bm-pick-tag">Sua recomendação</span>
+              <h3>{pick.titulo} {pick.ano && <span className="bm-ano">({pick.ano})</span>}</h3>
+              {pick.nota ? <p className="bm-nota-inline">★ {pick.nota}</p> : null}
+              {pick.overview && <p className="bm-pick-ov">{pick.overview}</p>}
+              <div className="bm-pick-acoes">
+                <button className="btn btn-primary" onClick={() => onAbrir(pick)}>Ver detalhes e onde assistir</button>
+                <button className="btn" onClick={outro}>Quero outro</button>
+                <button className="btn btn-ghost" onClick={refazer}>Refazer o quiz</button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  const escolhas = {
+    tipo: [['filme', '🎬 Um filme'], ['serie', '📺 Uma série']],
+    mood: MOODS.map((m) => [m.id, `${m.emoji} ${m.label}`]),
+    epoca: EPOCAS, dur: DURACOES, fama: FAMAS,
+  }
+  const perguntaTxt = { tipo: 'O que você quer ver?', mood: 'Qual o clima de hoje?', epoca: 'De qual época?', dur: 'Quanto tempo você tem?', fama: 'Prefere o quê?', prov: 'Onde você quer assistir? (opcional)' }
+
+  return (
+    <div className="bm-quiz">
+      <div className="bm-quiz-prog"><span style={{ width: `${((step + 1) / steps.length) * 100}%` }} /></div>
+      <p className="bm-quiz-passo">Pergunta {step + 1} de {steps.length}</p>
+      <h3 className="bm-quiz-q">{perguntaTxt[atual]}</h3>
+
+      {atual === 'prov' ? (
+        <>
+          <div className="bm-prov">
+            {providers.map((p) => (
+              <button key={p.id} type="button" className={'bm-prov-chip' + (resp.provs.includes(p.id) ? ' sel' : '')} title={p.nome}
+                onClick={() => setResp((r) => ({ ...r, provs: r.provs.includes(p.id) ? r.provs.filter((x) => x !== p.id) : [...r.provs, p.id] }))}>
+                {p.logo ? <img src={IMG(p.logo, 'w45')} alt={p.nome} /> : p.nome}
+              </button>
+            ))}
+          </div>
+          <p className="muted bm-quiz-dica">Selecione os serviços que você tem, ou deixe em branco para ver de qualquer lugar.</p>
+          <div className="bm-quiz-nav">
+            <button className="btn btn-ghost" onClick={voltar}>← Voltar</button>
+            <button className="btn btn-primary" onClick={() => recomendar(true)}>✨ Ver recomendação</button>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="bm-quiz-ops">
+            {escolhas[atual].map(([v, label]) => {
+              const sel = atual === 'tipo' ? tipo === v : resp[atual] === v
+              return (
+                <button key={v} className={'bm-quiz-op' + (sel ? ' sel' : '')}
+                  onClick={() => { if (atual === 'tipo') { setTipo(v); setTimeout(avancar, 120) } else responder(atual, v) }}>
+                  {label}
+                </button>
+              )
+            })}
+          </div>
+          {step > 0 && <div className="bm-quiz-nav"><button className="btn btn-ghost" onClick={voltar}>← Voltar</button></div>}
+        </>
+      )}
     </div>
   )
 }
@@ -287,6 +450,29 @@ function OndeAssistir({ wp }) {
 const CSS = `
 .bm{margin-top:14px}
 .bm .btn-sm{padding:6px 10px;font-size:13px}
+.bm-modo{display:flex;gap:8px;margin:4px 0 14px}
+.bm-modo-b{flex:1;padding:12px;border:1px solid var(--line-strong);background:var(--bg-2);color:var(--text);border-radius:var(--radius-lg);cursor:pointer;font:inherit;font-weight:700;font-size:15px}
+.bm-modo-b.sel{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.bm-quiz{max-width:640px;margin:0 auto}
+.bm-quiz-prog{height:7px;background:var(--panel-2);border-radius:999px;overflow:hidden;margin:6px 0 12px}
+.bm-quiz-prog span{display:block;height:100%;background:var(--accent);transition:width .3s}
+.bm-quiz-passo{font-size:12px;color:var(--muted);margin:0 0 4px}
+.bm-quiz-q{font-size:22px;margin:0 0 16px}
+.bm-quiz-ops{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.bm-quiz-op{padding:16px 14px;border:1px solid var(--line-strong);background:var(--panel);color:var(--text);border-radius:var(--radius-lg);cursor:pointer;font:inherit;font-size:15px;font-weight:600;text-align:left;transition:border-color .15s,background .15s}
+.bm-quiz-op:hover{border-color:var(--accent)}
+.bm-quiz-op.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
+.bm-quiz-nav{display:flex;justify-content:space-between;gap:10px;margin-top:16px;flex-wrap:wrap}
+.bm-quiz-dica{font-size:12px;margin:10px 0 0}
+.bm-pick{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+.bm-pick-poster{flex:0 0 200px;max-width:200px;aspect-ratio:2/3;border:none;padding:0;background:var(--panel-2);border-radius:var(--radius-lg);overflow:hidden;cursor:pointer}
+.bm-pick-poster img{width:100%;height:100%;object-fit:cover}
+.bm-pick-info{flex:1;min-width:220px}
+.bm-pick-tag{display:inline-block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--on-accent);background:var(--accent);padding:3px 10px;border-radius:999px;font-weight:700}
+.bm-pick-info h3{font-size:24px;margin:10px 0 4px}
+.bm-pick-ov{font-size:14px;line-height:1.6;margin:10px 0;color:var(--text)}
+.bm-pick-acoes{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+@media(max-width:520px){.bm-pick-poster{flex-basis:140px;max-width:140px}}
 .bm-busca{display:flex;gap:8px;margin:14px 0;flex-wrap:wrap}
 .bm-busca input{flex:1;min-width:200px;padding:11px;border:1px solid var(--line-strong);border-radius:var(--radius);background:var(--bg-2);color:var(--text);font:inherit}
 .bm-filtros{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-lg);padding:12px 14px;margin-bottom:14px}
