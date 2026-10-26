@@ -53,6 +53,7 @@ const components = {
   'simulador-urna-eletronica': dynamic(() => import('./tools/UrnaSimulada'), { loading }),
   'gerador-de-curriculo': dynamic(() => import('./tools/GeradorCurriculo'), { loading }),
   'buscar-filmes-e-series': dynamic(() => import('./tools/BuscadorMidia'), { loading }),
+  'gerador-de-convite': dynamic(() => import('./tools/GeradorConvite'), { loading }),
 }
 
 export default function ToolRenderer({ slug }) {
