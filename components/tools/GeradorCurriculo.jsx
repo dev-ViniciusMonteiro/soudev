@@ -354,8 +354,12 @@ const Preview = forwardRef(function Preview({ cv, tpl, accent }, ref) {
       setBox({ h: page.offsetHeight * s, left: Math.max(0, (stage.clientWidth - pw * s) / 2) })
     }
     medir()
-    const ro = new ResizeObserver(medir); ro.observe(stage)
-    return () => ro.disconnect()
+    const raf = requestAnimationFrame(medir)
+    const t = setTimeout(medir, 350)
+    const ro = new ResizeObserver(medir)
+    ro.observe(stage); ro.observe(page) // largura do palco e altura da folha
+    if (document.fonts?.ready) document.fonts.ready.then(medir).catch(() => {})
+    return () => { cancelAnimationFrame(raf); clearTimeout(t); ro.disconnect() }
   }, [cv, tpl, accent, ref])
 
   const contatos = [cv.email, cv.telefone, cv.cidade, cv.linkedin, cv.site].filter(Boolean)
@@ -492,7 +496,7 @@ const CSS = `
 .cv-idiomas li{margin-bottom:2px}
 
 /* layouts com barra lateral */
-.cv-sidebar,.cv-sidebarR{display:grid;overflow:hidden}
+.cv-sidebar,.cv-sidebarR{display:grid;grid-template-rows:1fr}
 .cv-sidebar{grid-template-columns:62mm 1fr}
 .cv-sidebarR{grid-template-columns:1fr 62mm}
 .cv-aside{background:var(--cv-accent);color:#fff;padding:16mm 10mm;word-break:break-word}
@@ -504,7 +508,7 @@ const CSS = `
 .cv-head-side h1{font-size:21pt}
 
 /* layout com faixa no topo */
-.cv-band{padding:0;overflow:hidden}
+.cv-band{padding:0}
 .cv-bandtop{background:var(--cv-accent);color:#fff;padding:15mm 16mm 12mm;display:flex;gap:16px;align-items:center}
 .cv-bandtop .cv-foto{border:3px solid rgba(255,255,255,.6)}
 .cv-bandtop h1{color:#fff}
