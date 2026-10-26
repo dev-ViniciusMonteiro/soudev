@@ -79,6 +79,7 @@ export const ferramentas = [
   f('dia', 'calculadora-dias-uteis', 'Dias Úteis', ['Prazos certos', '*sem contar feriados*'], [['💼', 'Dias úteis'], ['🎌', 'Feriados'], ['➕', 'Some prazos'], ['📅', 'Calendário']]),
   f('dia', 'feriados', 'Feriados', ['Planeje o ano', '*e os feriadões*'], [['📅', 'Todos do ano'], ['🏖️', 'Feriadões'], ['⏭️', 'Próximo feriado'], ['🇧🇷', 'Nacionais']]),
   f('dia', 'consulta-isbn', 'Consulta ISBN', ['Tudo sobre o livro', '*pelo ISBN*'], [['📖', 'Título'], ['✍️', 'Autor'], ['🏢', 'Editora'], ['📝', 'Sinopse']]),
+  f('dia', 'simulador-urna-eletronica', 'Urna Simulada', ['Veja o voto virar', '*dado, hash e boletim*'], [['🗳️', 'Fluxo do voto'], ['📊', 'Contabilização'], ['🔀', 'RDV embaralhado'], ['🔐', 'Hash e assinatura']]),
 
   /* Texto e segurança */
   f('texto', 'contador-caracteres', 'Contador', ['Caracteres e palavras', '*contados na hora*'], [['🔤', 'Caracteres'], ['📝', 'Palavras'], ['📏', 'Linhas'], ['🔁', 'Transforma o texto']]),

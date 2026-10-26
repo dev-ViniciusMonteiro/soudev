@@ -50,6 +50,7 @@ const components = {
   'calculadora-dias-uteis': dynamic(() => import('./tools/DiasUteis'), { loading }),
   feriados: dynamic(() => import('./tools/Feriados'), { loading }),
   'consulta-isbn': dynamic(() => import('./tools/ConsultaIsbn'), { loading }),
+  'simulador-urna-eletronica': dynamic(() => import('./tools/UrnaSimulada'), { loading }),
 }
 
 export default function ToolRenderer({ slug }) {
