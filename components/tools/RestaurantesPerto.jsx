@@ -31,8 +31,6 @@ const CUISINE = {
 }
 const traduzCuisine = (c) => CUISINE[c] || (c ? c.replace(/_/g, ' ').replace(/^\w/, (m) => m.toUpperCase()) : '')
 
-const OVERPASS = ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter']
-
 function catDe(tags) {
   if (tags.amenity && CATS[tags.amenity]) return tags.amenity
   if (tags.shop === 'bakery') return 'bakery'
@@ -68,17 +66,8 @@ function lugar(el, origem) {
 }
 
 async function buscarOverpass(origem, raio) {
-  const r = raio
-  const { lat, lon } = origem
-  const q = `[out:json][timeout:25];(nwr(around:${r},${lat},${lon})[amenity~"^(restaurant|fast_food|cafe|bar|pub|ice_cream|food_court)$"];nwr(around:${r},${lat},${lon})[shop=bakery];);out center tags 400;`
-  let ultimo
-  for (const url of OVERPASS) {
-    try {
-      const resp = await fetchJson(url, { timeout: 16000, retries: 0, init: { method: 'POST', body: new URLSearchParams({ data: q }) } })
-      return (resp.elements || []).map((el) => lugar(el, origem)).filter(Boolean)
-    } catch (e) { ultimo = e }
-  }
-  throw ultimo
+  const resp = await fetchJson(`/api/lugares?action=overpass&lat=${origem.lat}&lon=${origem.lon}&raio=${raio}`, { timeout: 30000, retries: 0 })
+  return (resp.elements || []).map((el) => lugar(el, origem)).filter(Boolean)
 }
 
 const mapaRota = (l) => `https://www.google.com/maps/dir/?api=1&destination=${l.lat},${l.lon}`
@@ -124,8 +113,8 @@ export default function RestaurantesPerto() {
     if (endereco.trim().length < 3) return setErro('Digite um bairro, cidade ou endereço.')
     setBusy('Procurando a região…')
     try {
-      const r = await fetchJson(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(endereco)}&format=jsonv2&limit=1&countrycodes=br`)
-      if (!r.length) { setBusy(''); return setErro('Região não encontrada. Tente “bairro, cidade”.') }
+      const r = await fetchJson(`/api/lugares?action=geocode&q=${encodeURIComponent(endereco)}`)
+      if (!Array.isArray(r) || !r.length) { setBusy(''); return setErro('Região não encontrada. Tente “bairro, cidade”.') }
       await buscar({ lat: Number(r[0].lat), lon: Number(r[0].lon), nome: r[0].display_name })
     } catch { setBusy(''); setErro('Não foi possível procurar a região agora.') }
   }
