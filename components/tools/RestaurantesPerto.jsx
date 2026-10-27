@@ -1,7 +1,7 @@
 'use client'
 
-// Buscador de restaurantes e comida: monta a busca certa e abre no Google Maps, já centrado na sua
-// localização (opcional) ou na região digitada. Sem servidor e sem depender de dados incompletos.
+// Buscador de restaurantes e comida: mostra o mapa do Google embutido na página (iframe output=embed,
+// sem chave) com os resultados da busca, e também permite abrir no app do Google Maps para rota/detalhes.
 
 import { useState } from 'react'
 import { track } from '@/lib/analytics'
@@ -15,82 +15,92 @@ const CATEGORIAS = [
   ['🍟', 'Hambúrguer', 'hamburgueria'],
   ['🍣', 'Japonesa / sushi', 'comida japonesa'],
   ['🥩', 'Churrascaria', 'churrascaria'],
-  ['🍛', 'Comida caseira / marmita', 'marmitaria comida caseira'],
-  ['🥗', 'Self-service / por quilo', 'restaurante self service por quilo'],
+  ['🍛', 'Caseira / marmita', 'marmitaria comida caseira'],
+  ['🥗', 'Self-service', 'restaurante self service por quilo'],
   ['☕', 'Cafeteria', 'cafeteria'],
   ['🍺', 'Bar', 'bar'],
   ['🥐', 'Padaria', 'padaria'],
   ['🍦', 'Sorveteria', 'sorveteria'],
   ['🫐', 'Açaí', 'açaí'],
   ['🥟', 'Pastelaria', 'pastelaria'],
-  ['🌱', 'Vegetariana / vegana', 'restaurante vegetariano'],
+  ['🌱', 'Vegetariana', 'restaurante vegetariano'],
   ['🕑', 'Aberto agora', 'restaurante aberto agora'],
 ]
 
 export default function RestaurantesPerto() {
   const [regiao, setRegiao] = useState('')
   const [origem, setOrigem] = useState(null)
-  const [localLabel, setLocalLabel] = useState('')
   const [busy, setBusy] = useState(false)
   const [erro, setErro] = useState('')
   const [custom, setCustom] = useState('')
+  const [termo, setTermo] = useState('') // busca ativa
 
   const usarLocalizacao = async () => {
     setErro(''); setBusy(true)
-    try {
-      const o = await minhaPosicao()
-      setOrigem(o); setRegiao(''); setLocalLabel('sua localização atual')
-    } catch (e) { setErro(e.message) } finally { setBusy(false) }
+    try { const o = await minhaPosicao(); setOrigem(o); setRegiao('') } catch (e) { setErro(e.message) } finally { setBusy(false) }
   }
 
-  const abrir = (termo) => {
-    const t = termo.trim(); if (!t) return
-    let url
-    if (origem) url = `https://www.google.com/maps/search/${encodeURIComponent(t)}/@${origem.lat},${origem.lon},15z`
-    else if (regiao.trim()) url = `https://www.google.com/maps/search/${encodeURIComponent(t + ' em ' + regiao.trim())}`
-    else url = `https://www.google.com/maps/search/${encodeURIComponent(t)}`
-    window.open(url, '_blank', 'noopener')
-    track('comer_maps', { termo: t.slice(0, 40) })
+  const queryTexto = (t) => (origem ? t : regiao.trim() ? `${t} em ${regiao.trim()}` : t)
+  const embedUrl = (t) => {
+    const base = 'https://www.google.com/maps?output=embed&hl=pt-BR'
+    if (origem) return `${base}&q=${encodeURIComponent(t)}&ll=${origem.lat},${origem.lon}&z=15`
+    return `${base}&q=${encodeURIComponent(queryTexto(t))}`
   }
+  const appUrl = (t) => (origem
+    ? `https://www.google.com/maps/search/${encodeURIComponent(t)}/@${origem.lat},${origem.lon},15z`
+    : `https://www.google.com/maps/search/${encodeURIComponent(queryTexto(t))}`)
 
-  const ondeLabel = origem ? 'perto da sua localização' : regiao.trim() ? `em ${regiao.trim()}` : 'perto de você (pela sua conexão)'
+  const buscar = (t) => { const v = (t || '').trim(); if (!v) return; setTermo(v); track('comer_mapa', { termo: v.slice(0, 40) }) }
+
+  const ondeLabel = origem ? 'perto da sua localização' : regiao.trim() ? `em ${regiao.trim()}` : 'pela sua conexão (aproximado)'
 
   return (
     <div className="tool-stack cp">
       <style>{CSS}</style>
       <Notice kind="info">
-        Escolha onde procurar e o que quer comer: a busca abre no <b>Google Maps</b>, com as avaliações, fotos, horários e rota de cada lugar. Rápido e sempre atualizado.
+        Escolha onde procurar e o que quer comer: o mapa do Google aparece aqui na página com os lugares. Para rota e detalhes completos, use “Abrir no Google Maps”.
       </Notice>
 
-      <h2 className="tool-subtitle">1. Onde você quer procurar?</h2>
+      <h2 className="tool-subtitle">1. Onde procurar?</h2>
       <div className="grid-2">
         <button type="button" className="btn btn-primary btn-lg" onClick={usarLocalizacao} disabled={busy}>
           {busy ? 'Pegando localização…' : '📍 Usar minha localização'}
         </button>
         <Field label="Ou digite a cidade/bairro">
-          <input value={regiao} onChange={(e) => { setRegiao(e.target.value); if (e.target.value) { setOrigem(null); setLocalLabel('') } }} placeholder="Ex.: Mogi Guaçu, SP" />
+          <input value={regiao} onChange={(e) => { setRegiao(e.target.value); if (e.target.value) setOrigem(null) }} placeholder="Ex.: Mogi Guaçu, SP" />
         </Field>
       </div>
-      <p className="cp-onde">Buscando <b>{ondeLabel}</b>.{localLabel && ' ✓ Localização obtida.'}</p>
+      <p className="cp-onde">Buscando <b>{ondeLabel}</b>.{origem && ' ✓ Localização obtida.'}</p>
       {erro && <Notice kind="error">{erro}</Notice>}
 
       <h2 className="tool-subtitle">2. O que você quer comer?</h2>
       <div className="cp-cats">
-        {CATEGORIAS.map(([emoji, nome, termo]) => (
-          <button key={termo} type="button" className="cp-cat" onClick={() => abrir(termo)}>
+        {CATEGORIAS.map(([emoji, nome, t]) => (
+          <button key={t} type="button" className={'cp-cat' + (termo === queryTexto(t) || termo === t ? ' sel' : '')} onClick={() => buscar(t)}>
             <span className="cp-emoji">{emoji}</span>{nome}
           </button>
         ))}
       </div>
-
-      <form className="input-group cp-custom" onSubmit={(e) => { e.preventDefault(); abrir(custom || 'restaurantes') }}>
+      <form className="input-group cp-custom" onSubmit={(e) => { e.preventDefault(); buscar(custom) }}>
         <Field label="Procurar outra coisa">
-          <input value={custom} onChange={(e) => setCustom(e.target.value)} placeholder="Ex.: comida mexicana, sorvete, tapiocaria…" />
+          <input value={custom} onChange={(e) => setCustom(e.target.value)} placeholder="Ex.: comida mexicana, tapiocaria, sorvete…" />
         </Field>
-        <button type="submit" className="btn btn-primary">Buscar no mapa</button>
+        <button type="submit" className="btn btn-primary">Buscar</button>
       </form>
 
-      <p className="muted small">Abre em uma nova aba, no app ou site do Google Maps. Nada é enviado para servidores; sua localização, se você permitir, é usada só para centralizar a busca.</p>
+      {termo && (
+        <div className="cp-mapa-box">
+          <div className="cp-mapa-top">
+            <span>Mostrando <b>{termo}</b> {ondeLabel}</span>
+            <a className="btn btn-ghost" href={appUrl(termo)} target="_blank" rel="noopener noreferrer">Abrir no Google Maps ↗</a>
+          </div>
+          <div className="cp-mapa">
+            <iframe key={embedUrl(termo)} src={embedUrl(termo)} title={`Mapa: ${termo}`} loading="lazy" referrerPolicy="no-referrer-when-downgrade" allowFullScreen />
+          </div>
+        </div>
+      )}
+
+      <p className="muted small">O mapa é do Google Maps, incorporado aqui. Nada é enviado para servidores; sua localização, se permitida, é usada só para centralizar a busca.</p>
     </div>
   )
 }
@@ -101,6 +111,12 @@ const CSS = `
 .cp .cp-cat{display:flex;align-items:center;gap:10px;text-align:left;padding:12px 14px;border:1px solid var(--line-strong);background:var(--panel);color:var(--text);border-radius:var(--radius-lg);cursor:pointer;font:inherit;font-weight:600;font-size:14px;transition:border-color .15s,transform .05s}
 .cp .cp-cat:hover{border-color:var(--accent)}
 .cp .cp-cat:active{transform:translateY(1px)}
+.cp .cp-cat.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
 .cp .cp-emoji{font-size:24px;line-height:1}
 .cp .cp-custom{margin-top:6px}
+.cp .cp-mapa-box{margin-top:16px;border:1px solid var(--line);border-radius:var(--radius-lg);overflow:hidden;background:var(--panel)}
+.cp .cp-mapa-top{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:10px 12px;font-size:14px;border-bottom:1px solid var(--line)}
+.cp .cp-mapa{position:relative;width:100%;aspect-ratio:16/11;background:var(--panel-2)}
+.cp .cp-mapa iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+@media(max-width:640px){.cp .cp-mapa{aspect-ratio:3/4}}
 `
