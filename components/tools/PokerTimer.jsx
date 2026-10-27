@@ -11,7 +11,7 @@ import { TEMAS, configPadrao, gerarEstrutura, gerarHTML } from '@/lib/poker'
 
 export default function PokerTimer() {
   const [cfg, setCfg] = useState(configPadrao)
-  const [ger, setGer] = useState({ sb: 25, bb: 50, min: 20, qtd: 12, mult: 1.5, comAnte: false, pausaCada: 4, pausaMin: 10 })
+  const [ger, setGer] = useState({ sb: 25, bb: 50, min: 20, qtd: 12, mult: 1.5, comAnte: true, pausaCada: 4, pausaMin: 10 })
   const [srcdoc, setSrcdoc] = useState('')
   const [msg, setMsg] = useState('')
   const nomeArq = (cfg.nome || 'relogio-poker').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
@@ -85,6 +85,15 @@ export default function PokerTimer() {
               {cfg.logo && <button className="btn btn-ghost btn-sm" onClick={() => setCfg((c) => ({ ...c, logo: '' }))}>Remover</button>}
             </div>
             <small className="muted">A logo fica embutida no HTML baixado, então funciona offline.</small>
+          </div>
+
+          <div className="pt-grid2">
+            <Field label="Jogadores (0 esconde)" hint="Aparece como um placar com + e − para dar baixa quando alguém é eliminado." className="pt-field">
+              <input inputMode="numeric" value={cfg.jogadores} onChange={(e) => setCfg((c) => ({ ...c, jogadores: Number(e.target.value) || 0 }))} />
+            </Field>
+            <Field label="Premiação (opcional)" className="pt-field">
+              <input value={cfg.premiacao} onChange={set('premiacao')} placeholder="Ex.: R$ 900 · 3 lugares" />
+            </Field>
           </div>
 
           {cfg.modo === 'cash' ? (
@@ -179,8 +188,7 @@ const CSS = `
 .pt-del{width:30px;height:32px;border:1px solid var(--line-strong);background:var(--bg-2);color:var(--red);border-radius:var(--radius);cursor:pointer}
 .pt-niveis-acoes{display:flex;gap:8px;margin-top:6px}
 .pt-side{display:flex;flex-direction:column;gap:12px;position:sticky;top:12px;align-self:start}
-.pt-preview{aspect-ratio:9/16;max-height:70vh;background:#000;border:1px solid var(--line);border-radius:var(--radius-lg);overflow:hidden}
-@media(min-width:861px){.pt-preview{aspect-ratio:3/4}}
+.pt-preview{aspect-ratio:16/10;background:#000;border:1px solid var(--line);border-radius:var(--radius-lg);overflow:hidden}
 .pt-preview iframe{width:100%;height:100%;border:0;display:block}
 .pt-acoes{display:flex;gap:8px;flex-wrap:wrap}
 .pt-acoes .btn{flex:1;min-width:150px}
