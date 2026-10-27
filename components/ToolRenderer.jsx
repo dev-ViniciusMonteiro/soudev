@@ -56,6 +56,7 @@ const components = {
   'gerador-de-convite': dynamic(() => import('./tools/GeradorConvite'), { loading }),
   'medir-objeto-na-foto': dynamic(() => import('./tools/MedidorTamanho'), { loading }),
   'restaurantes-perto-de-mim': dynamic(() => import('./tools/RestaurantesPerto'), { loading }),
+  'cronometro-de-poker': dynamic(() => import('./tools/PokerTimer'), { loading }),
 }
 
 export default function ToolRenderer({ slug }) {

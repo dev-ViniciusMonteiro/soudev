@@ -89,6 +89,7 @@ export const ferramentas = [
   f('geradores', 'gerador-de-convite', 'Gerador de Convite', ['Crie e compartilhe', '*por um link pronto*'], [['🎂', 'Aniversário'], ['💍', 'Casamento'], ['🔗', 'Link direto'], ['⬇️', 'Baixe a imagem']]),
   f('dia', 'medir-objeto-na-foto', 'Medir na Foto', ['Saiba o tamanho', '*com uma moeda de referência*'], [['📏', 'Sem régua'], ['🪙', 'Moeda'], ['💳', 'Cartão'], ['📄', 'Folha A4']]),
   f('comer', 'restaurantes-perto-de-mim', 'Onde Comer Perto', ['Ache restaurantes', '*e comida por perto*'], [['🍽️', 'Restaurantes'], ['🍔', 'Lanches'], ['☕', 'Cafés'], ['📍', 'Perto de você']]),
+  f('geradores', 'cronometro-de-poker', 'Cronômetro de Poker', ['Relógio de torneio', '*e cash, pra rodar offline*'], [['♠️', 'Torneio'], ['💵', 'Cash'], ['🎨', 'Temas e logo'], ['⬇️', 'Baixa o HTML']]),
 
   /* Texto e segurança */
   f('texto', 'contador-caracteres', 'Contador', ['Caracteres e palavras', '*contados na hora*'], [['🔤', 'Caracteres'], ['📝', 'Palavras'], ['📏', 'Linhas'], ['🔁', 'Transforma o texto']]),
