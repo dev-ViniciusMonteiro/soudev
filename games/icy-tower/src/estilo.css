@@ -1,0 +1,39 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  background: #070a17;
+  color: #e6edf3;
+  font-family: "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+#app { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
+.it-wrap { position: relative; }
+canvas { display: block; border-radius: 12px; box-shadow: 0 20px 60px rgba(0, 0, 0, .55); background: #0b1024; }
+
+/* controles em toque */
+.it-touch { position: absolute; inset: 0; display: none; }
+.it-touch .zona { position: absolute; bottom: 0; top: 40%; width: 34%; }
+.it-touch .esq { left: 0; } .it-touch .dir { left: 34%; }
+.it-touch .pular { right: 0; width: 32%; }
+.it-btn { position: absolute; bottom: 16px; width: 72px; height: 72px; border-radius: 50%;
+  background: rgba(255,255,255,.12); border: 2px solid rgba(255,255,255,.3); color: #fff;
+  font-size: 30px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+.it-btn.e { left: 16px; } .it-btn.d { left: 100px; } .it-btn.j { right: 16px; width: 92px; }
+@media (pointer: coarse) { .it-touch { display: block; } }
+
+/* telas de início e fim */
+.it-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 14px; text-align: center; padding: 24px; background: rgba(7,10,23,.82); border-radius: 12px; }
+.it-overlay[hidden] { display: none; }
+.it-overlay h1 { font-size: 34px; color: #7cc5ff; text-shadow: 0 2px 0 #0008; letter-spacing: .5px; }
+.it-overlay h2 { font-size: 26px; color: #ffd45e; }
+.it-overlay p { max-width: 320px; font-size: 15px; color: #b9c6d6; line-height: 1.5; }
+.it-overlay .stats { font-size: 17px; color: #e6edf3; }
+.it-overlay .stats b { color: #7cff9e; font-size: 22px; }
+.it-btn-main { margin-top: 6px; padding: 13px 28px; font-size: 18px; font-weight: 700; border: none; border-radius: 10px;
+  background: linear-gradient(180deg, #58b3ff, #2b7fe0); color: #04203f; cursor: pointer; box-shadow: 0 4px 0 #1b5aa6; }
+.it-btn-main:active { transform: translateY(2px); box-shadow: 0 2px 0 #1b5aa6; }
+.it-dica { font-size: 13px; color: #8aa0b2; }
