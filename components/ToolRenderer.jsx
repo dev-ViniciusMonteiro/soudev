@@ -54,6 +54,7 @@ const components = {
   'gerador-de-curriculo': dynamic(() => import('./tools/GeradorCurriculo'), { loading }),
   'buscar-filmes-e-series': dynamic(() => import('./tools/BuscadorMidia'), { loading }),
   'gerador-de-convite': dynamic(() => import('./tools/GeradorConvite'), { loading }),
+  'medir-objeto-na-foto': dynamic(() => import('./tools/MedidorTamanho'), { loading }),
 }
 
 export default function ToolRenderer({ slug }) {

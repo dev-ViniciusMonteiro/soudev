@@ -85,6 +85,7 @@ export const ferramentas = [
   f('trabalho', 'gerador-de-curriculo', 'Gerador de Currículo', ['Seu currículo pronto', '*com modelos e dicas*'], [['📄', 'Vários modelos'], ['💡', 'Dica em cada campo'], ['🤖', 'Melhore com IA'], ['⬇️', 'PDF e Word']]),
   f('cultura', 'buscar-filmes-e-series', 'Filmes e Séries', ['Busque e descubra', '*e veja onde assistir*'], [['🎬', 'Filmes'], ['📺', 'Séries'], ['🍿', 'Onde assistir'], ['⭐', 'Recomendações']]),
   f('geradores', 'gerador-de-convite', 'Gerador de Convite', ['Crie e compartilhe', '*por um link pronto*'], [['🎂', 'Aniversário'], ['💍', 'Casamento'], ['🔗', 'Link direto'], ['⬇️', 'Baixe a imagem']]),
+  f('dia', 'medir-objeto-na-foto', 'Medir na Foto', ['Saiba o tamanho', '*com uma moeda de referência*'], [['📏', 'Sem régua'], ['🪙', 'Moeda'], ['💳', 'Cartão'], ['📄', 'Folha A4']]),
 
   /* Texto e segurança */
   f('texto', 'contador-caracteres', 'Contador', ['Caracteres e palavras', '*contados na hora*'], [['🔤', 'Caracteres'], ['📝', 'Palavras'], ['📏', 'Linhas'], ['🔁', 'Transforma o texto']]),
