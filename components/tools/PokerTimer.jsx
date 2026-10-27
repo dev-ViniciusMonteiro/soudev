@@ -8,10 +8,12 @@ import { track } from '@/lib/analytics'
 import { downloadBlob } from '@/lib/client'
 import { Field, Notice } from '../ui'
 import { CAIXAS, TEMAS, configPadrao, gerarEstrutura, gerarHTML } from '@/lib/poker'
+import PokerMesa from './PokerMesa'
 
 const CHAVE = 'soudev-poker-v1'
 
 export default function PokerTimer() {
+  const [aba, setAba] = useState('relogio')
   const [cfg, setCfg] = useState(configPadrao)
   const [ger, setGer] = useState({ sb: 25, bb: 50, min: 20, qtd: 12, mult: 1.5, comAnte: true, pausaCada: 4, pausaMin: 10 })
   const [srcdoc, setSrcdoc] = useState('')
@@ -77,9 +79,15 @@ export default function PokerTimer() {
     <div className="pt">
       <style>{CSS}</style>
       <Notice kind="info">
-        Monte o relógio do seu jogo, veja a prévia funcionando ao lado e <b>baixe um arquivo HTML</b> que roda offline — é só abrir no navegador de qualquer computador ou TV, sem internet depois de pronto.
+        Em <b>Relógio</b>, monte o cronômetro e baixe um HTML que roda offline. Em <b>Mesa &amp; Caixa</b>, controle jogadores, fichas, rebuys, consumo e o caixa da noite, com gráficos — tudo salvo neste navegador. Os jogadores e a premiação aparecem automaticamente no relógio.
       </Notice>
 
+      <div className="pt-tabs">
+        <button className={'pt-tab' + (aba === 'relogio' ? ' sel' : '')} onClick={() => setAba('relogio')}>⏱ Relógio</button>
+        <button className={'pt-tab' + (aba === 'mesa' ? ' sel' : '')} onClick={() => setAba('mesa')}>💰 Mesa &amp; Caixa</button>
+      </div>
+
+      {aba === 'relogio' ? (
       <div className="pt-layout">
         <div className="pt-form">
           <div className="pt-grid2">
@@ -195,6 +203,9 @@ export default function PokerTimer() {
           <small className="muted">Suas configurações ficam salvas neste navegador automaticamente. Na prévia e no arquivo baixado funcionam o teclado (espaço = pausar, ← → trocam de nível, F = tela cheia) e os botões na tela.</small>
         </div>
       </div>
+      ) : (
+        <PokerMesa onSync={({ ativos, premio }) => setCfg((c) => ({ ...c, jogadores: ativos, premiacao: premio > 0 ? premio.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : c.premiacao }))} />
+      )}
     </div>
   )
 }
@@ -202,6 +213,9 @@ export default function PokerTimer() {
 const CSS = `
 .pt{margin-top:14px}
 .pt .btn-sm{padding:6px 10px;font-size:13px}
+.pt-tabs{display:flex;gap:8px;margin:4px 0 8px}
+.pt-tab{flex:1;padding:12px;border:1px solid var(--line-strong);background:var(--bg-2);color:var(--text);border-radius:var(--radius-lg);cursor:pointer;font:inherit;font-weight:700;font-size:15px}
+.pt-tab.sel{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
 .pt-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,420px);gap:20px;margin-top:14px}
 @media(max-width:860px){.pt-layout{grid-template-columns:minmax(0,1fr)}}
 .pt-form{display:flex;flex-direction:column;gap:14px}
