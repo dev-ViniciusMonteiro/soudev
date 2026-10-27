@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from 'react'
 import { track } from '@/lib/analytics'
 import { downloadBlob } from '@/lib/client'
 import { Field, Notice } from '../ui'
-import { TEMAS, configPadrao, gerarEstrutura, gerarHTML } from '@/lib/poker'
+import { CAIXAS, TEMAS, configPadrao, gerarEstrutura, gerarHTML } from '@/lib/poker'
 
 export default function PokerTimer() {
   const [cfg, setCfg] = useState(configPadrao)
@@ -102,6 +102,21 @@ export default function PokerTimer() {
             </Field>
           ) : (
             <>
+              <div className="pt-caixas">
+                <span className="pt-lbl">Caixas visíveis</span>
+                <div className="pt-caixas-chips">
+                  {CAIXAS.map(([id, nome]) => {
+                    const on = (cfg.mostrar || {})[id] !== false
+                    return (
+                      <label key={id} className={'pt-caixa' + (on ? ' sel' : '')}>
+                        <input type="checkbox" checked={on} onChange={(e) => setCfg((c) => ({ ...c, mostrar: { ...(c.mostrar || {}), [id]: e.target.checked } }))} />
+                        {nome}
+                      </label>
+                    )
+                  })}
+                </div>
+              </div>
+
               <div className="pt-gerador">
                 <span className="pt-lbl">Gerar estrutura rápida</span>
                 <div className="pt-grid-ger">
@@ -172,6 +187,11 @@ const CSS = `
 .pt-tema.sel{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--accent)}
 .pt-logo-row{display:flex;gap:8px;align-items:center;margin-bottom:4px}
 .pt-logo-mini{height:40px;max-width:120px;object-fit:contain;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:2px}
+.pt-caixas{border-top:1px solid var(--line);padding-top:12px}
+.pt-caixas-chips{display:flex;flex-wrap:wrap;gap:8px}
+.pt-caixa{display:inline-flex;align-items:center;gap:7px;font-size:13px;padding:7px 12px;border:1px solid var(--line-strong);border-radius:999px;cursor:pointer}
+.pt-caixa.sel{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent)}
+.pt-caixa input{width:auto}
 .pt-gerador,.pt-niveis{border-top:1px solid var(--line);padding-top:12px}
 .pt-grid-ger{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:10px}
 .pt-grid-ger label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)}
