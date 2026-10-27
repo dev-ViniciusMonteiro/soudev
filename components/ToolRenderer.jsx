@@ -55,6 +55,7 @@ const components = {
   'buscar-filmes-e-series': dynamic(() => import('./tools/BuscadorMidia'), { loading }),
   'gerador-de-convite': dynamic(() => import('./tools/GeradorConvite'), { loading }),
   'medir-objeto-na-foto': dynamic(() => import('./tools/MedidorTamanho'), { loading }),
+  'restaurantes-perto-de-mim': dynamic(() => import('./tools/RestaurantesPerto'), { loading }),
 }
 
 export default function ToolRenderer({ slug }) {

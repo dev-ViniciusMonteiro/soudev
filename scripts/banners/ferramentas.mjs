@@ -11,6 +11,7 @@ const CORES = {
   texto: ['#a78bfa', '#22d3ee'],
   geradores: ['#22d3ee', '#facc15'],
   cultura: ['#f43f5e', '#8b5cf6'],
+  comer: ['#f97316', '#ef4444'],
 };
 
 const TAG = {
@@ -23,6 +24,7 @@ const TAG = {
   texto: 'TEXTO E SEGURANÇA',
   geradores: 'GERADOR GRÁTIS',
   cultura: 'FILMES, SÉRIES E LIVROS',
+  comer: 'ONDE COMER · GRÁTIS',
 };
 
 const f = (categoria, slug, titulo, chamada, selos) => ({
@@ -86,6 +88,7 @@ export const ferramentas = [
   f('cultura', 'buscar-filmes-e-series', 'Filmes e Séries', ['Busque e descubra', '*e veja onde assistir*'], [['🎬', 'Filmes'], ['📺', 'Séries'], ['🍿', 'Onde assistir'], ['⭐', 'Recomendações']]),
   f('geradores', 'gerador-de-convite', 'Gerador de Convite', ['Crie e compartilhe', '*por um link pronto*'], [['🎂', 'Aniversário'], ['💍', 'Casamento'], ['🔗', 'Link direto'], ['⬇️', 'Baixe a imagem']]),
   f('dia', 'medir-objeto-na-foto', 'Medir na Foto', ['Saiba o tamanho', '*com uma moeda de referência*'], [['📏', 'Sem régua'], ['🪙', 'Moeda'], ['💳', 'Cartão'], ['📄', 'Folha A4']]),
+  f('comer', 'restaurantes-perto-de-mim', 'Onde Comer Perto', ['Ache restaurantes', '*e comida por perto*'], [['🍽️', 'Restaurantes'], ['🍔', 'Lanches'], ['☕', 'Cafés'], ['📍', 'Perto de você']]),
 
   /* Texto e segurança */
   f('texto', 'contador-caracteres', 'Contador', ['Caracteres e palavras', '*contados na hora*'], [['🔤', 'Caracteres'], ['📝', 'Palavras'], ['📏', 'Linhas'], ['🔁', 'Transforma o texto']]),
