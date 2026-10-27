@@ -9,6 +9,8 @@ import { downloadBlob } from '@/lib/client'
 import { Field, Notice } from '../ui'
 import { CAIXAS, TEMAS, configPadrao, gerarEstrutura, gerarHTML } from '@/lib/poker'
 
+const CHAVE = 'soudev-poker-v1'
+
 export default function PokerTimer() {
   const [cfg, setCfg] = useState(configPadrao)
   const [ger, setGer] = useState({ sb: 25, bb: 50, min: 20, qtd: 12, mult: 1.5, comAnte: true, pausaCada: 4, pausaMin: 10 })
@@ -16,11 +18,36 @@ export default function PokerTimer() {
   const [msg, setMsg] = useState('')
   const nomeArq = (cfg.nome || 'relogio-poker').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 
+  // restaura a configuração salva neste navegador
+  useEffect(() => {
+    try {
+      const s = localStorage.getItem(CHAVE)
+      if (!s) return
+      const d = JSON.parse(s)
+      if (d && d.cfg) {
+        const base = configPadrao()
+        setCfg({ ...base, ...d.cfg, mostrar: { ...base.mostrar, ...(d.cfg.mostrar || {}) }, cash: { ...base.cash, ...(d.cfg.cash || {}) } })
+      }
+      if (d && d.ger) setGer((g) => ({ ...g, ...d.ger }))
+    } catch { /* sem storage */ }
+  }, [])
+
+  // salva tudo automaticamente (com atraso para não gravar a cada tecla)
+  useEffect(() => {
+    const t = setTimeout(() => {
+      try { localStorage.setItem(CHAVE, JSON.stringify({ cfg, ger })) }
+      catch { setMsg('Não consegui salvar automaticamente (a logo pode estar grande demais para o armazenamento do navegador).') }
+    }, 400)
+    return () => clearTimeout(t)
+  }, [cfg, ger])
+
   // prévia com atraso, para não recarregar o relógio a cada tecla
   useEffect(() => {
     const t = setTimeout(() => setSrcdoc(gerarHTML(cfg)), 500)
     return () => clearTimeout(t)
   }, [cfg])
+
+  const restaurarPadrao = () => { setCfg(configPadrao()); setMsg(''); try { localStorage.removeItem(CHAVE) } catch { /* ignora */ } }
 
   const set = (k) => (e) => setCfg((c) => ({ ...c, [k]: e.target.value }))
   const setGerCampo = (k, v) => setGer((g) => ({ ...g, [k]: v }))
@@ -163,8 +190,9 @@ export default function PokerTimer() {
           <div className="pt-acoes">
             <button className="btn btn-primary" onClick={baixar}>⬇ Baixar HTML (offline)</button>
             <button className="btn" onClick={abrir}>↗ Abrir em nova aba</button>
+            <button className="btn btn-ghost" onClick={restaurarPadrao}>Restaurar padrão</button>
           </div>
-          <small className="muted">Dica: na prévia e no arquivo baixado funcionam o teclado (espaço = pausar, ← → trocam de nível, F = tela cheia) e os botões na tela.</small>
+          <small className="muted">Suas configurações ficam salvas neste navegador automaticamente. Na prévia e no arquivo baixado funcionam o teclado (espaço = pausar, ← → trocam de nível, F = tela cheia) e os botões na tela.</small>
         </div>
       </div>
     </div>
