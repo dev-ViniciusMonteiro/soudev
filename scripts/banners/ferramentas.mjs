@@ -46,6 +46,7 @@ export const ferramentas = [
   f('golpes', 'verificar-arquivo-virus', 'Tem Vírus?', ['Analise o arquivo', '*antes de abrir*'], [['🗜️', 'ZIP e EXE'], ['📄', 'PDF e Office'], ['📱', 'APK'], ['🔒', 'Sem enviar nada']]),
   f('golpes', 'consulta-ddd', 'Consulta DDD', ['De onde é', '*esse número?*'], [['📞', 'Estado e cidades'], ['🚩', 'Números suspeitos'], ['📍', 'Todos os DDDs'], ['⚡', 'Na hora']]),
   f('golpes', 'consulta-cnpj', 'Consulta CNPJ', ['Conheça a empresa', '*antes de fechar negócio*'], [['✅', 'Situação'], ['📅', 'Abertura'], ['🏭', 'Atividade'], ['👥', 'Sócios']]),
+  f('golpes', 'como-funcionam-os-golpes', 'Como os Golpes Funcionam', ['Veja exemplos falsos', '*e aprenda a reconhecer*'], [['🔑', 'Login clonado'], ['🎁', 'Falsa promoção'], ['🏦', 'Golpe do banco'], ['🛡️', 'Como se proteger']]),
 
   /* Saúde e emergência */
   f('saude', 'calculadora-imc', 'Calculadora IMC', ['Seu IMC e', '*o peso saudável*'], [['⚖️', 'Índice na hora'], ['📏', 'Faixa ideal'], ['🎯', 'Peso saudável'], ['🔒', 'Sem cadastro']]),

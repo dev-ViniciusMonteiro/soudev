@@ -60,6 +60,7 @@ const components = {
   'tarefas-do-dia': dynamic(() => import('./tools/TarefasDia'), { loading }),
   'controle-financeiro-mensal': dynamic(() => import('./tools/Financas'), { loading }),
   'controle-de-caixa-mercado': dynamic(() => import('./tools/CaixaMercado'), { loading }),
+  'como-funcionam-os-golpes': dynamic(() => import('./tools/GolpesDemo'), { loading }),
 }
 
 export default function ToolRenderer({ slug }) {
