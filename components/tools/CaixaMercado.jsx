@@ -15,6 +15,49 @@ const brl = (n) => Number(n || 0).toLocaleString('pt-BR', { style: 'currency', c
 const parseVal = (s) => { let v = String(s).trim().replace(/\s|R\$/g, ''); if (v.includes(',')) v = v.replace(/\./g, '').replace(',', '.'); return Math.abs(Number(v)) || 0 }
 const hojeISO = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10) }
 const hora = () => new Date().toLocaleTimeString('pt-BR').slice(0, 5)
+const CANAL = 'soudev-caixa-tela'
+
+// Runtime da TELA DO CLIENTE (janela separada): recebe a venda ao vivo por BroadcastChannel e exibe
+// grande, para ficar exposta ao cliente. Autocontido (embutido via .toString()).
+function telaRuntime() {
+  var S = { loja: 'Caixa', logo: '', itens: [], total: 0 }
+  var brl = function (n) { return Number(n || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) }
+  var css = '*{box-sizing:border-box;margin:0;padding:0}html,body{height:100%}body{background:#0a0f1e;color:#fff;font-family:"Segoe UI",system-ui,sans-serif;overflow:hidden}'
+    + '.t{height:100%;display:flex;flex-direction:column}'
+    + '.hd{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:3vh 4vw;background:linear-gradient(180deg,#13351f,#0a0f1e);border-bottom:2px solid #22c55e}'
+    + '.hd .loja{font-size:clamp(22px,4vw,46px);font-weight:800;display:flex;align-items:center;gap:16px}.hd .loja img{max-height:9vh;max-width:30vw;object-fit:contain}'
+    + '.hd .hora{font-size:clamp(16px,2.4vw,28px);color:#9ec9b5;font-variant-numeric:tabular-nums}'
+    + '.lista{flex:1;overflow:hidden;padding:2vh 4vw;display:flex;flex-direction:column;justify-content:flex-end;gap:1vh}'
+    + '.li{display:flex;justify-content:space-between;gap:20px;font-size:clamp(20px,3.2vw,40px);animation:ent .25s}'
+    + '.li .q{color:#9ec9b5} .li .v{font-variant-numeric:tabular-nums;font-weight:700}'
+    + '@keyframes ent{from{opacity:0;transform:translateY(12px)}}'
+    + '.vazio{margin:auto;text-align:center;color:#6b8;font-size:clamp(24px,5vw,56px);font-weight:800}'
+    + '.ft{background:#0d1526;border-top:2px solid #22c55e;padding:3vh 4vw;display:flex;align-items:baseline;justify-content:space-between}'
+    + '.ft span{font-size:clamp(18px,3vw,34px);letter-spacing:.2em;color:#9ec9b5;text-transform:uppercase}'
+    + '.ft b{font-size:clamp(54px,12vw,150px);font-weight:900;color:#22c55e;font-variant-numeric:tabular-nums;line-height:1}'
+    + '.ov{position:fixed;inset:0;background:rgba(6,20,12,.96);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3vh;text-align:center;padding:5vw}'
+    + '.ov[hidden]{display:none}.ov .ob{font-size:clamp(30px,6vw,72px);font-weight:900}.ov .tr{font-size:clamp(28px,7vw,96px);font-weight:900;color:#22c55e}'
+    + '.fs{position:fixed;top:10px;right:12px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.3);color:#fff;width:40px;height:40px;border-radius:8px;cursor:pointer;font-size:18px}'
+  var style = document.createElement('style'); style.textContent = css; document.head.appendChild(style)
+  document.title = 'Tela do cliente'
+  document.body.innerHTML = '<div class="t"><div class="hd"><div class="loja" id="loja"></div><div class="hora" id="hora"></div></div>'
+    + '<div class="lista" id="lista"></div><div class="ft"><span>Total</span><b id="total">R$ 0,00</b></div></div>'
+    + '<div class="ov" id="ov" hidden></div><button class="fs" id="fs" title="Tela cheia">⛶</button>'
+  function render() {
+    var loja = document.getElementById('loja')
+    loja.innerHTML = (S.logo ? '<img src="' + S.logo + '" alt="">' : '') + '<span>' + (S.loja || 'Caixa') + '</span>'
+    var lista = document.getElementById('lista')
+    if (!S.itens.length) { lista.innerHTML = '<div class="vazio">Seja bem-vindo! 🛒</div>' }
+    else { lista.innerHTML = S.itens.slice(-9).map(function (i) { return '<div class="li"><span><span class="q">' + i.qtd + '× </span>' + (i.nome || '') + '</span><span class="v">' + brl(i.preco * i.qtd) + '</span></div>' }).join('') }
+    document.getElementById('total').textContent = brl(S.total)
+  }
+  function obrigado(troco) { var ov = document.getElementById('ov'); ov.innerHTML = '<div class="ob">Obrigado pela preferência! 🙏</div>' + (troco > 0 ? '<div class="tr">Troco: ' + brl(troco) + '</div>' : ''); ov.hidden = false; setTimeout(function () { ov.hidden = true }, 6000) }
+  setInterval(function () { var h = document.getElementById('hora'); if (h) h.textContent = new Date().toLocaleTimeString('pt-BR') }, 1000)
+  try { var ch = new BroadcastChannel('soudev-caixa-tela'); ch.onmessage = function (e) { var d = e.data || {}; if (d.status === 'finalizada') obrigado(d.troco || 0); S.loja = d.loja || S.loja; S.logo = d.logo || ''; S.itens = d.itens || []; S.total = d.total || 0; render() } } catch (e) {}
+  document.getElementById('fs').onclick = function () { try { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen() } catch (e) {} }
+  render()
+}
+const telaClienteHTML = () => '<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><script>(' + telaRuntime.toString() + ')();<\/script></body></html>'
 
 function estadoInicial() {
   return {
@@ -81,6 +124,8 @@ function Caixa({ st, upd }) {
   const [fundoIni, setFundoIni] = useState('')
   const [mov, setMov] = useState({ tipo: 'sangria', valor: '', desc: '' })
   const [contado, setContado] = useState('')
+  const canal = useRef(null)
+  useEffect(() => { try { canal.current = new BroadcastChannel(CANAL) } catch { /* sem suporte */ } return () => { try { canal.current && canal.current.close() } catch { /* ignora */ } } }, [])
 
   const abrir = () => { const f = parseVal(fundoIni); upd((c) => { c.caixa = { aberto: true, fundo: f, aberturaTs: Date.now(), aberturaHora: hora(), movimentos: [] } }); setFundoIni('') }
 
@@ -94,6 +139,16 @@ function Caixa({ st, upd }) {
   const total = Math.max(0, subtotal - desconto)
   const troco = pgto === 'Dinheiro' ? Math.max(0, parseVal(recebido) - total) : 0
 
+  const enviarTela = (extra) => { try { canal.current && canal.current.postMessage({ loja: st.config.loja, logo: st.config.logoTela || '', itens: venda.itens.map((i) => ({ nome: i.nome, qtd: i.qtd, preco: i.preco })), total, status: 'vendendo', ...extra }) } catch { /* ignora */ } }
+  useEffect(() => { enviarTela() /* eslint-disable-next-line */ }, [venda, total, st.config.loja])
+  const abrirTela = () => {
+    const w = window.open('', 'telaClienteMercado', 'width=1024,height=640')
+    if (!w) { alert('Permita abrir janelas (pop-up) para usar a tela do cliente, e arraste-a para o monitor virado ao cliente.'); return }
+    w.document.open(); w.document.write(telaClienteHTML()); w.document.close()
+    setTimeout(() => enviarTela(), 500)
+    track('caixa_tela_cliente')
+  }
+
   const finalizar = () => {
     if (!venda.itens.length) return
     if (pgto === 'Dinheiro' && parseVal(recebido) < total) { alert('Valor recebido menor que o total.'); return }
@@ -102,6 +157,7 @@ function Caixa({ st, upd }) {
       if (c.config.controlarEstoque) venda.itens.forEach((i) => { if (i.produtoId) { const p = c.produtos.find((x) => x.id === i.produtoId); if (p) p.estoque -= i.qtd } })
     })
     track('caixa_venda', { pgto, total })
+    enviarTela({ status: 'finalizada', troco, itens: [] })
     setVenda({ itens: [], desconto: '' }); setRecebido('')
   }
 
@@ -165,7 +221,10 @@ function Caixa({ st, upd }) {
 
       {/* direita: venda atual */}
       <div className="cx-venda">
-        <h3 className="cx-h3">Venda atual</h3>
+        <div className="cx-venda-head">
+          <h3 className="cx-h3">Venda atual</h3>
+          <button className="btn btn-ghost btn-sm" onClick={abrirTela} title="Abre uma janela para exibir ao cliente (arraste para a 2ª tela)">🖥 Tela do cliente</button>
+        </div>
         <div className="cx-carrinho">
           {venda.itens.length === 0 && <p className="muted">Clique nos produtos para adicionar.</p>}
           {venda.itens.map((i, idx) => (
@@ -310,6 +369,16 @@ function Config({ st, upd, setSt }) {
       <label className="cx-campo">Nome da loja<input value={st.config.loja} onChange={(e) => upd((c) => { c.config.loja = e.target.value })} /></label>
       <label className="cx-check"><input type="checkbox" checked={st.config.controlarEstoque} onChange={(e) => upd((c) => { c.config.controlarEstoque = e.target.checked })} /> Controlar estoque (baixa a cada venda)</label>
 
+      <div className="cx-logo">
+        <span className="cx-lbl">Logo da tela do cliente (opcional)</span>
+        <div className="cx-logo-row">
+          {st.config.logoTela && <img className="cx-logo-mini" src={st.config.logoTela} alt="" />}
+          <label className="btn btn-ghost btn-sm">{st.config.logoTela ? 'Trocar logo' : 'Enviar logo'}<input type="file" accept="image/*" hidden onChange={(e) => { const f = e.target.files?.[0]; if (!f) return; if (f.size > 1.2 * 1024 * 1024) { alert('Logo muito grande (máx. ~1,2 MB).'); return } const r = new FileReader(); r.onload = () => upd((c) => { c.config.logoTela = r.result }); r.readAsDataURL(f) }} /></label>
+          {st.config.logoTela && <button className="btn btn-ghost btn-sm" onClick={() => upd((c) => { c.config.logoTela = '' })}>Remover</button>}
+        </div>
+        <p className="muted small">Aparece no topo da tela virada ao cliente, junto do nome da loja.</p>
+      </div>
+
       <div className="cx-formas">
         <span className="cx-lbl">Formas de pagamento</span>
         <div className="cx-formas-chips">
@@ -366,6 +435,9 @@ const CSS = `
 .cx-avulso{display:flex;gap:8px}.cx-avulso input{flex:1;min-width:0}
 
 .cx-venda{grid-area:venda;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-lg);padding:14px;display:flex;flex-direction:column;gap:8px}
+.cx-venda-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.cx-logo-row{display:flex;gap:8px;align-items:center}
+.cx-logo-mini{height:40px;max-width:120px;object-fit:contain;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:2px}
 .cx-carrinho{display:flex;flex-direction:column;gap:6px;max-height:240px;overflow:auto;min-height:60px}
 .cx-ci{display:flex;align-items:center;gap:8px}
 .cx-ci-nome{flex:1;min-width:0;display:flex;flex-direction:column;font-size:14px}.cx-ci-nome small{color:var(--muted);font-size:11px}
