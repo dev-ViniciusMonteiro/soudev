@@ -58,6 +58,7 @@ const components = {
   'restaurantes-perto-de-mim': dynamic(() => import('./tools/RestaurantesPerto'), { loading }),
   'cronometro-de-poker': dynamic(() => import('./tools/PokerTimer'), { loading }),
   'tarefas-do-dia': dynamic(() => import('./tools/TarefasDia'), { loading }),
+  'controle-financeiro-mensal': dynamic(() => import('./tools/Financas'), { loading }),
 }
 
 export default function ToolRenderer({ slug }) {

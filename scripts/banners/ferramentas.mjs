@@ -91,6 +91,7 @@ export const ferramentas = [
   f('comer', 'restaurantes-perto-de-mim', 'Onde Comer Perto', ['Ache restaurantes', '*e comida por perto*'], [['🍽️', 'Restaurantes'], ['🍔', 'Lanches'], ['☕', 'Cafés'], ['📍', 'Perto de você']]),
   f('geradores', 'cronometro-de-poker', 'Cronômetro de Poker', ['Relógio de torneio', '*e cash, pra rodar offline*'], [['♠️', 'Torneio'], ['💵', 'Cash'], ['🎨', 'Temas e logo'], ['⬇️', 'Baixa o HTML']]),
   f('dia', 'tarefas-do-dia', 'Tarefas do Dia', ['Organize sua rotina', '*e o que fazer hoje*'], [['✅', 'Tarefas do dia'], ['🔁', 'Rotina'], ['🔥', 'Sequência'], ['📊', 'Progresso']]),
+  f('trabalho', 'controle-financeiro-mensal', 'Controle Financeiro', ['Receitas e despesas', '*com projeção do mês*'], [['💰', 'Saldo do mês'], ['🔁', 'Contas fixas'], ['📊', 'Por categoria'], ['🔮', 'Projeção']]),
 
   /* Texto e segurança */
   f('texto', 'contador-caracteres', 'Contador', ['Caracteres e palavras', '*contados na hora*'], [['🔤', 'Caracteres'], ['📝', 'Palavras'], ['📏', 'Linhas'], ['🔁', 'Transforma o texto']]),
