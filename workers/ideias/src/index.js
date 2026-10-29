@@ -135,6 +135,7 @@ export default {
       if (pathname === '/ideias' && metodo === 'POST') return enviarIdeia(request, env)
 
       if (pathname === '/admin' || pathname === '/admin/') return adminHome(request, env)
+      if (pathname === '/admin/export.csv') return adminExportCsv(request, env)
       if (pathname === '/admin/login' && metodo === 'POST') return adminLogin(request, env)
       if (pathname === '/admin/logout' && metodo === 'POST') return adminLogout(env)
       if (pathname === '/admin/acao' && metodo === 'POST') return adminAcao(request, env)
@@ -246,6 +247,33 @@ async function adminAcao(request, env) {
   return new Response(null, { status: 303, headers: { Location: `/admin${q}` } })
 }
 
+async function adminExportCsv(request, env) {
+  if (!(await estaLogado(request, env))) return new Response('Não autorizado', { status: 401 })
+  const { results } = await env.DB.prepare(
+    'SELECT criado_em, status, nome, pagina, mensagem FROM ideias ORDER BY criado_em DESC LIMIT 5000',
+  ).all()
+
+  const campo = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`
+  const linhas = [['data', 'status', 'nome', 'pagina', 'mensagem'].map(campo).join(',')]
+  for (const i of results || []) {
+    linhas.push([
+      new Date(i.criado_em).toISOString(),
+      i.status,
+      i.nome || '',
+      i.pagina || '',
+      i.mensagem,
+    ].map(campo).join(','))
+  }
+  const csv = '﻿' + linhas.join('\r\n') // BOM para abrir certo no Excel
+  const hoje = new Date().toISOString().slice(0, 10)
+  return new Response(csv, {
+    headers: {
+      'Content-Type': 'text/csv; charset=utf-8',
+      'Content-Disposition': `attachment; filename="ideias-${hoje}.csv"`,
+    },
+  })
+}
+
 async function adminHome(request, env) {
   if (!(await estaLogado(request, env))) return html(paginaLogin())
 
@@ -333,8 +361,11 @@ function paginaPainel(ideias, filtro, totais, env) {
 <meta name="robots" content="noindex"><style>${BASE_CSS}</style></head>
 <body><div class="wrap">
 <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
-  <h1>Ideias da comunidade</h1>
-  <form method="post" action="/admin/logout"><button class="ghost">Sair</button></form>
+  <h1>Ideias da comunidade${totais.nova ? ` <span style="background:#3a63ff;color:#fff;border-radius:999px;padding:2px 10px;font-size:14px;vertical-align:middle">${totais.nova} nova${totais.nova > 1 ? 's' : ''}</span>` : ''}</h1>
+  <div style="display:flex;gap:8px">
+    <a href="/admin/export.csv" style="text-decoration:none"><button type="button" class="ghost">Exportar CSV</button></a>
+    <form method="post" action="/admin/logout"><button class="ghost">Sair</button></form>
+  </div>
 </div>
 <div style="margin:14px 0">
   ${chip('', 'Todas', (totais.nova + totais.lida + totais.arquivada))}
