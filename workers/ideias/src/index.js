@@ -115,7 +115,7 @@ function json(dados, status = 200, extra = {}) {
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
   'Access-Control-Max-Age': '86400',
 }
@@ -134,7 +134,11 @@ export default {
 
       if (pathname === '/ideias' && metodo === 'POST') return await enviarIdeia(request, env)
 
+      if (pathname === '/comentarios' && metodo === 'GET') return await listarComentarios(request, env)
+      if (pathname === '/comentarios' && metodo === 'POST') return await enviarComentario(request, env)
+
       if (pathname === '/admin' || pathname === '/admin/') return await adminHome(request, env)
+      if (pathname === '/admin/comentarios') return await adminComentarios(request, env)
       if (pathname === '/admin/export.csv') return await adminExportCsv(request, env)
       if (pathname === '/admin/login' && metodo === 'POST') return await adminLogin(request, env)
       if (pathname === '/admin/logout' && metodo === 'POST') return adminLogout(env)
@@ -194,6 +198,54 @@ async function enviarIdeia(request, env) {
   ).run()
 
   return json({ ok: true }, 200, CORS)
+}
+
+/* --------------------------- comentários (público) ------------------------ */
+
+async function listarComentarios(request, env) {
+  const url = new URL(request.url)
+  const pagina = (url.searchParams.get('pagina') || '').slice(0, 50)
+  let sql = "SELECT id, nome, mensagem, criado_em FROM comentarios WHERE status = 'publicado'"
+  const bind = []
+  if (pagina) {
+    sql += ' AND pagina = ?'
+    bind.push(pagina)
+  }
+  sql += ' ORDER BY criado_em DESC LIMIT 200'
+  const { results } = await env.DB.prepare(sql).bind(...bind).all()
+  return json({ comentarios: results || [] }, 200, CORS)
+}
+
+async function enviarComentario(request, env) {
+  let body
+  try {
+    body = await request.json()
+  } catch {
+    return json({ error: 'Requisição inválida.' }, 400, CORS)
+  }
+  if (String(body?.website || '').trim()) return json({ ok: true }, 200, CORS) // honeypot
+
+  const mensagem = String(body?.mensagem ?? '').trim().slice(0, 1000)
+  const nome = String(body?.nome ?? '').trim().slice(0, 60) || null
+  const pagina = String(body?.pagina ?? '').trim().slice(0, 50) || null
+  if (mensagem.length < 2) return json({ error: 'Escreva um comentário.' }, 400, CORS)
+
+  const ip = request.headers.get('CF-Connecting-IP') || '0.0.0.0'
+  const ipHash = await hashIp(ip, env.SESSAO_SECRET || 'sal')
+  const agora = Date.now()
+
+  // Rate-limit: no máx. 4 comentários por IP a cada 10 minutos.
+  const { results } = await env.DB.prepare(
+    'SELECT COUNT(*) AS n FROM comentarios WHERE ip_hash = ? AND criado_em > ?',
+  ).bind(ipHash, agora - 10 * 60 * 1000).all()
+  if (results?.[0]?.n >= 4) return json({ error: 'Você comentou demais agora há pouco. Tente mais tarde.' }, 429, CORS)
+
+  const id = crypto.randomUUID()
+  await env.DB.prepare(
+    "INSERT INTO comentarios (id, nome, mensagem, pagina, ip_hash, status, criado_em) VALUES (?,?,?,?,?,'publicado',?)",
+  ).bind(id, nome, mensagem, pagina, ipHash, agora).run()
+
+  return json({ ok: true, comentario: { id, nome, mensagem, criado_em: agora } }, 200, CORS)
 }
 
 /* -------------------------------- admin ----------------------------------- */
@@ -273,6 +325,29 @@ async function adminExportCsv(request, env) {
       'Content-Disposition': `attachment; filename="ideias-${hoje}.csv"`,
     },
   })
+}
+
+async function adminComentarios(request, env) {
+  if (!(await estaLogado(request, env))) return html(paginaLogin())
+
+  if (request.method === 'POST') {
+    const form = await request.formData()
+    const id = String(form.get('id') || '')
+    const acao = String(form.get('acao') || '')
+    if (acao === 'excluir') {
+      await env.DB.prepare('DELETE FROM comentarios WHERE id = ?').bind(id).run()
+    } else if (acao === 'ocultar') {
+      await env.DB.prepare("UPDATE comentarios SET status = 'oculto' WHERE id = ?").bind(id).run()
+    } else if (acao === 'publicar') {
+      await env.DB.prepare("UPDATE comentarios SET status = 'publicado' WHERE id = ?").bind(id).run()
+    }
+    return new Response(null, { status: 303, headers: { Location: '/admin/comentarios' } })
+  }
+
+  const { results } = await env.DB.prepare(
+    'SELECT id, nome, mensagem, pagina, status, criado_em FROM comentarios ORDER BY criado_em DESC LIMIT 500',
+  ).all()
+  return html(paginaComentarios(results || []))
 }
 
 async function adminHome(request, env) {
@@ -364,6 +439,7 @@ function paginaPainel(ideias, filtro, totais, env) {
 <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
   <h1>Ideias da comunidade${totais.nova ? ` <span style="background:#3a63ff;color:#fff;border-radius:999px;padding:2px 10px;font-size:14px;vertical-align:middle">${totais.nova} nova${totais.nova > 1 ? 's' : ''}</span>` : ''}</h1>
   <div style="display:flex;gap:8px">
+    <a href="/admin/comentarios" style="text-decoration:none"><button type="button" class="ghost">Comentários</button></a>
     <a href="/admin/export.csv" style="text-decoration:none"><button type="button" class="ghost">Exportar CSV</button></a>
     <form method="post" action="/admin/logout"><button class="ghost">Sair</button></form>
   </div>
@@ -375,5 +451,38 @@ function paginaPainel(ideias, filtro, totais, env) {
   ${chip('arquivada', 'Arquivadas', totais.arquivada)}
 </div>
 ${ideias.length ? linhas : '<div class="card" style="margin-top:12px"><p class="muted">Nenhuma ideia por aqui ainda.</p></div>'}
+</div></body></html>`
+}
+
+function paginaComentarios(comentarios) {
+  const linhas = comentarios.map((c) => {
+    const data = new Date(c.criado_em).toLocaleString('pt-BR')
+    const oculto = c.status === 'oculto'
+    return `<div class="card" style="margin-top:12px;opacity:${oculto ? '0.55' : '1'}">
+      <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">
+        <span class="muted">${esc(c.nome || 'Anônimo')} · ${esc(data)}${c.pagina ? ` · ${esc(c.pagina)}` : ''}</span>
+        <span class="muted">${oculto ? 'oculto' : 'publicado'}</span>
+      </div>
+      <p style="white-space:pre-wrap;margin:10px 0 12px">${esc(c.mensagem)}</p>
+      <form method="post" action="/admin/comentarios" style="display:flex;gap:8px;flex-wrap:wrap">
+        <input type="hidden" name="id" value="${esc(c.id)}">
+        ${oculto
+          ? `<button class="ghost" name="acao" value="publicar">Publicar</button>`
+          : `<button class="ghost" name="acao" value="ocultar">Ocultar do site</button>`}
+        <button class="danger" name="acao" value="excluir" onclick="return confirm('Excluir este comentário?')">Excluir</button>
+      </form>
+    </div>`
+  }).join('')
+
+  return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Comentários · Admin</title>
+<meta name="robots" content="noindex"><style>${BASE_CSS}</style></head>
+<body><div class="wrap">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+  <h1>Comentários do site</h1>
+  <a href="/admin" style="text-decoration:none"><button class="ghost">← Ideias</button></a>
+</div>
+<p class="muted">Aparecem publicamente no site. Use "Ocultar" para tirar do site sem apagar, ou "Excluir".</p>
+${comentarios.length ? linhas : '<div class="card" style="margin-top:12px"><p class="muted">Nenhum comentário ainda.</p></div>'}
 </div></body></html>`
 }

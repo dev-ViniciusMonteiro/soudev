@@ -14,3 +14,18 @@ CREATE TABLE IF NOT EXISTS ideias (
 CREATE INDEX IF NOT EXISTS idx_ideias_criado ON ideias (criado_em DESC);
 CREATE INDEX IF NOT EXISTS idx_ideias_status ON ideias (status);
 CREATE INDEX IF NOT EXISTS idx_ideias_ip ON ideias (ip_hash, criado_em);
+
+-- Comentários públicos (aparecem no próprio site, não dependem do admin).
+CREATE TABLE IF NOT EXISTS comentarios (
+  id          TEXT PRIMARY KEY,
+  nome        TEXT,
+  mensagem    TEXT NOT NULL,
+  pagina      TEXT,                          -- em qual página foi deixado (ex.: home, curriculo)
+  ip_hash     TEXT,
+  status      TEXT NOT NULL DEFAULT 'publicado', -- publicado | oculto
+  criado_em   INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_coment_criado ON comentarios (criado_em DESC);
+CREATE INDEX IF NOT EXISTS idx_coment_pagina ON comentarios (pagina, criado_em);
+CREATE INDEX IF NOT EXISTS idx_coment_ip ON comentarios (ip_hash, criado_em);

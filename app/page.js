@@ -2,6 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import CartaoBanner from '@/components/CartaoBanner'
 import ContactForm from '@/components/ContactForm'
+import Comentarios from '@/components/Comentarios'
 import Fileira from '@/components/Fileira'
 import JogosPorModo from '@/components/JogosPorModo'
 import { DESTAQUES, bannerDaFerramenta, bannerDoApp, bannerDoJogo, bannerDoSistema, bannerPessoal } from '@/lib/banners'
@@ -181,6 +182,12 @@ export default function Home() {
         </div>
         <ContactForm />
       </section>
+
+      <Comentarios
+        pagina="home"
+        titulo="Comentários"
+        subtitulo="Deixe uma ideia, um elogio ou conte o que você gostaria de ver no site."
+      />
 
       <script type="application/ld+json" dangerouslySetInnerHTML={jsonLd(structured)} />
     </main>

@@ -2,6 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { BaixarCurriculo } from '@/components/BaixarCurriculo'
 import ContactForm from '@/components/ContactForm'
+import Comentarios from '@/components/Comentarios'
 import { curriculo as cv, periodo } from '@/lib/curriculo'
 import { SITE_URL, jsonLd } from '@/lib/site'
 import './curriculo.css'
@@ -166,7 +167,7 @@ export default function Curriculo() {
       <section id="contato" className="section contact cv-contato-form cv-sem-impressao">
         <div>
           <p className="eyebrow">Contato</p>
-          <h2>Tem uma vaga ou projeto? Fale comigo.</h2>
+          <h2>Tem alguma ideia ou quer entrar em contato?</h2>
           <p className="muted">
             Mande uma mensagem rápida pelo formulário com seu e-mail ou WhatsApp que eu retorno. Se preferir, escreva para{' '}
             <a href={`mailto:${cv.email}`}>{cv.email}</a> ou chame no{' '}
@@ -178,6 +179,12 @@ export default function Curriculo() {
         </div>
         <ContactForm origem="curriculo" hint="Conte sobre a vaga ou o projeto e deixe seu e-mail ou WhatsApp para retorno." />
       </section>
+
+      <Comentarios
+        pagina="curriculo"
+        titulo="Deixe um comentário"
+        subtitulo="Um recado, feedback ou recomendação — aparece aqui na página."
+      />
     </main>
   )
 }

@@ -3303,3 +3303,51 @@ textarea {
   .balao-ideias { right: 12px; bottom: 12px; }
   .bi-fab-txt { display: none; }
 }
+
+/* ===== Seção de comentários (público, no site) ===== */
+.coment { }
+.coment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 640px;
+  margin: 16px 0 28px;
+}
+.coment-nome {
+  width: 100%;
+  max-width: 280px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  color: var(--text);
+  font: inherit;
+}
+.coment-texto {
+  width: 100%;
+  resize: vertical;
+  min-height: 84px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  color: var(--text);
+  font: inherit;
+}
+.coment-nome:focus, .coment-texto:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+.coment-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+.coment-acoes { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.coment-erro { color: var(--red); font-size: 0.9rem; }
+.coment-ok { color: var(--green); font-size: 0.9rem; }
+
+.coment-lista { display: flex; flex-direction: column; gap: 14px; max-width: 720px; }
+.coment-item {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--panel);
+  padding: 14px 16px;
+}
+.coment-cab { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
+.coment-cab strong { font-size: 0.95rem; }
+.coment-cab .muted { font-size: 0.8rem; white-space: nowrap; }
+.coment-item p { margin: 0; white-space: pre-wrap; word-break: break-word; line-height: 1.5; }
