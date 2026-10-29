@@ -94,13 +94,10 @@ export default async function NichoPage({ params }) {
         </span>
         <div>
           <h1>{n.titulo}</h1>
-          <p className="lead">{n.curto} Grátis e sem limite: cadastre a sua equipe e use no navegador, em todos os aparelhos.</p>
+          <p className="lead">{n.curto} Versão de demonstração grátis: roda no seu navegador com dados de exemplo, para você testar à vontade.</p>
           <div className="hero-actions">
-            <Link href={`/sistemas/${n.slug}/equipe`} className="btn btn-primary btn-lg">
-              Cadastrar equipe e utilizar sistema
-            </Link>
-            <Link href={`/sistemas/${n.slug}/app?beta=1`} className="btn btn-ghost btn-lg">
-              Ver beta
+            <Link href={`/sistemas/${n.slug}/app?beta=1`} className="btn btn-primary btn-lg">
+              Abrir demonstração
             </Link>
             {n.publico.includes('cardapio') && (
               <Link href={`/loja/cardapio?s=${fonte}`} className="btn btn-ghost btn-lg">
@@ -146,16 +143,11 @@ export default async function NichoPage({ params }) {
       <section className="tool-info">
         <h2>Como começar</h2>
         <ol className="steps-list">
-          <li>Clique em “Ver beta” e veja se o sistema serve para o seu negócio, com dados de exemplo.</li>
-          <li>Clique em “Cadastrar equipe e utilizar sistema” e crie a sua conta com e-mail e senha.</li>
-          <li>Dê o nome do seu negócio: essa é a sua equipe, e você é o dono.</li>
-          <li>Em Configurações → Equipe, adicione o e-mail de quem trabalha com você (gerente ou operador). A pessoa cria a conta com o mesmo e-mail e já entra na equipe.</li>
-          <li>Cadastre seus produtos, serviços e clientes. Pronto: tudo fica na nuvem e aparece em todos os aparelhos da equipe.</li>
+          <li>Clique em “Abrir demonstração”: o sistema abre no seu navegador, já com dados de exemplo.</li>
+          <li>Explore os módulos no menu lateral (PDV, caixa, cardápio, agenda…) e veja se serve para o seu negócio.</li>
+          <li>Cadastre, edite e apague à vontade: nada é enviado, tudo fica só neste navegador.</li>
+          <li>Em Configurações você liga módulos de outros sistemas e baixa um backup dos dados quando quiser.</li>
         </ol>
-        <p className="muted small">
-          Prefere os dados numa planilha do Google sua? Também dá:{' '}
-          <Link href="/sistemas/planilha">veja o guia da planilha</Link>.
-        </p>
       </section>
 
       <section className="sx-sob-medida" style={{ '--sx-cor': n.cor }}>

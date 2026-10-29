@@ -93,18 +93,12 @@ function DadosNegocio() {
   )
 }
 
-/** Na versão beta: o caminho para usar de verdade, grátis, com a equipe. */
+/** Versão beta: aviso de que é uma demonstração com dados de exemplo (sem cadastro). */
 function UsarDeVerdade() {
-  const { nicho } = useSistema()
   return (
     <section className="sx-cartao sx-usar">
-      <h2>Usar de verdade, grátis</h2>
-      <p className="muted">Crie uma conta com e-mail e senha, cadastre a sua equipe e convide quem trabalha com você. Os dados ficam na nuvem, em todos os aparelhos, sem limite e sem mensalidade.</p>
-      <div className="sx-acoes">
-        <Link href={`/sistemas/${nicho.slug}/equipe`} className="btn btn-primary">
-          Cadastrar equipe e utilizar o sistema
-        </Link>
-      </div>
+      <h2>Versão de demonstração</h2>
+      <p className="muted">Esta é a versão beta, com dados de exemplo. Tudo fica só neste navegador para você testar à vontade — explore os módulos, cadastre, edite e veja como funciona.</p>
     </section>
   )
 }

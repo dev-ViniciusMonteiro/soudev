@@ -16,10 +16,10 @@ export const metadata = {
 }
 
 const passos = [
-  ['Veja a versão beta', 'Cada sistema abre com dados de exemplo, sem cadastro. Nada é enviado: fica só no seu navegador.'],
-  ['Cadastre a sua equipe', 'Crie a conta com e-mail e senha e dê o nome do seu negócio. É grátis e sem limite: os dados ficam na nuvem.'],
-  ['Convide quem trabalha com você', 'Em Configurações → Equipe, adicione o e-mail de cada pessoa como gerente ou operador. Ela cria a conta com o mesmo e-mail e já entra.'],
-  ['Funciona sem internet', 'As vendas ficam no aparelho e sobem para a nuvem quando a conexão volta, em todos os aparelhos da equipe.'],
+  ['Abra a demonstração', 'Cada sistema abre com dados de exemplo, sem cadastro. Nada é enviado: fica só no seu navegador.'],
+  ['Explore os módulos', 'PDV, caixa, cardápio, agenda, ordem de serviço, mensalidades e CRM. Todos usam o mesmo banco, então os módulos se conversam.'],
+  ['Cadastre, edite, teste', 'Mexa à vontade: cadastre produtos, clientes e vendas para ver como o sistema funciona no dia a dia.'],
+  ['Leve seus dados', 'Em Configurações você liga módulos extras e baixa um backup (JSON) dos dados quando quiser.'],
 ]
 
 export default function SistemasIndex() {

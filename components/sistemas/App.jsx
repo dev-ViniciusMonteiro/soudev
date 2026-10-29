@@ -158,13 +158,9 @@ function Casca({ nicho, banco, conexao }) {
             })}
           </nav>
           <div className="sx-lateral-pe">
-            {conexao?.nuvem ? (
+            {conexao?.nuvem && (
               <Link href={`/sistemas/${nicho.slug}/equipe`} className="sx-sair">
                 ⇄ Trocar de equipe
-              </Link>
-            ) : (
-              <Link href={`/sistemas/${nicho.slug}/equipe`} className="sx-sair sx-sair-destaque">
-                ★ Cadastrar equipe (grátis)
               </Link>
             )}
             <Link href={`/sistemas/${nicho.slug}`} className="sx-sair">
@@ -206,9 +202,9 @@ function StatusSync({ banco, conexao, ir, slug }) {
   const s = useStatus(banco)
   if (!conexao) {
     return (
-      <Link href={`/sistemas/${slug}/equipe`} className="sx-status tom-aviso" title="Versão beta com dados de exemplo: fica só neste navegador. Cadastre a sua equipe para usar de verdade, grátis.">
-        Versão beta · cadastrar equipe
-      </Link>
+      <span className="sx-status tom-aviso" title="Versão beta com dados de exemplo: fica só neste navegador.">
+        Versão beta · dados de exemplo
+      </span>
     )
   }
   const onde = conexao.nuvem ? 'Nuvem' : 'Planilha'
