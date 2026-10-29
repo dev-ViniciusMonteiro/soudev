@@ -1,7 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import CartaoBanner from '@/components/CartaoBanner'
-import ContactForm from '@/components/ContactForm'
 import Comentarios from '@/components/Comentarios'
 import Fileira from '@/components/Fileira'
 import JogosPorModo from '@/components/JogosPorModo'
@@ -91,7 +90,7 @@ export default function Home() {
             Ver os projetos
           </Link>
           <Link href="/curriculo">Meu currículo</Link>
-          <Link href="#contato">Fale comigo</Link>
+          <a href={site.instagram} target="_blank" rel="noopener noreferrer">Fale comigo</a>
         </p>
       </section>
 
@@ -144,9 +143,9 @@ export default function Home() {
             <strong>Aberto a propostas</strong>
             <span>Faço sistemas sob medida: do jeito que você trabalha, com as integrações que precisar. Conte a ideia e eu preparo uma proposta.</span>
           </div>
-          <Link href="#contato" className="btn btn-primary">
+          <a href={site.instagram} target="_blank" rel="noopener noreferrer" className="btn btn-primary">
             Falar comigo
-          </Link>
+          </a>
         </div>
       </section>
 
@@ -170,17 +169,6 @@ export default function Home() {
             </div>
           ))}
         </dl>
-      </section>
-
-      <section id="contato" className="container secao contact">
-        <div>
-          <h2>Tem alguma ideia ou quer falar comigo?</h2>
-          <p className="muted">
-            Sugestões de ferramentas e ideias pro site pode mandar ali no balão 💡. Se precisar falar comigo sobre algo, é só mandar uma mensagem aqui ou me acompanhar no Instagram{' '}
-            <a href={site.instagram} target="_blank" rel="noopener noreferrer">{site.instagramHandle}</a>.
-          </p>
-        </div>
-        <ContactForm />
       </section>
 
       <Comentarios
