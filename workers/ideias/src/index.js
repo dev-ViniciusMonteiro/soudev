@@ -139,7 +139,6 @@ export default {
 
       if (pathname === '/admin' || pathname === '/admin/') return await adminHome(request, env)
       if (pathname === '/admin/comentarios') return await adminComentarios(request, env)
-      if (pathname === '/admin/empresas') return await adminEmpresas(request, env)
       if (pathname === '/admin/export.csv') return await adminExportCsv(request, env)
       if (pathname === '/admin/login' && metodo === 'POST') return await adminLogin(request, env)
       if (pathname === '/admin/logout' && metodo === 'POST') return adminLogout(env)
@@ -328,24 +327,6 @@ async function adminExportCsv(request, env) {
   })
 }
 
-async function adminEmpresas(request, env) {
-  if (!(await estaLogado(request, env))) return html(paginaLogin())
-
-  const base = (env.SX_BACKEND_URL || '').replace(/\/$/, '')
-  const token = env.ADMIN_SUPER_TOKEN
-  if (!base || !token) {
-    return html(paginaEmpresas(null, 'Falta a var SX_BACKEND_URL e/ou o secret ADMIN_SUPER_TOKEN neste worker.'))
-  }
-  try {
-    const r = await fetch(`${base}/admin-sx/empresas`, { headers: { Authorization: `Bearer ${token}` } })
-    const d = await r.json().catch(() => ({}))
-    if (!r.ok) return html(paginaEmpresas(null, `Backend respondeu ${r.status}: ${d.erro || 'erro'}. Confira se o ADMIN_SUPER_TOKEN é igual nos dois workers.`))
-    return html(paginaEmpresas(d, ''))
-  } catch (e) {
-    return html(paginaEmpresas(null, `Não consegui falar com o backend: ${String(e.message || e)}`))
-  }
-}
-
 async function adminComentarios(request, env) {
   if (!(await estaLogado(request, env))) return html(paginaLogin())
 
@@ -458,7 +439,6 @@ function paginaPainel(ideias, filtro, totais, env) {
 <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
   <h1>Ideias da comunidade${totais.nova ? ` <span style="background:#3a63ff;color:#fff;border-radius:999px;padding:2px 10px;font-size:14px;vertical-align:middle">${totais.nova} nova${totais.nova > 1 ? 's' : ''}</span>` : ''}</h1>
   <div style="display:flex;gap:8px">
-    <a href="/admin/empresas" style="text-decoration:none"><button type="button" class="ghost">Empresas</button></a>
     <a href="/admin/comentarios" style="text-decoration:none"><button type="button" class="ghost">Comentários</button></a>
     <a href="/admin/export.csv" style="text-decoration:none"><button type="button" class="ghost">Exportar CSV</button></a>
     <form method="post" action="/admin/logout"><button class="ghost">Sair</button></form>
@@ -504,31 +484,5 @@ function paginaComentarios(comentarios) {
 </div>
 <p class="muted">Aparecem publicamente no site. Use "Ocultar" para tirar do site sem apagar, ou "Excluir".</p>
 ${comentarios.length ? linhas : '<div class="card" style="margin-top:12px"><p class="muted">Nenhum comentário ainda.</p></div>'}
-</div></body></html>`
-}
-
-function paginaEmpresas(dados, erro) {
-  const empresas = dados?.empresas || []
-  const fmt = (ms) => { try { return new Date(ms).toLocaleString('pt-BR') } catch { return '' } }
-  const linhas = empresas.map((e) => `<div class="card" style="margin-top:12px">
-      <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">
-        <strong>${esc(e.nome || '—')}</strong>
-        <span class="muted">${esc(e.nicho || '')} · ${e.membros} membro(s)</span>
-      </div>
-      <div class="muted" style="margin-top:6px">Dono: ${esc(e.dono || '—')} · criada em ${esc(fmt(e.criado_em))}</div>
-      <div class="muted" style="font-size:12px;margin-top:4px">id: ${esc(e.id)}</div>
-    </div>`).join('')
-
-  return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1"><title>Empresas · Admin</title>
-<meta name="robots" content="noindex"><style>${BASE_CSS}</style></head>
-<body><div class="wrap">
-<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
-  <h1>Empresas (sistemas)${dados ? ` <span style="background:#3a63ff;color:#fff;border-radius:999px;padding:2px 10px;font-size:14px;vertical-align:middle">${empresas.length}</span>` : ''}</h1>
-  <a href="/admin" style="text-decoration:none"><button class="ghost">← Ideias</button></a>
-</div>
-${dados ? `<p class="muted">${empresas.length} empresa(s) · ${dados.total_contas} conta(s) cadastrada(s).</p>` : ''}
-${erro ? `<div class="card" style="margin-top:12px"><p style="color:#ffb4bf">${esc(erro)}</p></div>` : ''}
-${dados ? (empresas.length ? linhas : '<div class="card" style="margin-top:12px"><p class="muted">Nenhuma empresa cadastrada ainda.</p></div>') : ''}
 </div></body></html>`
 }
