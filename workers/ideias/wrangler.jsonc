@@ -1,0 +1,29 @@
+{
+  // Worker que recebe as ideias do balão do soudev e guarda no D1.
+  // Painel admin seguro servido pelo próprio Worker em /admin.
+  "name": "soudev-ideias",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-29",
+
+  // Observabilidade (logs + traces) ligada para produção.
+  "observability": {
+    "enabled": true,
+    "traces": { "enabled": true }
+  },
+
+  // Banco D1. Rode `wrangler d1 create soudev-ideias` e cole o database_id abaixo.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "soudev-ideias",
+      "database_id": "COLE_AQUI_O_DATABASE_ID"
+    }
+  ],
+
+  // Variáveis públicas (não são segredo). Os segredos (hash da senha e chave de sessão)
+  // entram por `wrangler secret put`, nunca aqui.
+  "vars": {
+    "ADMIN_USER": "vinivn",
+    "SESSAO_HORAS": "12"
+  }
+}

@@ -5,6 +5,7 @@ import Analytics from '@/components/Analytics'
 import CookieConsent, { CookiePreferencesButton } from '@/components/CookieConsent'
 import Busca from '@/components/Busca'
 import MenuMobile from '@/components/MenuMobile'
+import BalaoIdeias from '@/components/BalaoIdeias'
 import { montarIndice } from '@/lib/busca-indice'
 import { GA_ID, gaInitScript } from '@/lib/analytics'
 import { SITE_URL, site } from '@/lib/site'
@@ -129,6 +130,7 @@ export default function RootLayout({ children }) {
         <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
         <Analytics />
         <CookieConsent />
+        <BalaoIdeias />
 
         {adsenseClient && (
           <Script

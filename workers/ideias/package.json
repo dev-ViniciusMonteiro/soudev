@@ -1,0 +1,14 @@
+{
+  "name": "soudev-ideias",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "hash": "node scripts/hash-senha.mjs",
+    "schema": "wrangler d1 execute soudev-ideias --remote --file=schema.sql"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}
