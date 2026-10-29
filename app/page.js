@@ -174,9 +174,9 @@ export default function Home() {
 
       <section id="contato" className="container secao contact">
         <div>
-          <h2>Sugira uma ferramenta ou peça um sistema sob medida.</h2>
+          <h2>Tem alguma ideia ou quer falar comigo?</h2>
           <p className="muted">
-            Faltou alguma ferramenta? Quer um sistema personalizado para o seu negócio, um site ou uma automação com IA? Conte o que precisa que eu preparo uma proposta. Mande uma mensagem ou me acompanhe no Instagram{' '}
+            Sugestões de ferramentas e ideias pro site pode mandar ali no balão 💡. Se precisar falar comigo sobre algo, é só mandar uma mensagem aqui ou me acompanhar no Instagram{' '}
             <a href={site.instagram} target="_blank" rel="noopener noreferrer">{site.instagramHandle}</a>.
           </p>
         </div>
