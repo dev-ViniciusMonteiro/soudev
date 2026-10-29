@@ -11,12 +11,12 @@
     "traces": { "enabled": true }
   },
 
-  // Banco D1. Rode `wrangler d1 create soudev-ideias` e cole o database_id abaixo.
+  // Banco D1. O código usa o binding "DB".
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "soudev-ideias",
-      "database_id": "COLE_AQUI_O_DATABASE_ID"
+      "database_id": "736fdd60-3347-4e2e-a322-6eda269875a1"
     }
   ],
 

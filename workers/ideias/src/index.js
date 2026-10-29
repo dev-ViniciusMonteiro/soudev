@@ -132,19 +132,20 @@ export default {
       // CORS preflight do endpoint público
       if (metodo === 'OPTIONS') return new Response(null, { status: 204, headers: CORS })
 
-      if (pathname === '/ideias' && metodo === 'POST') return enviarIdeia(request, env)
+      if (pathname === '/ideias' && metodo === 'POST') return await enviarIdeia(request, env)
 
-      if (pathname === '/admin' || pathname === '/admin/') return adminHome(request, env)
-      if (pathname === '/admin/export.csv') return adminExportCsv(request, env)
-      if (pathname === '/admin/login' && metodo === 'POST') return adminLogin(request, env)
+      if (pathname === '/admin' || pathname === '/admin/') return await adminHome(request, env)
+      if (pathname === '/admin/export.csv') return await adminExportCsv(request, env)
+      if (pathname === '/admin/login' && metodo === 'POST') return await adminLogin(request, env)
       if (pathname === '/admin/logout' && metodo === 'POST') return adminLogout(env)
-      if (pathname === '/admin/acao' && metodo === 'POST') return adminAcao(request, env)
+      if (pathname === '/admin/acao' && metodo === 'POST') return await adminAcao(request, env)
 
       if (pathname === '/') return json({ ok: true, servico: 'soudev-ideias' })
 
       return new Response('Não encontrado', { status: 404 })
     } catch (erro) {
-      console.log(JSON.stringify({ nivel: 'erro', rota: pathname, msg: String(erro && erro.message || erro) }))
+      const msg = String((erro && erro.stack) || (erro && erro.message) || erro)
+      console.log(JSON.stringify({ nivel: 'erro', rota: pathname, msg }))
       return json({ error: 'Erro interno' }, 500)
     }
   },

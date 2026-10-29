@@ -10,7 +10,7 @@
 import crypto from 'node:crypto'
 import readline from 'node:readline'
 
-const ITERACOES = 210000 // precisa ser igual ao do Worker (PBKDF2-SHA256)
+const ITERACOES = 100000 // máximo que o runtime do Cloudflare Workers aceita (PBKDF2-SHA256)
 
 function perguntarSenhaOculta(texto) {
   return new Promise((resolve) => {
