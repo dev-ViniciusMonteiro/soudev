@@ -70,11 +70,6 @@ export default function SistemasIndex() {
             </li>
           ))}
         </ol>
-        <p className="see-all">
-          <Link href="/sistemas/planilha" className="btn btn-ghost">
-            Prefere uma planilha do Google sua? Passo a passo →
-          </Link>
-        </p>
       </section>
 
       <section className="sx-sob-medida">

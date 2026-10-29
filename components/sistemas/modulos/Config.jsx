@@ -35,15 +35,11 @@ export default function Config() {
           <MembrosEquipe />
         </>
       ) : conexao ? (
+        // Quem já conectou uma planilha antiga continua vendo o status para exportar/desconectar,
+        // mas não oferecemos mais conectar planilhas novas (tudo migrou para a conta na nuvem).
         <Planilha />
       ) : (
-        <>
-          <UsarDeVerdade />
-          <details className="sx-cartao sx-outra-forma">
-            <summary>Prefere guardar os dados numa planilha do Google sua?</summary>
-            <Planilha />
-          </details>
-        </>
+        <UsarDeVerdade />
       )}
       <DadosNegocio key={banco.ns} />
       <Modulos />
