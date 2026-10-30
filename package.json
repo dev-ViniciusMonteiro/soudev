@@ -11,7 +11,9 @@
     "build:monkepo-script": "node games/monkepo/scripts/build-apps-script.mjs",
     "build:sistemas-script": "node lib/sistemas/apps-script/build.mjs",
     "build:treino-exercicios": "node lib/treino/gerar-exercicios.mjs",
-    "build:sistemas-nuvem": "node lib/sistemas/apps-script/build-nuvem.mjs"
+    "build:sistemas-nuvem": "node lib/sistemas/apps-script/build-nuvem.mjs",
+    "test:e2e": "playwright test",
+    "test:e2e:report": "playwright show-report"
   },
   "dependencies": {
     "docx": "^9.11.0",
@@ -35,6 +37,7 @@
     "node": ">=20.9.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "@types/three": "^0.160.0",
     "typescript": "^5.6.3",
     "vite": "^5.4.21"

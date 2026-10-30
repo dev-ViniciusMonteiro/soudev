@@ -147,3 +147,8 @@ vite.config.ts.timestamp-*
 
 # Banners gerados: telas capturadas e HTML intermediário (scripts/banners)
 /.banners/
+
+# Playwright
+/test-results/
+/playwright-report/
+/playwright/.cache/
