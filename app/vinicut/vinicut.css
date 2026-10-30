@@ -3,7 +3,7 @@
 .vc-full .site-header,
 .vc-full .site-footer { display: none !important; }
 
-.vc-tela {
+.vc-tela, .vc-entrar {
   --vc-azul: #315f99;
   --vc-azul-esc: #284d7e;
   --vc-azul-claro: #e8eef7;

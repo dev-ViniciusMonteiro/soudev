@@ -1,5 +1,5 @@
 {
-  "geradoEm": "2026-10-30T16:45:00.659Z",
+  "geradoEm": "2026-10-30T16:51:41.527Z",
   "total": 15,
   "ok": 15,
   "itens": [
@@ -62,8 +62,8 @@
       "slug": "vinicut",
       "nome": "Vinicut",
       "ok": true,
-      "geradoEm": "2026-10-30T16:45:00.248Z",
-      "prints": 2,
+      "geradoEm": "2026-10-30T16:51:40.964Z",
+      "prints": 6,
       "capa": "/testes/img/rede-vinicut-01.jpg"
     },
     {

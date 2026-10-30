@@ -132,8 +132,8 @@ function Entrar({ aoEntrar }) {
       </div>
       <div className="vc-card vc-entrar-box">
         <div className="vc-abas">
-          <button type="button" className={modo === 'login' ? 'on' : ''} onClick={() => setModo('login')}>Entrar</button>
-          <button type="button" className={modo === 'cadastro' ? 'on' : ''} onClick={() => setModo('cadastro')}>Criar conta</button>
+          <button type="button" className={modo === 'login' ? 'on' : ''} onClick={() => { setModo('login'); setErro('') }}>Entrar</button>
+          <button type="button" className={modo === 'cadastro' ? 'on' : ''} onClick={() => { setModo('cadastro'); setErro('') }}>Criar conta</button>
         </div>
         <form onSubmit={enviar}>
           {modo === 'cadastro' && (

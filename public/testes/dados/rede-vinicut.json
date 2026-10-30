@@ -3,21 +3,37 @@
   "slug": "vinicut",
   "nome": "Vinicut",
   "ok": true,
-  "geradoEm": "2026-10-30T16:45:00.248Z",
+  "geradoEm": "2026-10-30T16:51:40.964Z",
   "passos": [
     {
       "titulo": "Tela de entrada",
-      "detalhe": "A tela inicial do Vinicut, no estilo Orkut, com login e criar conta.",
+      "detalhe": "Login e \"criar conta\" no estilo Orkut, com usuário e senha (sem e-mail).",
       "img": "/testes/img/rede-vinicut-01.jpg"
     },
     {
-      "titulo": "Campos de acesso presentes",
-      "detalhe": "Usuário e senha disponíveis (login só com usuário e senha, sem e-mail)."
+      "titulo": "Formulário de criar conta",
+      "detalhe": "O cadastro pede nome, usuário e senha.",
+      "img": "/testes/img/rede-vinicut-02.jpg"
     },
     {
-      "titulo": "Formulário de criar conta",
-      "detalhe": "O formulário de cadastro (nome, usuário e senha) abre sem erro.",
+      "titulo": "Início logado",
+      "detalhe": "Entrou com usuário e senha; aparece o topo com o nome e os atalhos.",
       "img": "/testes/img/rede-vinicut-03.jpg"
+    },
+    {
+      "titulo": "Meu perfil",
+      "detalhe": "Perfil com contadores (recados, amigos, depoimentos, comunidades) e abas.",
+      "img": "/testes/img/rede-vinicut-04.jpg"
+    },
+    {
+      "titulo": "Recado publicado",
+      "detalhe": "O recado enviado aparece na hora no mural do perfil.",
+      "img": "/testes/img/rede-vinicut-05.jpg"
+    },
+    {
+      "titulo": "Comunidades",
+      "detalhe": "Lista de comunidades e o formulário para criar uma nova.",
+      "img": "/testes/img/rede-vinicut-06.jpg"
     }
   ]
 }
