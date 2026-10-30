@@ -70,6 +70,7 @@ export default async function AppPage({ params }) {
           <Link href={`/apps/${slug}/app`} className="btn btn-primary btn-lg">
             Abrir o {app.nome}
           </Link>
+          <Link href={`/apps/${slug}/teste`} className="btn btn-ghost btn-lg">🧪 Testes</Link>
         </div>
       </header>
 
@@ -110,7 +111,7 @@ export default async function AppPage({ params }) {
           <h2>Precisa de um app sob medida?</h2>
           <p className="muted">Eu desenvolvo apps web que funcionam no celular e offline, do jeito que o seu negócio precisa.</p>
         </div>
-        <Link href="/#contato" className="btn btn-primary btn-lg">
+        <Link href="/curriculo#contato" className="btn btn-primary btn-lg">
           Pedir uma proposta
         </Link>
       </section>

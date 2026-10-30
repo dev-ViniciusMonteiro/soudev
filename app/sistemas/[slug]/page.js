@@ -99,6 +99,7 @@ export default async function NichoPage({ params }) {
             <Link href={`/sistemas/${n.slug}/app?beta=1`} className="btn btn-primary btn-lg">
               Abrir demonstração
             </Link>
+            <Link href={`/sistemas/${n.slug}/teste`} className="btn btn-ghost btn-lg">🧪 Testes</Link>
             {n.publico.includes('cardapio') && (
               <Link href={`/loja/cardapio?s=${fonte}`} className="btn btn-ghost btn-lg">
                 Ver o cardápio do cliente
@@ -158,7 +159,7 @@ export default async function NichoPage({ params }) {
             preparo uma proposta.
           </p>
         </div>
-        <Link href="/#contato" className="btn btn-primary btn-lg">
+        <Link href="/curriculo#contato" className="btn btn-primary btn-lg">
           Pedir uma proposta
         </Link>
       </section>

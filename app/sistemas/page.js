@@ -80,7 +80,7 @@ export default function SistemasIndex() {
             proposta.
           </p>
         </div>
-        <Link href="/#contato" className="btn btn-primary btn-lg">
+        <Link href="/curriculo#contato" className="btn btn-primary btn-lg">
           Pedir uma proposta
         </Link>
       </section>

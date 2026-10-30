@@ -71,7 +71,7 @@ export default function Privacidade() {
         <h2>Seus direitos (LGPD)</h2>
         <p>
           Pela Lei Geral de Proteção de Dados (Lei 13.709/2018), você pode pedir confirmação, acesso, correção ou exclusão dos seus dados e
-          revogar o consentimento a qualquer momento. Para isso, use o <Link href="/#contato">formulário de contato</Link>.
+          revogar o consentimento a qualquer momento. Para isso, use o <Link href="/curriculo#contato">formulário de contato</Link>.
         </p>
       </div>
     </main>

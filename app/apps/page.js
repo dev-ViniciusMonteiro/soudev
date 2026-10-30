@@ -62,7 +62,7 @@ export default function AppsIndex() {
           <h2>Quer um app assim para o seu negócio?</h2>
           <p className="muted">Eu desenvolvo apps web sob medida, que funcionam offline e no celular. Conte a ideia e eu preparo uma proposta.</p>
         </div>
-        <Link href="/#contato" className="btn btn-primary btn-lg">
+        <Link href="/curriculo#contato" className="btn btn-primary btn-lg">
           Pedir uma proposta
         </Link>
       </section>
