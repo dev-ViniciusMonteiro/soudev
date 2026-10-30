@@ -3434,3 +3434,12 @@ textarea {
 .ev-nome { font-size: .98rem; line-height: 1.25; }
 .ev-local { color: var(--muted); font-size: .82rem; }
 .ev-comprar { margin-top: 6px; font-size: .82rem; font-weight: 600; color: var(--blue); }
+
+/* Buscador de eventos — modo atalhos (sem API) */
+.ev-filtros-3 { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+.ev-explica { margin: 14px 0 10px; }
+.ev-plataformas { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.ev-plat { display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--panel); text-decoration: none; color: var(--text); transition: transform .12s, box-shadow .12s, border-color .12s; }
+.ev-plat:hover { transform: translateY(-2px); box-shadow: var(--shadow); border-color: var(--accent); }
+.ev-plat strong { color: var(--blue); }
+.ev-plat span { color: var(--muted); font-size: .85rem; line-height: 1.4; }
