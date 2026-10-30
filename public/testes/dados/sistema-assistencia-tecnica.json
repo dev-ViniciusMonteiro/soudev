@@ -3,31 +3,85 @@
   "slug": "assistencia-tecnica",
   "nome": "Assistência Técnica e Oficina",
   "ok": true,
-  "geradoEm": "2026-10-30T16:32:32.951Z",
+  "geradoEm": "2026-10-30T16:42:59.372Z",
   "passos": [
     {
       "titulo": "Painel inicial carregado",
       "detalhe": "O sistema abriu com os dados de exemplo e o menu lateral.",
-      "img": "/testes/img/sistema-assistencia-tecnica-01.png"
+      "img": "/testes/img/sistema-assistencia-tecnica-01.jpg"
     },
     {
-      "titulo": "Menu com 13 módulos",
-      "detalhe": "O sistema expõe seus módulos no menu lateral."
+      "titulo": "Negócio identificado: \"TecFix Assistência Técnica\"",
+      "detalhe": "O painel mostra o nome do negócio no cabeçalho lateral."
     },
     {
-      "titulo": "Módulo \"📊 Painel\"",
-      "detalhe": "A tela do módulo abriu sem erro.",
-      "img": "/testes/img/sistema-assistencia-tecnica-03.png"
+      "titulo": "Módulo: 📊 Painel",
+      "detalhe": "A tela do módulo abriu e renderizou sem erro.",
+      "img": "/testes/img/sistema-assistencia-tecnica-03.jpg"
     },
     {
-      "titulo": "Módulo \"🛒 Vender (PDV)\"",
-      "detalhe": "A tela do módulo abriu sem erro.",
-      "img": "/testes/img/sistema-assistencia-tecnica-04.png"
+      "titulo": "Módulo: 🛒 Vender (PDV)",
+      "detalhe": "A tela do módulo abriu e renderizou sem erro.",
+      "img": "/testes/img/sistema-assistencia-tecnica-04.jpg"
     },
     {
-      "titulo": "Módulo \"💵 Caixa\"",
-      "detalhe": "A tela do módulo abriu sem erro.",
-      "img": "/testes/img/sistema-assistencia-tecnica-05.png"
+      "titulo": "Módulo: 💵 Caixa",
+      "detalhe": "A tela do módulo abriu e renderizou sem erro.",
+      "img": "/testes/img/sistema-assistencia-tecnica-05.jpg"
+    },
+    {
+      "titulo": "Módulo: 🔧 Ordens de serviço",
+      "detalhe": "A tela do módulo abriu e renderizou sem erro.",
+      "img": "/testes/img/sistema-assistencia-tecnica-06.jpg"
+    },
+    {
+      "titulo": "Módulo: 🧾 Histórico de vendas",
+      "detalhe": "A tela do módulo abriu e renderizou sem erro.",
+      "img": "/testes/img/sistema-assistencia-tecnica-07.jpg"
+    },
+    {
+      "titulo": "Módulo: 📦 Estoque",
+      "detalhe": "A tela do módulo abriu e renderizou sem erro.",
+      "img": "/testes/img/sistema-assistencia-tecnica-08.jpg"
+    },
+    {
+      "titulo": "Módulo: 💰 Financeiro",
+      "detalhe": "A tela do módulo abriu e renderizou sem erro.",
+      "img": "/testes/img/sistema-assistencia-tecnica-09.jpg"
+    },
+    {
+      "titulo": "Módulo: 📈 Relatórios",
+      "detalhe": "A tela do módulo abriu e renderizou sem erro.",
+      "img": "/testes/img/sistema-assistencia-tecnica-10.jpg"
+    },
+    {
+      "titulo": "Módulo: 👥 Clientes",
+      "detalhe": "A tela do módulo abriu e renderizou sem erro.",
+      "img": "/testes/img/sistema-assistencia-tecnica-11.jpg"
+    },
+    {
+      "titulo": "Módulo: 🏷️ Peças e serviços",
+      "detalhe": "A tela do módulo abriu e renderizou sem erro.",
+      "img": "/testes/img/sistema-assistencia-tecnica-12.jpg"
+    },
+    {
+      "titulo": "Módulo: 🚚 Fornecedores",
+      "detalhe": "A tela do módulo abriu e renderizou sem erro.",
+      "img": "/testes/img/sistema-assistencia-tecnica-13.jpg"
+    },
+    {
+      "titulo": "Módulo: 🔑 Usuários",
+      "detalhe": "A tela do módulo abriu e renderizou sem erro.",
+      "img": "/testes/img/sistema-assistencia-tecnica-14.jpg"
+    },
+    {
+      "titulo": "12 módulos verificados",
+      "detalhe": "📊 Painel · 🛒 Vender (PDV) · 💵 Caixa · 🔧 Ordens de serviço · 🧾 Histórico de vendas · 📦 Estoque · 💰 Financeiro · 📈 Relatórios · 👥 Clientes · 🏷️ Peças e serviços · 🚚 Fornecedores · 🔑 Usuários"
+    },
+    {
+      "titulo": "Configurações e backup",
+      "detalhe": "A tela de Configurações oferece exportar um backup dos dados.",
+      "img": "/testes/img/sistema-assistencia-tecnica-16.jpg"
     }
   ]
 }

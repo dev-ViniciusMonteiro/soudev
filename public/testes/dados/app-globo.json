@@ -3,16 +3,21 @@
   "slug": "globo",
   "nome": "Globo ao vivo",
   "ok": true,
-  "geradoEm": "2026-10-30T16:32:06.811Z",
+  "geradoEm": "2026-10-30T16:41:57.406Z",
   "passos": [
     {
       "titulo": "App aberto",
       "detalhe": "A interface principal do app carregou no navegador.",
-      "img": "/testes/img/app-globo-01.png"
+      "img": "/testes/img/app-globo-01.jpg"
+    },
+    {
+      "titulo": "Globo 3D renderizado",
+      "detalhe": "O mapa 3D (WebGL) desenhou na tela.",
+      "img": "/testes/img/app-globo-02.jpg"
     },
     {
       "titulo": "Conteúdo renderizado",
-      "detalhe": "A tela mostrou 1196 caracteres de conteúdo."
+      "detalhe": "A tela mostrou 1205 caracteres de conteúdo."
     }
   ]
 }

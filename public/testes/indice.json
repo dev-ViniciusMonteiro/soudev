@@ -1,133 +1,142 @@
 {
-  "geradoEm": "2026-10-30T16:32:43.191Z",
-  "total": 14,
-  "ok": 14,
+  "geradoEm": "2026-10-30T16:45:00.659Z",
+  "total": 15,
+  "ok": 15,
   "itens": [
     {
       "tipo": "app",
       "slug": "documentador",
       "nome": "Documentador",
       "ok": true,
-      "geradoEm": "2026-10-30T16:32:11.131Z",
+      "geradoEm": "2026-10-30T16:42:01.838Z",
       "prints": 1,
-      "capa": "/testes/img/app-documentador-01.png"
+      "capa": "/testes/img/app-documentador-01.jpg"
     },
     {
       "tipo": "app",
       "slug": "editor-de-video",
       "nome": "Editor de vídeo",
       "ok": true,
-      "geradoEm": "2026-10-30T16:32:19.131Z",
+      "geradoEm": "2026-10-30T16:42:10.911Z",
       "prints": 1,
-      "capa": "/testes/img/app-editor-de-video-01.png"
+      "capa": "/testes/img/app-editor-de-video-01.jpg"
     },
     {
       "tipo": "app",
       "slug": "globo",
       "nome": "Globo ao vivo",
       "ok": true,
-      "geradoEm": "2026-10-30T16:32:06.811Z",
-      "prints": 1,
-      "capa": "/testes/img/app-globo-01.png"
+      "geradoEm": "2026-10-30T16:41:57.406Z",
+      "prints": 2,
+      "capa": "/testes/img/app-globo-01.jpg"
     },
     {
       "tipo": "app",
       "slug": "ppfd",
       "nome": "Medidor PPFD",
       "ok": true,
-      "geradoEm": "2026-10-30T16:32:16.522Z",
+      "geradoEm": "2026-10-30T16:42:07.927Z",
       "prints": 1,
-      "capa": "/testes/img/app-ppfd-01.png"
+      "capa": "/testes/img/app-ppfd-01.jpg"
     },
     {
       "tipo": "app",
       "slug": "imoveis",
       "nome": "Radar de Imóveis",
       "ok": true,
-      "geradoEm": "2026-10-30T16:32:13.874Z",
+      "geradoEm": "2026-10-30T16:42:04.880Z",
       "prints": 1,
-      "capa": "/testes/img/app-imoveis-01.png"
+      "capa": "/testes/img/app-imoveis-01.jpg"
     },
     {
       "tipo": "app",
       "slug": "treino",
       "nome": "Treino",
       "ok": true,
-      "geradoEm": "2026-10-30T16:32:01.348Z",
-      "prints": 1,
-      "capa": "/testes/img/app-treino-01.png"
+      "geradoEm": "2026-10-30T16:41:47.041Z",
+      "prints": 3,
+      "capa": "/testes/img/app-treino-01.jpg"
+    },
+    {
+      "tipo": "rede",
+      "slug": "vinicut",
+      "nome": "Vinicut",
+      "ok": true,
+      "geradoEm": "2026-10-30T16:45:00.248Z",
+      "prints": 2,
+      "capa": "/testes/img/rede-vinicut-01.jpg"
     },
     {
       "tipo": "sistema",
       "slug": "academia-studio",
       "nome": "Academia, Studio e Escola",
       "ok": true,
-      "geradoEm": "2026-10-30T16:32:35.700Z",
-      "prints": 4,
-      "capa": "/testes/img/sistema-academia-studio-01.png"
+      "geradoEm": "2026-10-30T16:43:08.029Z",
+      "prints": 14,
+      "capa": "/testes/img/sistema-academia-studio-01.jpg"
     },
     {
       "tipo": "sistema",
       "slug": "assistencia-tecnica",
       "nome": "Assistência Técnica e Oficina",
       "ok": true,
-      "geradoEm": "2026-10-30T16:32:32.951Z",
-      "prints": 4,
-      "capa": "/testes/img/sistema-assistencia-tecnica-01.png"
+      "geradoEm": "2026-10-30T16:42:59.372Z",
+      "prints": 14,
+      "capa": "/testes/img/sistema-assistencia-tecnica-01.jpg"
     },
     {
       "tipo": "sistema",
       "slug": "barbearia-salao",
       "nome": "Barbearia e Salão de Beleza",
       "ok": true,
-      "geradoEm": "2026-10-30T16:32:30.239Z",
-      "prints": 4,
-      "capa": "/testes/img/sistema-barbearia-salao-01.png"
+      "geradoEm": "2026-10-30T16:42:50.595Z",
+      "prints": 14,
+      "capa": "/testes/img/sistema-barbearia-salao-01.jpg"
     },
     {
       "tipo": "sistema",
       "slug": "crm-vendas",
       "nome": "CRM e Prestadores de Serviço",
       "ok": true,
-      "geradoEm": "2026-10-30T16:32:41.150Z",
-      "prints": 4,
-      "capa": "/testes/img/sistema-crm-vendas-01.png"
+      "geradoEm": "2026-10-30T16:43:24.650Z",
+      "prints": 13,
+      "capa": "/testes/img/sistema-crm-vendas-01.jpg"
     },
     {
       "tipo": "sistema",
       "slug": "mei-na-mao",
       "nome": "MEI na Mão",
       "ok": true,
-      "geradoEm": "2026-10-30T16:32:22.014Z",
-      "prints": 4,
-      "capa": "/testes/img/sistema-mei-na-mao-01.png"
+      "geradoEm": "2026-10-30T16:42:18.911Z",
+      "prints": 10,
+      "capa": "/testes/img/sistema-mei-na-mao-01.jpg"
     },
     {
       "tipo": "sistema",
       "slug": "mercadinho-pdv",
       "nome": "Mercadinho, Loja e Varejo",
       "ok": true,
-      "geradoEm": "2026-10-30T16:32:27.450Z",
-      "prints": 4,
-      "capa": "/testes/img/sistema-mercadinho-pdv-01.png"
+      "geradoEm": "2026-10-30T16:42:41.781Z",
+      "prints": 14,
+      "capa": "/testes/img/sistema-mercadinho-pdv-01.jpg"
     },
     {
       "tipo": "sistema",
       "slug": "petshop",
       "nome": "Pet Shop e Banho e Tosa",
       "ok": true,
-      "geradoEm": "2026-10-30T16:32:38.385Z",
-      "prints": 4,
-      "capa": "/testes/img/sistema-petshop-01.png"
+      "geradoEm": "2026-10-30T16:43:16.964Z",
+      "prints": 14,
+      "capa": "/testes/img/sistema-petshop-01.jpg"
     },
     {
       "tipo": "sistema",
       "slug": "restaurante-delivery",
       "nome": "Restaurante e Delivery",
       "ok": true,
-      "geradoEm": "2026-10-30T16:32:24.717Z",
-      "prints": 4,
-      "capa": "/testes/img/sistema-restaurante-delivery-01.png"
+      "geradoEm": "2026-10-30T16:42:30.185Z",
+      "prints": 14,
+      "capa": "/testes/img/sistema-restaurante-delivery-01.jpg"
     }
   ]
 }

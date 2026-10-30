@@ -13,12 +13,17 @@ export function novaEvidencia(tipo, slug, nome) {
   const passos = []
 
   return {
-    // Tira o print, salva em public/testes/img e também anexa ao relatório do Playwright.
+    // Tira o print (JPEG leve), salva em public/testes/img e anexa ao relatório do Playwright.
     async print(page, info, titulo, detalhe) {
-      const arq = `${tipo}-${slug}-${String(passos.length + 1).padStart(2, '0')}.png`
-      const buffer = await page.screenshot()
+      const arq = `${tipo}-${slug}-${String(passos.length + 1).padStart(2, '0')}.jpg`
+      let buffer
+      try {
+        buffer = await page.screenshot({ type: 'jpeg', quality: 78 })
+      } catch {
+        return
+      }
       fs.writeFileSync(path.join(DIR_IMG, arq), buffer)
-      await info.attach(titulo, { body: buffer, contentType: 'image/png' })
+      try { await info.attach(titulo, { body: buffer, contentType: 'image/jpeg' }) } catch {}
       passos.push({ titulo, detalhe: detalhe || '', img: `/testes/img/${arq}` })
     },
     nota(titulo, detalhe) {

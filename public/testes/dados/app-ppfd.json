@@ -3,12 +3,12 @@
   "slug": "ppfd",
   "nome": "Medidor PPFD",
   "ok": true,
-  "geradoEm": "2026-10-30T16:32:16.522Z",
+  "geradoEm": "2026-10-30T16:42:07.927Z",
   "passos": [
     {
       "titulo": "App aberto",
       "detalhe": "A interface principal do app carregou no navegador.",
-      "img": "/testes/img/app-ppfd-01.png"
+      "img": "/testes/img/app-ppfd-01.jpg"
     },
     {
       "titulo": "Conteúdo renderizado",

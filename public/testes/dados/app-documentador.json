@@ -3,12 +3,12 @@
   "slug": "documentador",
   "nome": "Documentador",
   "ok": true,
-  "geradoEm": "2026-10-30T16:32:11.131Z",
+  "geradoEm": "2026-10-30T16:42:01.838Z",
   "passos": [
     {
       "titulo": "App aberto",
       "detalhe": "A interface principal do app carregou no navegador.",
-      "img": "/testes/img/app-documentador-01.png"
+      "img": "/testes/img/app-documentador-01.jpg"
     },
     {
       "titulo": "Conteúdo renderizado",

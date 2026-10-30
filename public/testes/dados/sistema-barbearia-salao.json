@@ -3,31 +3,85 @@
   "slug": "barbearia-salao",
   "nome": "Barbearia e Salão de Beleza",
   "ok": true,
-  "geradoEm": "2026-10-30T16:32:30.239Z",
+  "geradoEm": "2026-10-30T16:42:50.595Z",
   "passos": [
     {
       "titulo": "Painel inicial carregado",
       "detalhe": "O sistema abriu com os dados de exemplo e o menu lateral.",
-      "img": "/testes/img/sistema-barbearia-salao-01.png"
+      "img": "/testes/img/sistema-barbearia-salao-01.jpg"
     },
     {
-      "titulo": "Menu com 13 módulos",
-      "detalhe": "O sistema expõe seus módulos no menu lateral."
+      "titulo": "Negócio identificado: \"Barbearia Navalha de Ouro\"",
+      "detalhe": "O painel mostra o nome do negócio no cabeçalho lateral."
     },
     {
-      "titulo": "Módulo \"📊 Painel\"",
-      "detalhe": "A tela do módulo abriu sem erro.",
-      "img": "/testes/img/sistema-barbearia-salao-03.png"
+      "titulo": "Módulo: 📊 Painel",
+      "detalhe": "A tela do módulo abriu e renderizou sem erro.",
+      "img": "/testes/img/sistema-barbearia-salao-03.jpg"
     },
     {
-      "titulo": "Módulo \"🛒 Vender (PDV)\"",
-      "detalhe": "A tela do módulo abriu sem erro.",
-      "img": "/testes/img/sistema-barbearia-salao-04.png"
+      "titulo": "Módulo: 🛒 Vender (PDV)",
+      "detalhe": "A tela do módulo abriu e renderizou sem erro.",
+      "img": "/testes/img/sistema-barbearia-salao-04.jpg"
     },
     {
-      "titulo": "Módulo \"💵 Caixa\"",
-      "detalhe": "A tela do módulo abriu sem erro.",
-      "img": "/testes/img/sistema-barbearia-salao-05.png"
+      "titulo": "Módulo: 💵 Caixa",
+      "detalhe": "A tela do módulo abriu e renderizou sem erro.",
+      "img": "/testes/img/sistema-barbearia-salao-05.jpg"
+    },
+    {
+      "titulo": "Módulo: 📅 Agenda",
+      "detalhe": "A tela do módulo abriu e renderizou sem erro.",
+      "img": "/testes/img/sistema-barbearia-salao-06.jpg"
+    },
+    {
+      "titulo": "Módulo: 🧾 Histórico de vendas",
+      "detalhe": "A tela do módulo abriu e renderizou sem erro.",
+      "img": "/testes/img/sistema-barbearia-salao-07.jpg"
+    },
+    {
+      "titulo": "Módulo: 💰 Financeiro",
+      "detalhe": "A tela do módulo abriu e renderizou sem erro.",
+      "img": "/testes/img/sistema-barbearia-salao-08.jpg"
+    },
+    {
+      "titulo": "Módulo: 📈 Relatórios",
+      "detalhe": "A tela do módulo abriu e renderizou sem erro.",
+      "img": "/testes/img/sistema-barbearia-salao-09.jpg"
+    },
+    {
+      "titulo": "Módulo: 👥 Clientes",
+      "detalhe": "A tela do módulo abriu e renderizou sem erro.",
+      "img": "/testes/img/sistema-barbearia-salao-10.jpg"
+    },
+    {
+      "titulo": "Módulo: 🏷️ Produtos e serviços",
+      "detalhe": "A tela do módulo abriu e renderizou sem erro.",
+      "img": "/testes/img/sistema-barbearia-salao-11.jpg"
+    },
+    {
+      "titulo": "Módulo: 🗂️ Categorias",
+      "detalhe": "A tela do módulo abriu e renderizou sem erro.",
+      "img": "/testes/img/sistema-barbearia-salao-12.jpg"
+    },
+    {
+      "titulo": "Módulo: 💇 Profissionais",
+      "detalhe": "A tela do módulo abriu e renderizou sem erro.",
+      "img": "/testes/img/sistema-barbearia-salao-13.jpg"
+    },
+    {
+      "titulo": "Módulo: 🔑 Usuários",
+      "detalhe": "A tela do módulo abriu e renderizou sem erro.",
+      "img": "/testes/img/sistema-barbearia-salao-14.jpg"
+    },
+    {
+      "titulo": "12 módulos verificados",
+      "detalhe": "📊 Painel · 🛒 Vender (PDV) · 💵 Caixa · 📅 Agenda · 🧾 Histórico de vendas · 💰 Financeiro · 📈 Relatórios · 👥 Clientes · 🏷️ Produtos e serviços · 🗂️ Categorias · 💇 Profissionais · 🔑 Usuários"
+    },
+    {
+      "titulo": "Configurações e backup",
+      "detalhe": "A tela de Configurações oferece exportar um backup dos dados.",
+      "img": "/testes/img/sistema-barbearia-salao-16.jpg"
     }
   ]
 }

@@ -3,31 +3,80 @@
   "slug": "crm-vendas",
   "nome": "CRM e Prestadores de Serviço",
   "ok": true,
-  "geradoEm": "2026-10-30T16:32:41.150Z",
+  "geradoEm": "2026-10-30T16:43:24.650Z",
   "passos": [
     {
       "titulo": "Painel inicial carregado",
       "detalhe": "O sistema abriu com os dados de exemplo e o menu lateral.",
-      "img": "/testes/img/sistema-crm-vendas-01.png"
+      "img": "/testes/img/sistema-crm-vendas-01.jpg"
     },
     {
-      "titulo": "Menu com 11 módulos",
-      "detalhe": "O sistema expõe seus módulos no menu lateral."
+      "titulo": "Negócio identificado: \"Agência Pulso Digital\"",
+      "detalhe": "O painel mostra o nome do negócio no cabeçalho lateral."
     },
     {
-      "titulo": "Módulo \"📊 Painel\"",
-      "detalhe": "A tela do módulo abriu sem erro.",
-      "img": "/testes/img/sistema-crm-vendas-03.png"
+      "titulo": "Módulo: 📊 Painel",
+      "detalhe": "A tela do módulo abriu e renderizou sem erro.",
+      "img": "/testes/img/sistema-crm-vendas-03.jpg"
     },
     {
-      "titulo": "Módulo \"🎯 Funil de vendas\"",
-      "detalhe": "A tela do módulo abriu sem erro.",
-      "img": "/testes/img/sistema-crm-vendas-04.png"
+      "titulo": "Módulo: 🎯 Funil de vendas",
+      "detalhe": "A tela do módulo abriu e renderizou sem erro.",
+      "img": "/testes/img/sistema-crm-vendas-04.jpg"
     },
     {
-      "titulo": "Módulo \"🧾 Histórico de vendas\"",
-      "detalhe": "A tela do módulo abriu sem erro.",
-      "img": "/testes/img/sistema-crm-vendas-05.png"
+      "titulo": "Módulo: 🧾 Histórico de vendas",
+      "detalhe": "A tela do módulo abriu e renderizou sem erro.",
+      "img": "/testes/img/sistema-crm-vendas-05.jpg"
+    },
+    {
+      "titulo": "Módulo: 💰 Financeiro",
+      "detalhe": "A tela do módulo abriu e renderizou sem erro.",
+      "img": "/testes/img/sistema-crm-vendas-06.jpg"
+    },
+    {
+      "titulo": "Módulo: 📈 Relatórios",
+      "detalhe": "A tela do módulo abriu e renderizou sem erro.",
+      "img": "/testes/img/sistema-crm-vendas-07.jpg"
+    },
+    {
+      "titulo": "Módulo: 👥 Clientes",
+      "detalhe": "A tela do módulo abriu e renderizou sem erro.",
+      "img": "/testes/img/sistema-crm-vendas-08.jpg"
+    },
+    {
+      "titulo": "Módulo: 🏷️ Serviços e pacotes",
+      "detalhe": "A tela do módulo abriu e renderizou sem erro.",
+      "img": "/testes/img/sistema-crm-vendas-09.jpg"
+    },
+    {
+      "titulo": "Módulo: 📇 Oportunidades",
+      "detalhe": "A tela do módulo abriu e renderizou sem erro.",
+      "img": "/testes/img/sistema-crm-vendas-10.jpg"
+    },
+    {
+      "titulo": "Módulo: 📞 Atividades",
+      "detalhe": "A tela do módulo abriu e renderizou sem erro.",
+      "img": "/testes/img/sistema-crm-vendas-11.jpg"
+    },
+    {
+      "titulo": "Módulo: 🔑 Usuários",
+      "detalhe": "A tela do módulo abriu e renderizou sem erro.",
+      "img": "/testes/img/sistema-crm-vendas-12.jpg"
+    },
+    {
+      "titulo": "Módulo: ⚙️ Configurações",
+      "detalhe": "A tela do módulo abriu e renderizou sem erro.",
+      "img": "/testes/img/sistema-crm-vendas-13.jpg"
+    },
+    {
+      "titulo": "11 módulos verificados",
+      "detalhe": "📊 Painel · 🎯 Funil de vendas · 🧾 Histórico de vendas · 💰 Financeiro · 📈 Relatórios · 👥 Clientes · 🏷️ Serviços e pacotes · 📇 Oportunidades · 📞 Atividades · 🔑 Usuários · ⚙️ Configurações"
+    },
+    {
+      "titulo": "Configurações e backup",
+      "detalhe": "A tela de Configurações oferece exportar um backup dos dados.",
+      "img": "/testes/img/sistema-crm-vendas-15.jpg"
     }
   ]
 }

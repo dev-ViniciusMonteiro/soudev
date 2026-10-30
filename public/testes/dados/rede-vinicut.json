@@ -1,0 +1,23 @@
+{
+  "tipo": "rede",
+  "slug": "vinicut",
+  "nome": "Vinicut",
+  "ok": true,
+  "geradoEm": "2026-10-30T16:45:00.248Z",
+  "passos": [
+    {
+      "titulo": "Tela de entrada",
+      "detalhe": "A tela inicial do Vinicut, no estilo Orkut, com login e criar conta.",
+      "img": "/testes/img/rede-vinicut-01.jpg"
+    },
+    {
+      "titulo": "Campos de acesso presentes",
+      "detalhe": "Usuário e senha disponíveis (login só com usuário e senha, sem e-mail)."
+    },
+    {
+      "titulo": "Formulário de criar conta",
+      "detalhe": "O formulário de cadastro (nome, usuário e senha) abre sem erro.",
+      "img": "/testes/img/rede-vinicut-03.jpg"
+    }
+  ]
+}
