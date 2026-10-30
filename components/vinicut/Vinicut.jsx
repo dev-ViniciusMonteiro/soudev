@@ -46,9 +46,14 @@ export default function Vinicut() {
     router.push('/vinicut')
   }
 
+  const botaoVoltar = (
+    <a href="/" className="vc-voltar-home" aria-label="Voltar para a página inicial" title="Voltar ao início do site">←</a>
+  )
+
   if (!temBackend()) {
     return (
       <div className="vc-tela">
+        {botaoVoltar}
         <div className="vc-card" style={{ maxWidth: 440, margin: '40px auto' }}>
           <h2>Vinicut</h2>
           <p>O Vinicut precisa da variável <code>NEXT_PUBLIC_IDEIAS_API</code> configurada na Vercel.</p>
@@ -56,8 +61,8 @@ export default function Vinicut() {
       </div>
     )
   }
-  if (eu === undefined) return <div className="vc-tela"><p className="vc-carregando">Carregando o Vinicut…</p></div>
-  if (!eu) return <Entrar aoEntrar={(perfil) => { setEu(perfil); carregarEu() }} />
+  if (eu === undefined) return <div className="vc-tela">{botaoVoltar}<p className="vc-carregando">Carregando o Vinicut…</p></div>
+  if (!eu) return (<>{botaoVoltar}<Entrar aoEntrar={(perfil) => { setEu(perfil); carregarEu() }} /></>)
 
   const seg = pathname.replace(/^\/vinicut\/?/, '').split('/').filter(Boolean)
   let conteudo
@@ -72,6 +77,7 @@ export default function Vinicut() {
 
   return (
     <div className="vc-tela">
+      {botaoVoltar}
       <header className="vc-topo">
         <div className="vc-topo-in">
           <a className="vc-logo" href="/vinicut" onClick={nav(router, '/vinicut')}>vini<span>cut</span></a>

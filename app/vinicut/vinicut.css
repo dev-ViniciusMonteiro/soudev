@@ -150,3 +150,31 @@
 .vc-abas button.on { background: #fff; color: var(--vc-azul-esc); box-shadow: inset 0 -3px 0 var(--vc-rosa); }
 .vc-entrar-box .vc-botao { width: 100%; margin-top: 8px; }
 .vc-dica { color: #8795a8; margin: 10px 0 0; font-size: 11px; text-align: center; }
+
+/* Botão flutuante redondo: volta para a home do site (fora do Vinicut) */
+.vc-voltar-home {
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 60;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--vc-azul, #315f99);
+  color: #fff;
+  font-size: 22px;
+  line-height: 1;
+  text-decoration: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  transition: transform 0.12s, filter 0.12s;
+}
+.vc-voltar-home:hover { transform: scale(1.08); filter: brightness(1.08); }
+.vc-voltar-home:active { transform: scale(0.96); }
+/* Em telas estreitas o conteúdo do topo encosta na esquerda: abre espaço para o botão */
+@media (max-width: 1000px) {
+  .vc-topo-in { padding-left: 56px; }
+}
