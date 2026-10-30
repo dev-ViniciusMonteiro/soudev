@@ -11,6 +11,8 @@
  *  - Endpoint público com rate-limit por IP (hash, nunca o IP cru), honeypot e limite de tamanho.
  */
 
+import { rotasVinicut } from './vinicut.js'
+
 const enc = new TextEncoder()
 
 /* ----------------------------- utils de bytes ----------------------------- */
@@ -129,6 +131,10 @@ export default {
     const metodo = request.method
 
     try {
+      // Vinicut (rede social) cuida das próprias rotas /vc/* e do próprio preflight.
+      const vc = await rotasVinicut(request, env)
+      if (vc) return vc
+
       // CORS preflight do endpoint público
       if (metodo === 'OPTIONS') return new Response(null, { status: 204, headers: CORS })
 

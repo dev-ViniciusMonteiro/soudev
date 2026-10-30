@@ -1,12 +1,12 @@
-import { VinicutCliente } from '@/components/vinicut/Carregador'
+import Vinicut from '@/components/vinicut/Vinicut'
 
 export const metadata = {
-  title: 'Vinicut: a rede social com cara de Orkut',
-  description: 'Recados, depoimentos, "sou fã", comunidades com fórum, fotos e o feed dos amigos. A rede social do Vinicius, grátis.',
+  title: 'Vinicut: rede social com cara de Orkut',
+  description: 'Recados, depoimentos, amigos e comunidades — só texto, de brincadeira, no estilo Orkut. Entre só com usuário e senha.',
   alternates: { canonical: '/vinicut' },
-  openGraph: { title: 'Vinicut', description: 'A rede social com cara de Orkut e jeito de hoje.', url: '/vinicut' },
+  openGraph: { title: 'Vinicut', description: 'A rede social de brincadeira com cara de Orkut.', url: '/vinicut' },
 }
 
 export default function VinicutPage() {
-  return <VinicutCliente />
+  return <Vinicut />
 }
