@@ -1,0 +1,18 @@
+{
+  "tipo": "app",
+  "slug": "globo",
+  "nome": "Globo ao vivo",
+  "ok": true,
+  "geradoEm": "2026-10-30T16:32:06.811Z",
+  "passos": [
+    {
+      "titulo": "App aberto",
+      "detalhe": "A interface principal do app carregou no navegador.",
+      "img": "/testes/img/app-globo-01.png"
+    },
+    {
+      "titulo": "Conteúdo renderizado",
+      "detalhe": "A tela mostrou 1196 caracteres de conteúdo."
+    }
+  ]
+}

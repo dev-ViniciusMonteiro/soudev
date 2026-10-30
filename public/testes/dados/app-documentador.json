@@ -1,0 +1,18 @@
+{
+  "tipo": "app",
+  "slug": "documentador",
+  "nome": "Documentador",
+  "ok": true,
+  "geradoEm": "2026-10-30T16:32:11.131Z",
+  "passos": [
+    {
+      "titulo": "App aberto",
+      "detalhe": "A interface principal do app carregou no navegador.",
+      "img": "/testes/img/app-documentador-01.png"
+    },
+    {
+      "titulo": "Conteúdo renderizado",
+      "detalhe": "A tela mostrou 1758 caracteres de conteúdo."
+    }
+  ]
+}

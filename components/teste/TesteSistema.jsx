@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useCallback } from 'react'
 import Autoteste from './Autoteste'
+import EvidenciasTeste from './EvidenciasTeste'
 import { abrirBanco, esquecerBanco } from '@/lib/sistemas/db'
 import { semear } from '@/lib/sistemas/seed'
 import { precificar, totalItens } from '@/lib/sistemas/regras'
@@ -102,6 +103,7 @@ export default function TesteSistema({ slug, nome }) {
         montar={montar}
         aoQuebrar={aoQuebrar}
       />
+      <EvidenciasTeste tipo="sistema" slug={slug} />
     </main>
   )
 }

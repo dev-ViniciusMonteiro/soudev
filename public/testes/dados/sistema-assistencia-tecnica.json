@@ -1,0 +1,33 @@
+{
+  "tipo": "sistema",
+  "slug": "assistencia-tecnica",
+  "nome": "Assistência Técnica e Oficina",
+  "ok": true,
+  "geradoEm": "2026-10-30T16:32:32.951Z",
+  "passos": [
+    {
+      "titulo": "Painel inicial carregado",
+      "detalhe": "O sistema abriu com os dados de exemplo e o menu lateral.",
+      "img": "/testes/img/sistema-assistencia-tecnica-01.png"
+    },
+    {
+      "titulo": "Menu com 13 módulos",
+      "detalhe": "O sistema expõe seus módulos no menu lateral."
+    },
+    {
+      "titulo": "Módulo \"📊 Painel\"",
+      "detalhe": "A tela do módulo abriu sem erro.",
+      "img": "/testes/img/sistema-assistencia-tecnica-03.png"
+    },
+    {
+      "titulo": "Módulo \"🛒 Vender (PDV)\"",
+      "detalhe": "A tela do módulo abriu sem erro.",
+      "img": "/testes/img/sistema-assistencia-tecnica-04.png"
+    },
+    {
+      "titulo": "Módulo \"💵 Caixa\"",
+      "detalhe": "A tela do módulo abriu sem erro.",
+      "img": "/testes/img/sistema-assistencia-tecnica-05.png"
+    }
+  ]
+}

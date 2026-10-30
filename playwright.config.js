@@ -4,6 +4,7 @@ import { defineConfig } from '@playwright/test'
 // e os passos de cada cenário. Rode:  npm run test:e2e   e depois  npm run test:e2e:report
 export default defineConfig({
   testDir: './e2e',
+  globalTeardown: './e2e/gerar-indice.js',
   timeout: 90000,
   expect: { timeout: 15000 },
   fullyParallel: false,

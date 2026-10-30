@@ -1,0 +1,33 @@
+{
+  "tipo": "sistema",
+  "slug": "petshop",
+  "nome": "Pet Shop e Banho e Tosa",
+  "ok": true,
+  "geradoEm": "2026-10-30T16:32:38.385Z",
+  "passos": [
+    {
+      "titulo": "Painel inicial carregado",
+      "detalhe": "O sistema abriu com os dados de exemplo e o menu lateral.",
+      "img": "/testes/img/sistema-petshop-01.png"
+    },
+    {
+      "titulo": "Menu com 16 módulos",
+      "detalhe": "O sistema expõe seus módulos no menu lateral."
+    },
+    {
+      "titulo": "Módulo \"📊 Painel\"",
+      "detalhe": "A tela do módulo abriu sem erro.",
+      "img": "/testes/img/sistema-petshop-03.png"
+    },
+    {
+      "titulo": "Módulo \"🛒 Vender (PDV)\"",
+      "detalhe": "A tela do módulo abriu sem erro.",
+      "img": "/testes/img/sistema-petshop-04.png"
+    },
+    {
+      "titulo": "Módulo \"💵 Caixa\"",
+      "detalhe": "A tela do módulo abriu sem erro.",
+      "img": "/testes/img/sistema-petshop-05.png"
+    }
+  ]
+}

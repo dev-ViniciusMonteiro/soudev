@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useCallback } from 'react'
 import Autoteste from './Autoteste'
+import EvidenciasTeste from './EvidenciasTeste'
 import * as treino from '@/lib/treino/banco'
 import { e1rm } from '@/lib/treino/logica'
 import { ler as docLer, guardar as docGuardar } from '@/components/apps/documentador/armazem'
@@ -201,6 +202,7 @@ export default function TesteApp({ slug, nome }) {
           <p className="muted">O autoteste deste app ainda não foi configurado.</p>
         </div>
       )}
+      <EvidenciasTeste tipo="app" slug={slug} />
     </main>
   )
 }

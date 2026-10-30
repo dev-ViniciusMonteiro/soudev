@@ -1,0 +1,18 @@
+{
+  "tipo": "app",
+  "slug": "treino",
+  "nome": "Treino",
+  "ok": true,
+  "geradoEm": "2026-10-30T16:32:01.348Z",
+  "passos": [
+    {
+      "titulo": "App aberto",
+      "detalhe": "A interface principal do app carregou no navegador.",
+      "img": "/testes/img/app-treino-01.png"
+    },
+    {
+      "titulo": "Conteúdo renderizado",
+      "detalhe": "A tela mostrou 494 caracteres de conteúdo."
+    }
+  ]
+}

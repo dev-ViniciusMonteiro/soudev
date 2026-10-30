@@ -76,6 +76,10 @@ export default function Curriculo() {
         <section>
           <h2>Resumo</h2>
           <p>{cv.resumo}</p>
+          <p className="cv-sem-impressao" style={{ marginTop: 10, padding: '10px 14px', border: '1px solid var(--line)', borderRadius: 'var(--radius)', background: 'var(--bg-2)' }}>
+            🧪 <strong>Qualidade:</strong> os apps e sistemas deste portfólio têm testes automatizados num navegador real (Playwright), com prints de evidência.{' '}
+            <Link href="/testes">Ver os testes e evidências →</Link>
+          </p>
           <ul>
             {cv.destaques.map((d) => (
               <li key={d}>{d}</li>
