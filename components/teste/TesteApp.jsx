@@ -9,6 +9,11 @@ import { e1rm } from '@/lib/treino/logica'
 import { ler as docLer, guardar as docGuardar } from '@/components/apps/documentador/armazem'
 import { segundos } from '@/components/apps/documentador/comuns'
 import { nomeStatus } from '@/components/apps/imoveis/status'
+import { sequencia, textoVisor, ERRO_DIVISAO } from '@/lib/win98/calculadora'
+import { novoJogo, revelar, marcar, acorde } from '@/lib/win98/campo-minado'
+import * as disco98 from '@/lib/win98/arquivos'
+import { executar as dos98, INVALIDO } from '@/lib/win98/dos'
+import { janelas as janelas98, estadoInicial as janelasIniciais } from '@/lib/win98/janelas'
 
 /* ---------- blocos reaproveitáveis ---------- */
 const cap = (nome, teste, okTxt, falhaTxt) => ({
@@ -179,8 +184,107 @@ function montarEditor() {
   }
 }
 
-const MONTAR = { treino: montarTreino, documentador: montarDocumentador, imoveis: montarImoveis, ppfd: montarPpfd, globo: montarGlobo, 'editor-de-video': montarEditor }
-const QUEBRAR = { treino: quebrarTreino, documentador: quebrarDocumentador, imoveis: quebrarImoveis, ppfd: quebrarPpfd, globo: quebrarGlobo }
+/* ---------- windows 98 ---------- */
+// Regras do Windows 98 conferidas contra o comportamento do original.
+const calc98 = (teclas) => textoVisor(sequencia(teclas))
+const regra = (nome, fn) => ({
+  nome,
+  async rodar() {
+    try {
+      const [ok, detalhe] = fn()
+      return { ok, detalhe }
+    } catch (e) {
+      return { ok: false, detalhe: `Erro: ${e.message}` }
+    }
+  },
+})
+const DOCS = 'C:\\Meus documentos'
+
+function montarWin98() {
+  return async () => {
+    prepararStorage('win98.__autoteste__')
+    const cenarios = [
+      regra('Calculadora conta da esquerda para a direita (2 + 3 × 4)', () => {
+        const v = calc98(['2', '+', '3', '*', '4', '='])
+        return [v === '20,', `2 + 3 × 4 = "${v}" (no Windows 98 a Padrão não tem precedência: 20,).`]
+      }),
+      regra('Calculadora repete a última conta com "=" (2 + 3 = = =)', () => {
+        const v = calc98(['2', '+', '3', '=', '=', '='])
+        return [v === '11,', `2 + 3 = = = → "${v}" (esperado 11,: soma 3 a cada "=").`]
+      }),
+      regra('Porcentagem do Windows (200 + 10 %)', () => {
+        const v = calc98(['2', '0', '0', '+', '1', '0', '%'])
+        return [v === '20,', `200 + 10 % mostra "${v}" (10% de 200 = 20,).`]
+      }),
+      regra('Divisão por zero mostra a mensagem do Windows', () => {
+        const v = calc98(['1', '/', '0', '='])
+        return [v === ERRO_DIVISAO, `1 ÷ 0 → "${v}".`]
+      }),
+      regra('Campo minado: o primeiro clique nunca é mina', () => {
+        let j = novoJogo({ linhas: 9, colunas: 9, minas: 1 }, { minas: [40] })
+        j = revelar(j, 40, 1000)
+        return [j.estado !== 'perdeu' && !j.casas[40].mina, `Clicou na casa 40 (que tinha a mina): a mina foi para a casa ${j.casas.findIndex((c) => c.mina)} e o jogo seguiu (${j.estado}).`]
+      }),
+      regra('Campo minado: casa vazia abre as vizinhas em cascata e vence', () => {
+        let j = novoJogo({ linhas: 9, colunas: 9, minas: 1 }, { minas: [80] })
+        j = revelar(j, 0, 1000)
+        return [j.estado === 'ganhou' && j.abertas === 80, `Um clique abriu ${j.abertas} casas; estado: ${j.estado}.`]
+      }),
+      regra('Campo minado: bandeira → interrogação → nada, e o acorde', () => {
+        let j = novoJogo({ linhas: 3, colunas: 3, minas: 1 }, { minas: [0] })
+        const ciclo = [marcar(j, 0), marcar(marcar(j, 0), 0), marcar(marcar(marcar(j, 0), 0), 0)].map((x) => x.casas[0].marca)
+        j = revelar(j, 4, 1000)
+        j = marcar(j, 0)
+        j = acorde(j, 4, 2000)
+        const ok = ciclo.join() === 'bandeira,interrogacao,' && j.estado === 'ganhou'
+        return [ok, `Marcas: ${ciclo.map((m) => ({ bandeira: 'bandeira', interrogacao: 'interrogação' })[m] || 'nada').join(' → ')}. Acorde no "1" com a bandeira certa: ${j.estado}.`]
+      }),
+      regra('Disco: "Nova pasta (2)" e nomes com caracteres proibidos', () => {
+        let d = disco98.discoInicial()
+        d = disco98.criarPasta(d, DOCS, 'Nova pasta')
+        const livre = disco98.nomeLivre(d, DOCS, 'Nova pasta')
+        const proibido = disco98.validarNome('a:b?.txt')
+        return [livre === 'Nova pasta (2)' && !!proibido, `Próximo nome livre: "${livre}". "a:b?.txt" recusado: ${proibido ? 'sim' : 'não'}.`]
+      }),
+      regra('Lixeira: excluir e restaurar para o lugar de origem', () => {
+        const leiame = disco98.juntar(DOCS, 'Leia-me.txt')
+        let d = disco98.excluir(disco98.discoInicial(), leiame, 1)
+        const sumiu = !disco98.achar(d, leiame)
+        d = disco98.restaurar(d, d.lixeira[0].id)
+        const voltou = !!disco98.achar(d, leiame)
+        let protegido = false
+        try {
+          disco98.excluir(d, 'C:\\Windows')
+        } catch {
+          protegido = true
+        }
+        return [sumiu && voltou && protegido && d.lixeira.length === 0, `Excluído: ${sumiu}; restaurado: ${voltou}; pasta Windows protegida: ${protegido}.`]
+      }),
+      regra('MS-DOS: DIR, CD .. e comando inválido', () => {
+        const d = disco98.discoInicial()
+        const dir = dos98(d, 'C:\\', 'dir').saida.join('\n')
+        const cd = dos98(d, 'C:\\Windows', 'cd..').cwd
+        const inv = dos98(d, 'C:\\', 'xyz').saida[0]
+        return [dir.includes('<DIR>') && cd === 'C:\\' && inv === INVALIDO, `DIR lista pastas: ${dir.includes('<DIR>')}; CD.. foi para ${cd}; "xyz" → "${inv}".`]
+      }),
+      regra('Barra de tarefas: clicar na janela ativa minimiza; de novo, restaura', () => {
+        let e = janelasIniciais()
+        e = janelas98(e, { tipo: 'abrir', app: 'a' })
+        e = janelas98(e, { tipo: 'tarefa', id: 'j1' })
+        const minimizou = e.janelas[0].min && e.ativa === null
+        e = janelas98(e, { tipo: 'tarefa', id: 'j1' })
+        const restaurou = !e.janelas[0].min && e.ativa === 'j1'
+        return [minimizou && restaurou, `Minimizou: ${minimizou}; restaurou e ativou: ${restaurou}.`]
+      }),
+      cenarioStorage('win98.__autoteste__'),
+    ]
+    return { ctx: {}, cenarios, limpar: limparStorage('win98.__autoteste__') }
+  }
+}
+const quebrarWin98 = quebrarStorage('win98.__autoteste__')
+
+const MONTAR = { treino: montarTreino, documentador: montarDocumentador, imoveis: montarImoveis, ppfd: montarPpfd, globo: montarGlobo, 'editor-de-video': montarEditor, 'windows-98': montarWin98 }
+const QUEBRAR = { treino: quebrarTreino, documentador: quebrarDocumentador, imoveis: quebrarImoveis, ppfd: quebrarPpfd, globo: quebrarGlobo, 'windows-98': quebrarWin98 }
 
 export default function TesteApp({ slug, nome }) {
   const fabrica = MONTAR[slug]

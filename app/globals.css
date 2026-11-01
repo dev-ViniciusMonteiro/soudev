@@ -3391,7 +3391,7 @@ textarea {
 .ev-passos { list-style: none; margin: 16px 0 0; padding: 0; display: flex; flex-direction: column; gap: 18px; }
 .ev-passo-cab { font-weight: 600; display: flex; align-items: center; gap: 8px; }
 .ev-check { color: var(--green); font-weight: 700; }
-.ev-detalhe { margin: 4px 0 8px 22px; color: var(--muted); font-size: .9rem; }
+.ev-detalhe { margin: 4px 0 8px 22px; color: var(--muted); font-size: .9rem; white-space: pre-line; }
 .ev-print { display: block; position: relative; border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; max-width: 680px; background: var(--panel); }
 .ev-print img { display: block; width: 100%; height: auto; }
 .ev-print-zoom { position: absolute; right: 8px; bottom: 8px; background: rgba(0,0,0,.65); color: #fff; font-size: .72rem; padding: 3px 8px; border-radius: 999px; opacity: 0; transition: opacity .15s; }

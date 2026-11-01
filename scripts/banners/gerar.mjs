@@ -62,7 +62,7 @@ async function capturar(base, so = []) {
   const c = await abrirChrome(1600, 900);
   await c.cdp('Page.addScriptToEvaluateOnNewDocument', { source: "try{localStorage.setItem('consentimento', JSON.stringify({analytics:false,ads:false,em:Date.now()}))}catch(e){}" });
   for (const b of banners.filter((x) => x.tela && (!so.length || so.includes(x.slug)))) {
-    await c.cdp('Page.navigate', { url: base + ENDERECO[b.tipo](b.slug) });
+    await c.cdp('Page.navigate', { url: base + (b.endereco ?? ENDERECO[b.tipo](b.slug)) });
     await esperar(b.tipo === 'ferramentas' ? 5000 : 9000);
     // Nas ferramentas, a tela começa no quadro da ferramenta (sem o cabeçalho do site).
     if (b.tipo === 'ferramentas') {

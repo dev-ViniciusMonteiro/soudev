@@ -1,0 +1,186 @@
+{
+  "tipo": "app",
+  "slug": "windows-98",
+  "nome": "Windows 98",
+  "ok": true,
+  "geradoEm": "2026-11-01T19:36:18.089Z",
+  "passos": [
+    {
+      "titulo": "Inicialização (BIOS)",
+      "detalhe": "O computador liga mostrando a BIOS: teste de memória, discos IDE e \"Iniciando o Windows 98...\".",
+      "img": "/testes/img/app-windows-98-01.jpg"
+    },
+    {
+      "titulo": "Tela de abertura",
+      "detalhe": "Céu com nuvens e a barra animada embaixo, como na abertura do 98.",
+      "img": "/testes/img/app-windows-98-02.jpg"
+    },
+    {
+      "titulo": "Área de trabalho",
+      "detalhe": "Ícones Meu computador, Meus documentos, Internet Explorer, Ambiente de rede e Lixeira; barra de tarefas com Iniciar, Inicialização rápida e relógio.",
+      "img": "/testes/img/app-windows-98-03.jpg"
+    },
+    {
+      "titulo": "Comparação visual",
+      "detalhe": "Calculadora inativa (título cinza), Bloco de notas ativo (título azul) e o menu Iniciar aberto com o item realçado, para medir as cores do sistema.",
+      "img": "/testes/img/app-windows-98-04.jpg"
+    },
+    {
+      "titulo": "Fidelidade ao esquema padrão do Windows 98",
+      "detalhe": "✓ Área de trabalho (Desktop): medido rgb(0, 128, 128) · Windows 98 #008080 (verde-azulado)\n✓ Face dos botões e barras (ButtonFace): medido rgb(192, 192, 192) · Windows 98 #C0C0C0\n✓ Título ativo, início do degradê: medido rgb(0, 0, 128) · Windows 98 #000080\n✓ Título ativo, fim do degradê: medido rgb(16, 132, 208) · Windows 98 #1084D0\n✓ Título inativo, início do degradê: medido rgb(128, 128, 128) · Windows 98 #808080\n✓ Título inativo, fim do degradê: medido rgb(181, 181, 181) · Windows 98 #B5B5B5\n✓ Item selecionado no menu (Highlight): medido rgb(0, 0, 128) · Windows 98 #000080\n✓ Altura da barra de tarefas: medido 28px · Windows 98 28 px\n✓ Altura da barra de título: medido 18px · Windows 98 18 px\n✓ Tamanho da fonte da interface (8 pt): medido 11px · Windows 98 11 px"
+    },
+    {
+      "titulo": "Menu Iniciar com submenus",
+      "detalhe": "A faixa \"Windows98\" na lateral e os submenus abrindo ao passar o mouse, como no original.",
+      "img": "/testes/img/app-windows-98-06.jpg"
+    },
+    {
+      "titulo": "Campo Minado (Iniciante)",
+      "detalhe": "Tabuleiro 9×9 com 10 minas, contadores em LED e a carinha.",
+      "img": "/testes/img/app-windows-98-07.jpg"
+    },
+    {
+      "titulo": "Regra: primeiro clique nunca é mina",
+      "detalhe": "O primeiro clique abriu a casa sem explodir, como no Windows 98 (se houvesse mina, ela muda de lugar)."
+    },
+    {
+      "titulo": "Primeiro clique e bandeira",
+      "detalhe": "O primeiro clique abriu sem explodir e o botão direito marcou uma bandeira: o contador caiu de 010 para 009 e o relógio começou.",
+      "img": "/testes/img/app-windows-98-09.jpg"
+    },
+    {
+      "titulo": "Nível Intermediário",
+      "detalhe": "Jogo › Intermediário: 16×16 com 40 minas e a janela se ajusta ao tamanho do campo.",
+      "img": "/testes/img/app-windows-98-10.jpg"
+    },
+    {
+      "titulo": "Calculadora: 2 + 3 × 4 = 20",
+      "detalhe": "Como no 98, a Calculadora Padrão faz a conta na ordem digitada (não há precedência), e o visor mostra a vírgula: \"20,\".",
+      "img": "/testes/img/app-windows-98-11.jpg"
+    },
+    {
+      "titulo": "Regra: porcentagem",
+      "detalhe": "Pelo teclado: 200 + 10 % mostra 20, (10% do primeiro número)."
+    },
+    {
+      "titulo": "Divisão por zero",
+      "detalhe": "A mensagem do Windows aparece no visor; só C/CE ou um número limpam.",
+      "img": "/testes/img/app-windows-98-13.jpg"
+    },
+    {
+      "titulo": "Pergunta ao fechar",
+      "detalhe": "\"O texto do arquivo Sem título foi alterado. Deseja salvar as alterações?\" com Sim, Não e Cancelar.",
+      "img": "/testes/img/app-windows-98-14.jpg"
+    },
+    {
+      "titulo": "Salvar como",
+      "detalhe": "Caixa \"Salvar como\" em Meus documentos, com o tipo \"Documentos de texto (*.txt)\".",
+      "img": "/testes/img/app-windows-98-15.jpg"
+    },
+    {
+      "titulo": "Regra: extensão automática",
+      "detalhe": "Digitado \"Minha nota\", o arquivo foi salvo como \"Minha nota.txt\" e o Bloco de notas fechou."
+    },
+    {
+      "titulo": "Meus documentos",
+      "detalhe": "O arquivo salvo aparece na pasta; o painel da esquerda mostra o tipo e a data, como na visualização Web do 98.",
+      "img": "/testes/img/app-windows-98-17.jpg"
+    },
+    {
+      "titulo": "Lixeira (detalhes)",
+      "detalhe": "O arquivo excluído está na Lixeira com o local original; o ícone da Lixeira na área de trabalho ficou cheio.",
+      "img": "/testes/img/app-windows-98-18.jpg"
+    },
+    {
+      "titulo": "Regra: restaurar",
+      "detalhe": "Restaurar devolveu o arquivo para C:\\Meus documentos e a Lixeira voltou a ficar vazia."
+    },
+    {
+      "titulo": "Menu da área de trabalho",
+      "detalhe": "Botão direito na área de trabalho: Organizar ícones, Atualizar, Colar, Novo › Pasta / Documento de texto / Imagem de bitmap e Propriedades.",
+      "img": "/testes/img/app-windows-98-20.jpg"
+    },
+    {
+      "titulo": "Pasta criada e renomeada",
+      "detalhe": "A \"Nova pasta\" nasce com o nome em edição (como no 98); renomeada para \"Projetos\".",
+      "img": "/testes/img/app-windows-98-21.jpg"
+    },
+    {
+      "titulo": "Regra: arrastar para a Lixeira",
+      "detalhe": "Soltar a pasta sobre a Lixeira pediu confirmação e a mandou para a Lixeira."
+    },
+    {
+      "titulo": "Janela maximizada",
+      "detalhe": "Duplo clique na barra de título maximiza; o botão do meio vira \"Restaurar\".",
+      "img": "/testes/img/app-windows-98-23.jpg"
+    },
+    {
+      "titulo": "Regra: botão da barra de tarefas",
+      "detalhe": "Clicar no botão da janela ativa minimizou; clicar de novo restaurou e ativou."
+    },
+    {
+      "titulo": "Arrastando com contorno",
+      "detalhe": "Ao arrastar pela barra de título aparece só o contorno pontilhado; a janela vai para lá ao soltar (padrão do 98).",
+      "img": "/testes/img/app-windows-98-25.jpg"
+    },
+    {
+      "titulo": "Executar: arquivo não encontrado",
+      "detalhe": "A mesma mensagem de erro do 98 para um nome que não existe.",
+      "img": "/testes/img/app-windows-98-26.jpg"
+    },
+    {
+      "titulo": "MS-DOS: VER, CD .., DIR",
+      "detalhe": "VER mostra a versão, CD .. sobe para C:\\, DIR lista com <DIR>, tamanhos e \"bytes disponíveis\", e um comando errado dá \"Comando ou nome de arquivo inválido\".",
+      "img": "/testes/img/app-windows-98-27.jpg"
+    },
+    {
+      "titulo": "Paint",
+      "detalhe": "Retângulo azul-marinho preenchido de amarelo com o balde e um traço do lápis vermelho; o pixel do meio do retângulo é amarelo (255, 255, 0).",
+      "img": "/testes/img/app-windows-98-28.jpg"
+    },
+    {
+      "titulo": "Internet Explorer",
+      "detalhe": "O IE abre a página inicial do soudev, com Voltar, Avançar, Parar, Atualizar, Página inicial e o endereço.",
+      "img": "/testes/img/app-windows-98-29.jpg"
+    },
+    {
+      "titulo": "IE: página de erro",
+      "detalhe": "Um site de fora não pode ser aberto dentro de outra página: aparece a clássica \"Não é possível exibir a página\".",
+      "img": "/testes/img/app-windows-98-30.jpg"
+    },
+    {
+      "titulo": "Plano de fundo",
+      "detalhe": "Escolher \"Nuvens\" mostra a prévia no monitorzinho e acende o botão Aplicar (que começa desativado).",
+      "img": "/testes/img/app-windows-98-31.jpg"
+    },
+    {
+      "titulo": "Nuvens + esquema Berinjela",
+      "detalhe": "Depois de OK, a área de trabalho ficou com o papel de parede Nuvens e as janelas com o esquema Berinjela.",
+      "img": "/testes/img/app-windows-98-32.jpg"
+    },
+    {
+      "titulo": "Proteção de tela",
+      "detalhe": "\"Voo espacial\": estrelas vindo na sua direção, em tela cheia. Mexer o mouse volta para o Windows.",
+      "img": "/testes/img/app-windows-98-33.jpg"
+    },
+    {
+      "titulo": "Desligar o Windows",
+      "detalhe": "A tela escurece com pontinhos e aparecem as opções Desligar, Reiniciar e Reiniciar em modo MS-DOS.",
+      "img": "/testes/img/app-windows-98-34.jpg"
+    },
+    {
+      "titulo": "Pode desligar com segurança",
+      "detalhe": "A clássica mensagem laranja em fundo preto, com \"Ligar o computador\" e \"Voltar ao soudev\".",
+      "img": "/testes/img/app-windows-98-35.jpg"
+    },
+    {
+      "titulo": "Regra: o disco C: fica salvo",
+      "detalhe": "Depois de recarregar a página, \"Minha nota.txt\" continua em Meus documentos (salvo no navegador)."
+    },
+    {
+      "titulo": "Celular",
+      "detalhe": "No celular um toque abre o ícone e as janelas abrem maximizadas.",
+      "img": "/testes/img/app-windows-98-37.jpg"
+    }
+  ]
+}

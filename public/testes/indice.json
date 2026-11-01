@@ -1,7 +1,7 @@
 {
-  "geradoEm": "2026-10-30T16:51:41.527Z",
-  "total": 15,
-  "ok": 15,
+  "geradoEm": "2026-11-01T19:36:19.654Z",
+  "total": 16,
+  "ok": 16,
   "itens": [
     {
       "tipo": "app",
@@ -56,6 +56,15 @@
       "geradoEm": "2026-10-30T16:41:47.041Z",
       "prints": 3,
       "capa": "/testes/img/app-treino-01.jpg"
+    },
+    {
+      "tipo": "app",
+      "slug": "windows-98",
+      "nome": "Windows 98",
+      "ok": true,
+      "geradoEm": "2026-11-01T19:36:18.089Z",
+      "prints": 29,
+      "capa": "/testes/img/app-windows-98-01.jpg"
     },
     {
       "tipo": "rede",

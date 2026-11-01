@@ -16,6 +16,7 @@ const Globo = dynamic(() => import('./globo/Globo'), { ssr: false, loading: carr
 const Documentador = dynamic(() => import('./documentador/Documentador'), { ssr: false, loading: carregando })
 const Imoveis = dynamic(() => import('./imoveis/Imoveis'), { ssr: false, loading: carregando })
 const Ppfd = dynamic(() => import('./ppfd/Ppfd'), { ssr: false, loading: carregando })
+const Win98 = dynamic(() => import('./win98/Win98'), { ssr: false, loading: carregando })
 
 export function AppCliente({ slug }) {
   if (slug === 'treino') return <Treino />
@@ -24,5 +25,6 @@ export function AppCliente({ slug }) {
   if (slug === 'documentador') return <Documentador />
   if (slug === 'imoveis') return <Imoveis />
   if (slug === 'ppfd') return <Ppfd />
+  if (slug === 'windows-98') return <Win98 />
   return null
 }
