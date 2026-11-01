@@ -16,6 +16,7 @@ export const metadata = {
 
 // Apps com rota própria (fora de /apps/[slug]) que também aparecem na listagem.
 const extras = [
+  { slug: 'catalogo', nome: 'Catálogo digital', href: '/catalogo', curto: 'Monte a vitrine da sua loja arrastando blocos, compartilhe o link e receba pedidos no WhatsApp. Grátis até 20 produtos.' },
   { slug: 'vinicut', nome: 'Vinicut', href: '/vinicut', curto: 'A rede social do site, com a cara do Orkut: perfil, recados, comunidades e depoimentos.' },
 ]
 

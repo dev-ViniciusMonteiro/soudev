@@ -117,3 +117,61 @@ CREATE TABLE IF NOT EXISTS vc_respostas (
   criado_em     INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS vc_respostas_top ON vc_respostas (topico_id, criado_em);
+
+-- ================== Catálogo digital (tabelas ct_*) ==================
+-- Lojista entra com o link da loja (slug) + senha. A página pública fica em soudev/c/<slug>.
+
+CREATE TABLE IF NOT EXISTS ct_lojas (
+  id            TEXT PRIMARY KEY,
+  slug          TEXT NOT NULL UNIQUE,
+  senha_hash    TEXT NOT NULL,
+  nome          TEXT NOT NULL,
+  whatsapp      TEXT NOT NULL DEFAULT '',
+  config        TEXT NOT NULL DEFAULT '{}',   -- JSON: tema, blocos da página, logo, capa, contatos
+  visitas       INTEGER NOT NULL DEFAULT 0,
+  pedidos       INTEGER NOT NULL DEFAULT 0,   -- cliques em "pedir pelo WhatsApp"
+  criado_em     INTEGER NOT NULL,
+  atualizado_em INTEGER NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS ct_sessoes (
+  token     TEXT PRIMARY KEY,
+  loja_id   TEXT NOT NULL,
+  criado_em INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ct_sessoes_loja ON ct_sessoes (loja_id);
+
+CREATE TABLE IF NOT EXISTS ct_produtos (
+  id         TEXT PRIMARY KEY,
+  loja_id    TEXT NOT NULL,
+  nome       TEXT NOT NULL,
+  descricao  TEXT NOT NULL DEFAULT '',
+  categoria  TEXT NOT NULL DEFAULT '',
+  preco      INTEGER NOT NULL DEFAULT 0,      -- centavos
+  preco_de   INTEGER NOT NULL DEFAULT 0,      -- preço antigo (promoção), 0 = sem
+  imagem     TEXT,                            -- id em ct_imagens
+  destaque   INTEGER NOT NULL DEFAULT 0,
+  estado     TEXT NOT NULL DEFAULT 'ativo',   -- ativo | esgotado | oculto
+  ordem      INTEGER NOT NULL DEFAULT 0,
+  criado_em  INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ct_produtos_loja ON ct_produtos (loja_id, ordem);
+
+-- Imagens (já comprimidas no navegador). Se o Worker tiver R2 (binding FOTOS), os bytes vão
+-- para o R2 e "dados" fica NULL; senão ficam aqui mesmo no D1.
+CREATE TABLE IF NOT EXISTS ct_imagens (
+  id        TEXT PRIMARY KEY,
+  loja_id   TEXT NOT NULL,
+  tipo      TEXT NOT NULL,
+  tamanho   INTEGER NOT NULL,
+  dados     BLOB,
+  criado_em INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ct_imagens_loja ON ct_imagens (loja_id);
+
+-- Tentativas de login erradas (rate-limit por IP com hash).
+CREATE TABLE IF NOT EXISTS ct_falhas (
+  ip_hash   TEXT NOT NULL,
+  criado_em INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ct_falhas_ip ON ct_falhas (ip_hash, criado_em);

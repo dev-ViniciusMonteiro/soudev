@@ -20,6 +20,7 @@ export default function sitemap() {
     ...nichos.map((n) => ({ url: `${SITE_URL}/sistemas/${n.slug}`, lastModified, changeFrequency: 'monthly', priority: 0.8 })),
     { url: `${SITE_URL}/apps`, lastModified, changeFrequency: 'weekly', priority: 0.8 },
     ...apps.map((a) => ({ url: `${SITE_URL}/apps/${a.slug}`, lastModified, changeFrequency: 'monthly', priority: 0.8 })),
+    { url: `${SITE_URL}/catalogo`, lastModified, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${SITE_URL}/jogos`, lastModified, changeFrequency: 'weekly', priority: 0.8 },
     ...games.map((game) => ({
       url: `${SITE_URL}/jogos/${game.slug}`,

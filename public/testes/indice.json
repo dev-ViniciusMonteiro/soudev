@@ -1,7 +1,7 @@
 {
-  "geradoEm": "2026-11-01T19:36:19.654Z",
-  "total": 16,
-  "ok": 16,
+  "geradoEm": "2026-11-01T22:08:26.880Z",
+  "total": 17,
+  "ok": 17,
   "itens": [
     {
       "tipo": "app",
@@ -65,6 +65,15 @@
       "geradoEm": "2026-11-01T19:36:18.089Z",
       "prints": 29,
       "capa": "/testes/img/app-windows-98-01.jpg"
+    },
+    {
+      "tipo": "apps",
+      "slug": "catalogo",
+      "nome": "Catálogo digital",
+      "ok": true,
+      "geradoEm": "2026-11-01T22:08:12.881Z",
+      "prints": 6,
+      "capa": "/testes/img/apps-catalogo-01.jpg"
     },
     {
       "tipo": "rede",

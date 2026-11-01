@@ -12,6 +12,7 @@
  */
 
 import { rotasVinicut } from './vinicut.js'
+import { rotasCatalogo } from './catalogo.js'
 
 const enc = new TextEncoder()
 
@@ -134,6 +135,10 @@ export default {
       // Vinicut (rede social) cuida das próprias rotas /vc/* e do próprio preflight.
       const vc = await rotasVinicut(request, env)
       if (vc) return vc
+
+      // Catálogo digital: rotas /ct/* (lojas, produtos, imagens).
+      const ct = await rotasCatalogo(request, env, ctx)
+      if (ct) return ct
 
       // CORS preflight do endpoint público
       if (metodo === 'OPTIONS') return new Response(null, { status: 204, headers: CORS })
