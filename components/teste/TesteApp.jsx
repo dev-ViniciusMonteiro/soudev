@@ -283,8 +283,19 @@ function montarWin98() {
 }
 const quebrarWin98 = quebrarStorage('win98.__autoteste__')
 
-const MONTAR = { treino: montarTreino, documentador: montarDocumentador, imoveis: montarImoveis, ppfd: montarPpfd, globo: montarGlobo, 'editor-de-video': montarEditor, 'windows-98': montarWin98 }
-const QUEBRAR = { treino: quebrarTreino, documentador: quebrarDocumentador, imoveis: quebrarImoveis, ppfd: quebrarPpfd, globo: quebrarGlobo, 'windows-98': quebrarWin98 }
+// Demos de produto (dados de exemplo no localStorage): confere que o navegador salva e relê.
+const DEMOS = ['obra-organizada', 'meu-carro', 'garantia-facil', 'gestao-de-aluguel', 'achei-perdi', 'evento-facil']
+const montarDemo = (slug) => () => async () => {
+  const k = `demo.${slug}.__autoteste__`
+  prepararStorage(k)
+  const cenarios = [cap('Armazenamento local disponível', () => typeof localStorage !== 'undefined', 'O navegador guarda os dados da demo.', 'Sem armazenamento local neste navegador.'), cenarioStorage(k)]
+  return { ctx: {}, cenarios, limpar: limparStorage(k) }
+}
+const demosMontar = Object.fromEntries(DEMOS.map((d) => [d, montarDemo(d)]))
+const demosQuebrar = Object.fromEntries(DEMOS.map((d) => [d, quebrarStorage(`demo.${d}.__autoteste__`)]))
+
+const MONTAR = { ...demosMontar, treino: montarTreino, documentador: montarDocumentador, imoveis: montarImoveis, ppfd: montarPpfd, globo: montarGlobo, 'editor-de-video': montarEditor, 'windows-98': montarWin98 }
+const QUEBRAR = { ...demosQuebrar, treino: quebrarTreino, documentador: quebrarDocumentador, imoveis: quebrarImoveis, ppfd: quebrarPpfd, globo: quebrarGlobo, 'windows-98': quebrarWin98 }
 
 export default function TesteApp({ slug, nome }) {
   const fabrica = MONTAR[slug]

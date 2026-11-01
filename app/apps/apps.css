@@ -1846,3 +1846,5 @@ div.tr-item-nome {
 .tr-sessao-topo > .tr-icone {
   font-size: 1.5rem;
 }
+
+.ap-demo-selo { display: inline-block; margin: 0 0 10px; padding: 4px 10px; border-radius: 99px; background: #fff4d6; color: #8a5a00; font-size: .8rem; font-weight: 700; }

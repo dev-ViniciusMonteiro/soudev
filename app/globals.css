@@ -347,9 +347,9 @@ hr {
   cursor: not-allowed;
 }
 
-input:not([type='checkbox']):not([type='range']):not([type='color']):not(.dv-palco *),
-select:not(.dv-palco *),
-textarea:not(.dv-palco *) {
+input:not([type='checkbox']):not([type='range']):not([type='color']):not(.dv-palco *):not(.dm *),
+select:not(.dv-palco *):not(.dm *),
+textarea:not(.dv-palco *):not(.dm *) {
   width: 100%;
   padding: 11px 13px;
   border-radius: var(--radius);
@@ -359,9 +359,9 @@ textarea:not(.dv-palco *) {
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-input:focus:not(.dv-palco *),
-select:focus:not(.dv-palco *),
-textarea:focus:not(.dv-palco *) {
+input:focus:not(.dv-palco *):not(.dm *),
+select:focus:not(.dv-palco *):not(.dm *),
+textarea:focus:not(.dv-palco *):not(.dm *) {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(31, 92, 69, 0.15);
 }

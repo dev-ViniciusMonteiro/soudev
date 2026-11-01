@@ -65,6 +65,7 @@ export default async function AppPage({ params }) {
           {app.icone}
         </span>
         <div>
+          {app.demo && <p className="ap-demo-selo">Versão de demonstração · dados de exemplo, nada é salvo em servidor</p>}
           <h1>{app.titulo}</h1>
           <p className="lead">{app.descricao}</p>
           <Link href={`/apps/${slug}/app`} className="btn btn-primary btn-lg">
