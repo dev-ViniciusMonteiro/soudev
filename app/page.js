@@ -10,6 +10,7 @@ import { categories, tools } from '@/lib/tools'
 import { nichos } from '@/lib/sistemas/nichos'
 import { MODOS, games } from '@/lib/games'
 import { apps } from '@/lib/apps'
+import { devTools } from '@/lib/dev/ferramentas'
 
 export const metadata = {
   alternates: { canonical: '/' },
@@ -118,6 +119,19 @@ export default function Home() {
       <section id="apps" className="container secao">
         <Cabeca titulo="Apps" qtd={itens.apps.length} texto="Apps completos que abrem no navegador e guardam os dados no seu aparelho." href="/apps" />
         <Fileira rotulo="Apps">{cartoes(itens.apps)}</Fileira>
+      </section>
+
+      <section id="4dev" className="container secao">
+        <Cabeca titulo="4dev" qtd={devTools.length} texto="Para quem programa: JSON, JWT, cron, API no estilo Postman, SQL e webhooks. Tudo no navegador." href="/4dev" />
+        <div className="home-4dev">
+          {devTools.map((t) => (
+            <Link key={t.slug} href={`/4dev/${t.slug}`} className="home-4dev-item" style={{ '--c': t.cor }}>
+              <span>{t.sigla}</span>
+              <b>{t.nome}</b>
+              <small>{t.curto}</small>
+            </Link>
+          ))}
+        </div>
       </section>
 
       <section id="sistemas" className="container secao">

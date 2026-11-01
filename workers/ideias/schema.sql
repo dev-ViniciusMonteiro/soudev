@@ -175,3 +175,35 @@ CREATE TABLE IF NOT EXISTS ct_falhas (
   criado_em INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS ct_falhas_ip ON ct_falhas (ip_hash, criado_em);
+
+-- ================== Webhook Inspector (seção 4dev, tabelas wh_*) ==================
+-- URLs temporárias (24 h) que guardam as requisições recebidas. Tudo é apagado ao vencer.
+CREATE TABLE IF NOT EXISTS wh_bins (
+  id        TEXT PRIMARY KEY,
+  chave     TEXT NOT NULL,
+  ip_hash   TEXT NOT NULL,
+  status    INTEGER NOT NULL DEFAULT 200,
+  ctype     TEXT NOT NULL DEFAULT 'application/json',
+  corpo     TEXT NOT NULL DEFAULT '',
+  criado_em INTEGER NOT NULL,
+  expira_em INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS wh_bins_ip ON wh_bins (ip_hash, criado_em);
+CREATE INDEX IF NOT EXISTS wh_bins_exp ON wh_bins (expira_em);
+
+CREATE TABLE IF NOT EXISTS wh_reqs (
+  id        TEXT PRIMARY KEY,
+  bin_id    TEXT NOT NULL,
+  metodo    TEXT NOT NULL,
+  caminho   TEXT NOT NULL,
+  query     TEXT NOT NULL DEFAULT '',
+  headers   TEXT NOT NULL DEFAULT '[]',
+  corpo     TEXT,
+  binario   INTEGER NOT NULL DEFAULT 0,
+  tamanho   INTEGER NOT NULL DEFAULT 0,
+  truncado  INTEGER NOT NULL DEFAULT 0,
+  ip        TEXT,
+  pais      TEXT,
+  criado_em INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS wh_reqs_bin ON wh_reqs (bin_id, criado_em);

@@ -13,6 +13,7 @@
 
 import { rotasVinicut } from './vinicut.js'
 import { rotasCatalogo } from './catalogo.js'
+import { rotasWebhook } from './webhook.js'
 
 const enc = new TextEncoder()
 
@@ -139,6 +140,10 @@ export default {
       // Catálogo digital: rotas /ct/* (lojas, produtos, imagens).
       const ct = await rotasCatalogo(request, env, ctx)
       if (ct) return ct
+
+      // Webhook Inspector (4dev): rotas /wh/*.
+      const wh = await rotasWebhook(request, env, ctx)
+      if (wh) return wh
 
       // CORS preflight do endpoint público
       if (metodo === 'OPTIONS') return new Response(null, { status: 204, headers: CORS })

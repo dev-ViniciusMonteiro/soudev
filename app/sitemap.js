@@ -3,6 +3,7 @@ import { games } from '@/lib/games'
 import { tools } from '@/lib/tools'
 import { nichos } from '@/lib/sistemas/nichos'
 import { apps } from '@/lib/apps'
+import { devTools } from '@/lib/dev/ferramentas'
 
 export default function sitemap() {
   const lastModified = new Date(`${site.updated}T00:00:00Z`)
@@ -20,6 +21,8 @@ export default function sitemap() {
     ...nichos.map((n) => ({ url: `${SITE_URL}/sistemas/${n.slug}`, lastModified, changeFrequency: 'monthly', priority: 0.8 })),
     { url: `${SITE_URL}/apps`, lastModified, changeFrequency: 'weekly', priority: 0.8 },
     ...apps.map((a) => ({ url: `${SITE_URL}/apps/${a.slug}`, lastModified, changeFrequency: 'monthly', priority: 0.8 })),
+    { url: `${SITE_URL}/4dev`, lastModified, changeFrequency: 'monthly', priority: 0.8 },
+    ...devTools.map((t) => ({ url: `${SITE_URL}/4dev/${t.slug}`, lastModified, changeFrequency: 'monthly', priority: 0.7 })),
     { url: `${SITE_URL}/catalogo`, lastModified, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${SITE_URL}/jogos`, lastModified, changeFrequency: 'weekly', priority: 0.8 },
     ...games.map((game) => ({

@@ -55,6 +55,7 @@ const menu = [
   ['/ferramentas', 'Ferramentas'],
   ['/sistemas', 'Sistemas'],
   ['/apps', 'Apps'],
+  ['/4dev', '4dev'],
   ['/jogos', 'Jogos'],
   ['/curriculo', 'Currículo'],
   [site.instagram, 'Contato'],
@@ -77,6 +78,7 @@ export default function RootLayout({ children }) {
               <Link href="/ferramentas">Ferramentas</Link>
               <Link href="/sistemas">Sistemas</Link>
               <Link href="/apps">Apps</Link>
+              <Link href="/4dev">4dev</Link>
               <Link href="/jogos">Jogos</Link>
               <Link href="/curriculo">Currículo</Link>
               <a href={site.instagram} target="_blank" rel="noopener noreferrer" className="nav-cta">Contato</a>
@@ -101,6 +103,7 @@ export default function RootLayout({ children }) {
               <Link href="/ferramentas">Ferramentas</Link>
               <Link href="/sistemas">Sistemas de gestão</Link>
               <Link href="/apps">Apps</Link>
+              <Link href="/4dev">4dev (para programadores)</Link>
               <Link href="/jogos">Jogos</Link>
               <Link href="/vinicut">Vinicut (rede social)</Link>
             </nav>
