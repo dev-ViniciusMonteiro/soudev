@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { apps, getApp } from '@/lib/apps'
 import { bannerDoApp } from '@/lib/banners'
-import { SITE_URL, jsonLd } from '@/lib/site'
+import { SITE_URL, jsonLd, site } from '@/lib/site'
 
 export const dynamicParams = false
 
@@ -112,9 +112,9 @@ export default async function AppPage({ params }) {
           <h2>Precisa de um app sob medida?</h2>
           <p className="muted">Eu desenvolvo apps web que funcionam no celular e offline, do jeito que o seu negócio precisa.</p>
         </div>
-        <Link href="/curriculo#contato" className="btn btn-primary btn-lg">
+        <a href={site.instagram} target="_blank" rel="noopener noreferrer" className="btn btn-primary btn-lg">
           Pedir uma proposta
-        </Link>
+        </a>
       </section>
       <script type="application/ld+json" dangerouslySetInnerHTML={jsonLd(structured)} />
     </main>

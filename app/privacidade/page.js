@@ -41,8 +41,8 @@ export default function Privacidade() {
 
         <h2>Formulário de contato</h2>
         <p>
-          O nome e a mensagem enviados pelo formulário de contato ficam guardados em uma planilha do Google, usada só para responder você.
-          Peça a exclusão a qualquer momento pelo mesmo formulário ou pelo Instagram{' '}
+          O formulário de contato foi desativado. As mensagens enviadas antes por ele (nome e mensagem) ficam guardadas em uma planilha do
+          Google, usada só para responder você. Peça a exclusão a qualquer momento pelo Instagram{' '}
           <a href={site.instagram} target="_blank" rel="noopener noreferrer">{site.instagramHandle}</a>.
         </p>
 
@@ -71,7 +71,8 @@ export default function Privacidade() {
         <h2>Seus direitos (LGPD)</h2>
         <p>
           Pela Lei Geral de Proteção de Dados (Lei 13.709/2018), você pode pedir confirmação, acesso, correção ou exclusão dos seus dados e
-          revogar o consentimento a qualquer momento. Para isso, use o <Link href="/curriculo#contato">formulário de contato</Link>.
+          revogar o consentimento a qualquer momento. Para isso, fale comigo pelo Instagram{' '}
+          <a href={site.instagram} target="_blank" rel="noopener noreferrer">{site.instagramHandle}</a>.
         </p>
       </div>
     </main>

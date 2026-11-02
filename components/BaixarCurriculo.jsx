@@ -84,7 +84,7 @@ export function BaixarCurriculo() {
       <a className="btn btn-ghost" href="/resume.json" target="_blank" rel="noopener">
         JSON Resume
       </a>
-      <a className="btn btn-ghost" href="#contato" onClick={() => track('curriculo_contato')}>
+      <a className="btn btn-ghost" href={`mailto:${cv.email}`} onClick={() => track('curriculo_contato')}>
         Entrar em contato
       </a>
     </div>
