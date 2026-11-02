@@ -207,3 +207,17 @@ CREATE TABLE IF NOT EXISTS wh_reqs (
   criado_em INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS wh_reqs_bin ON wh_reqs (bin_id, criado_em);
+
+-- ================== Salas compartilhadas por link (tabela gp_salas) ==================
+-- Decida por Nós (votação), Lista de Presentes e Divisão de Tarefas. Sem cadastro: quem cria guarda a chave.
+CREATE TABLE IF NOT EXISTS gp_salas (
+  id            TEXT PRIMARY KEY,
+  tipo          TEXT NOT NULL,
+  dados         TEXT NOT NULL,
+  chave         TEXT NOT NULL,
+  versao        INTEGER NOT NULL DEFAULT 0,
+  ip_hash       TEXT NOT NULL,
+  criado_em     INTEGER NOT NULL,
+  atualizado_em INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS gp_salas_ip ON gp_salas (ip_hash, criado_em);

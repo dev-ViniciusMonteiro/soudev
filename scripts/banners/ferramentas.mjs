@@ -13,6 +13,7 @@ const CORES = {
   cultura: ['#f43f5e', '#8b5cf6'],
   comer: ['#f97316', '#ef4444'],
   eventos: ['#7c3aed', '#2563eb'],
+  grupos: ['#ec4899', '#facc15'],
 };
 
 const TAG = {
@@ -27,6 +28,7 @@ const TAG = {
   cultura: 'FILMES, SÉRIES E LIVROS',
   comer: 'ONDE COMER · GRÁTIS',
   eventos: 'EVENTOS · INGRESSOS',
+  grupos: 'FAMÍLIA E GRUPOS · GRÁTIS',
 };
 
 const f = (categoria, slug, titulo, chamada, selos) => ({
@@ -95,6 +97,12 @@ export const ferramentas = [
   f('eventos', 'buscar-eventos', 'Buscar Eventos', ['Shows, festas e jogos', '*com link do ingresso*'], [['🎵', 'Shows'], ['🎭', 'Teatro'], ['⚽', 'Esportes'], ['🎫', 'Comprar ingresso']]),
   f('geradores', 'cronometro-de-poker', 'Cronômetro de Poker', ['Relógio de torneio', '*e cash, pra rodar offline*'], [['♠️', 'Torneio'], ['💵', 'Cash'], ['🎨', 'Temas e logo'], ['⬇️', 'Baixa o HTML']]),
   f('dia', 'tarefas-do-dia', 'Tarefas do Dia', ['Organize sua rotina', '*e o que fazer hoje*'], [['✅', 'Tarefas do dia'], ['🔁', 'Rotina'], ['🔥', 'Sequência'], ['📊', 'Progresso']]),
+  f('grupos', 'arvore-genealogica', 'Árvore da Família', ['A história da família', '*num link só*'], [['🌳', 'Gerações'], ['📖', 'Histórias'], ['🔗', 'Link'], ['👪', 'Parentes']]),
+  f('grupos', 'organizador-de-mesas', 'Organizador de Mesas', ['Cada convidado', '*no lugar certo*'], [['🪑', 'Arrastar'], ['✨', 'Automático'], ['🎨', 'Por grupo'], ['🔎', 'Ache seu lugar']]),
+  f('grupos', 'decida-por-nos', 'Decida por Nós', ['O grupo decide', '*em um link*'], [['🗳️', 'Sem cadastro'], ['📊', 'Ao vivo'], ['💡', 'Sugestões'], ['🏆', 'Resultado']]),
+  f('grupos', 'lista-de-experiencias', 'Lista de Experiências', ['O que você quer', '*viver*'], [['🌍', 'Lugares'], ['🪂', 'Aventuras'], ['🎯', 'Metas'], ['✨', 'Progresso']]),
+  f('grupos', 'lista-de-presentes', 'Lista de Presentes', ['Sem presente', '*repetido*'], [['🍼', 'Chá de bebê'], ['💍', 'Casamento'], ['🎁', 'Reserva'], ['🤫', 'Surpresa']]),
+  f('grupos', 'divisao-de-tarefas', 'Divisão de Tarefas', ['A casa dividida', '*de forma justa*'], [['🧹', 'Tarefas'], ['⚖️', 'Justa'], ['🏆', 'Placar'], ['🔗', 'Um link']]),
   f('trabalho', 'controle-financeiro-mensal', 'Controle Financeiro', ['Receitas e despesas', '*com projeção do mês*'], [['💰', 'Saldo do mês'], ['🔁', 'Contas fixas'], ['📊', 'Por categoria'], ['🔮', 'Projeção']]),
   f('trabalho', 'controle-de-caixa-mercado', 'Controle de Caixa', ['Frente de caixa (PDV)', '*vendas, estoque e fechamento*'], [['🧾', 'Vendas'], ['💵', 'Troco'], ['📦', 'Estoque'], ['📊', 'Relatórios']]),
 

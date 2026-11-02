@@ -14,6 +14,7 @@
 import { rotasVinicut } from './vinicut.js'
 import { rotasCatalogo } from './catalogo.js'
 import { rotasWebhook } from './webhook.js'
+import { rotasGrupos } from './grupos.js'
 
 const enc = new TextEncoder()
 
@@ -144,6 +145,10 @@ export default {
       // Webhook Inspector (4dev): rotas /wh/*.
       const wh = await rotasWebhook(request, env, ctx)
       if (wh) return wh
+
+      // Salas por link (votação, presentes, tarefas): rotas /gp/*.
+      const gp = await rotasGrupos(request, env)
+      if (gp) return gp
 
       // CORS preflight do endpoint público
       if (metodo === 'OPTIONS') return new Response(null, { status: 204, headers: CORS })
