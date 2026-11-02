@@ -236,3 +236,8 @@
     break-after: avoid;
   }
 }
+
+/* Contato: a mesma conversa do balão "Tem uma ideia?", embutida na página */
+.cv-ideias { max-width: 860px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 28px; align-items: start; scroll-margin-top: 90px; }
+.cv-ideias-chat { display: flex; flex-direction: column; height: 420px; border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; background: var(--panel); box-shadow: 0 20px 50px -30px rgba(0, 0, 0, 0.35); }
+@media (max-width: 760px) { .cv-ideias { grid-template-columns: 1fr; gap: 16px; } .cv-ideias-chat { height: 380px; } }

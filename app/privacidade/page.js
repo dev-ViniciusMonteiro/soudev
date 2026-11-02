@@ -39,10 +39,11 @@ export default function Privacidade() {
           cada ferramenta explica o que é consultado. Sua localização e sua câmera só são usadas quando você permite, no próprio navegador: o vídeo da correção de exercícios é analisado ao vivo no aparelho e nunca é gravado nem enviado.
         </p>
 
-        <h2>Formulário de contato</h2>
+        <h2>Ideias e contato</h2>
         <p>
-          O formulário de contato foi desativado. As mensagens enviadas antes por ele (nome e mensagem) ficam guardadas em uma planilha do
-          Google, usada só para responder você. Peça a exclusão a qualquer momento pelo Instagram{' '}
+          As mensagens enviadas pela caixa de ideias e contato (o balão “Tem uma ideia?” e a conversa no currículo) ficam guardadas no
+          servidor do site (Cloudflare), com o nome opcional e a página de onde vieram, usadas só para ler e responder você. Mensagens
+          antigas do formulário anterior ficam numa planilha do Google. Peça a exclusão a qualquer momento pela própria caixa ou pelo Instagram{' '}
           <a href={site.instagram} target="_blank" rel="noopener noreferrer">{site.instagramHandle}</a>.
         </p>
 

@@ -159,9 +159,9 @@ export default async function NichoPage({ params }) {
             preparo uma proposta.
           </p>
         </div>
-        <a href={site.instagram} target="_blank" rel="noopener noreferrer" className="btn btn-primary btn-lg">
+        <Link href="/curriculo#contato" className="btn btn-primary btn-lg">
           Pedir uma proposta
-        </a>
+        </Link>
       </section>
 
       <section className="tool-info">

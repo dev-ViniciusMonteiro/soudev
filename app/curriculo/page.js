@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { BaixarCurriculo } from '@/components/BaixarCurriculo'
-import Comentarios from '@/components/Comentarios'
+import ChatIdeias from '@/components/ChatIdeias'
 import { curriculo as cv, periodo } from '@/lib/curriculo'
 import { SITE_URL, jsonLd } from '@/lib/site'
 import './curriculo.css'
@@ -167,11 +167,22 @@ export default function Curriculo() {
         </section>
       </article>
 
-      <Comentarios
-        pagina="curriculo"
-        titulo="Deixe um comentário"
-        subtitulo="Um recado, feedback ou recomendação — aparece aqui na página."
-      />
+      <section id="contato" className="section cv-ideias cv-sem-impressao">
+        <div>
+          <p className="eyebrow">Contato</p>
+          <h2>Deixe sua ideia ou entre em contato</h2>
+          <p className="muted">Uma ideia, uma vaga ou um projeto: escreva aqui. Se quiser retorno, deixe seu e-mail ou WhatsApp na mensagem.</p>
+        </div>
+        <div className="cv-ideias-chat">
+          <ChatIdeias
+            chave="soudev-ideias-curriculo"
+            pagina="/curriculo"
+            intro="Oi! 👋 Tem uma ideia, uma vaga ou um projeto? Me conta aqui. Se quiser que eu responda, deixe seu e-mail ou WhatsApp."
+            resposta="Recebido! Obrigado pela mensagem 🙌 Se deixou um contato, eu respondo em breve."
+            placeholder="Escreva sua mensagem…"
+          />
+        </div>
+      </section>
     </main>
   )
 }

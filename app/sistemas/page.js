@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { SITE_URL, jsonLd, site } from '@/lib/site'
+import { SITE_URL, jsonLd } from '@/lib/site'
 import { nichos } from '@/lib/sistemas/nichos'
 import { bannerDoSistema } from '@/lib/banners'
 import CartaoBanner from '@/components/CartaoBanner'
@@ -80,9 +80,9 @@ export default function SistemasIndex() {
             proposta.
           </p>
         </div>
-        <a href={site.instagram} target="_blank" rel="noopener noreferrer" className="btn btn-primary btn-lg">
+        <Link href="/curriculo#contato" className="btn btn-primary btn-lg">
           Pedir uma proposta
-        </a>
+        </Link>
       </section>
 
       <section className="tool-info prose">

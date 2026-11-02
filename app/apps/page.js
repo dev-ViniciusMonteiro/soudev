@@ -2,7 +2,7 @@ import Link from 'next/link'
 import CartaoBanner from '@/components/CartaoBanner'
 import { apps } from '@/lib/apps'
 import { bannerDoApp } from '@/lib/banners'
-import { SITE_URL, jsonLd, site } from '@/lib/site'
+import { SITE_URL, jsonLd } from '@/lib/site'
 
 const title = 'Apps no navegador: treino, editor de vídeo, globo ao vivo e baixador'
 const description = 'Apps completos que rodam no navegador, sem instalar e sem cadastro: diário de treino com progressão, editor de vídeo com linha do tempo, globo 3D ao vivo e baixador de vídeos.'
@@ -63,9 +63,9 @@ export default function AppsIndex() {
           <h2>Quer um app assim para o seu negócio?</h2>
           <p className="muted">Eu desenvolvo apps web sob medida, que funcionam offline e no celular. Conte a ideia e eu preparo uma proposta.</p>
         </div>
-        <a href={site.instagram} target="_blank" rel="noopener noreferrer" className="btn btn-primary btn-lg">
+        <Link href="/curriculo#contato" className="btn btn-primary btn-lg">
           Pedir uma proposta
-        </a>
+        </Link>
       </section>
       <script type="application/ld+json" dangerouslySetInnerHTML={jsonLd(structured)} />
     </main>
