@@ -2,7 +2,7 @@
 
 // Ordens de serviço: quadro por situação, ficha completa, impressão e entrega com pagamento.
 
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { Combo, Modal, Selo, Topo, Vazio, useConfig, useMapa, useSistema, useTabela } from '../base'
 import { ItensEditor, Pagamento, htmlOS, imprimir } from '../comuns'
 import { concluirVenda } from '@/lib/sistemas/acoes'
@@ -112,6 +112,8 @@ function FichaOS({ inicial, onFechar }) {
   const cfg = useConfig()
   const [os, setOs] = useState(() => ({ status: 'aberta', garantia_dias: 90, checklist: {}, itens: [], ...inicial }))
   const [cobrar, setCobrar] = useState(false)
+  const [fotos, setFotos] = useState([])
+  const fotoRef = useRef(null)
   const [erro, setErro] = useState('')
   const set = (k, v) => setOs((s) => ({ ...s, [k]: v }))
   const cliente = banco.get('clientes', os.cliente_id)
@@ -122,7 +124,11 @@ function FichaOS({ inicial, onFechar }) {
     if (!os.cliente_id) return setErro('Escolha o cliente.')
     if (!String(os.equipamento || '').trim()) return setErro('Informe o equipamento.')
     if (!String(os.defeito || '').trim()) return setErro('Descreva o defeito.')
-    const salvo = banco.salvar('ordens', { ...os, total, ...extra })
+    const novoStatus = extra.status || os.status
+    const hist = Array.isArray(os.historico) ? os.historico : []
+    const ultimo = hist[hist.length - 1]?.status
+    const historico = ultimo === novoStatus ? hist : [...hist, { status: novoStatus, em: new Date().toISOString() }].slice(-40)
+    const salvo = banco.salvar('ordens', { ...os, total, ...extra, historico })
     setOs(salvo)
     return salvo
   }
@@ -207,6 +213,10 @@ function FichaOS({ inicial, onFechar }) {
             <input value={os.acessorios || ''} onChange={(e) => set('acessorios', e.target.value)} />
           </label>
           <label className="field">
+            <span className="field-label">Senha / padrão de desbloqueio</span>
+            <input value={os.senha_aparelho || ''} onChange={(e) => set('senha_aparelho', e.target.value)} placeholder="Ex.: 1234 ou desenho em L" autoComplete="off" />
+          </label>
+          <label className="field">
             <span className="field-label">Situação</span>
             <select value={os.status} onChange={(e) => set('status', e.target.value)}>
               {STATUS_OS.filter(([s]) => s !== 'entregue' || travada).map(([s, r]) => (
@@ -244,6 +254,19 @@ function FichaOS({ inicial, onFechar }) {
             ))}
           </div>
         </div>
+        <div className="field">
+          <span className="field-label">Fotos do aparelho na entrada</span>
+          {fotos.length > 0 && (
+          <div className="sx-fotos">
+            {fotos.map((u) => (
+              <div key={u} className="sx-foto-demo"><img src={u} alt="Foto do aparelho (não salva)" /><span>Agora · não salva</span></div>
+            ))}
+          </div>
+          )}
+          <button type="button" className="btn btn-ghost" style={{ justifySelf: 'start' }} onClick={() => fotoRef.current?.click()}>📷 Fotografar riscos e trincas</button>
+            <input ref={fotoRef} type="file" accept="image/*" capture="environment" hidden onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) setFotos((l) => [...l, URL.createObjectURL(f)]) }} />
+          <small className="muted">Demonstração: a foto aparece só agora e não é salva. Serve para mostrar ao cliente o estado do aparelho na entrada.</small>
+        </div>
         <label className="field">
           <span className="field-label">Laudo técnico</span>
           <textarea rows={2} value={os.laudo || ''} onChange={(e) => set('laudo', e.target.value)} />
@@ -253,6 +276,16 @@ function FichaOS({ inicial, onFechar }) {
           <ItensEditor itens={os.itens || []} onChange={(v) => set('itens', v)} />
         </div>
       </fieldset>
+      {Array.isArray(os.historico) && os.historico.length > 0 && (
+        <div className="field">
+          <span className="field-label">Linha do tempo</span>
+          <ol className="sx-os-tempo">
+            {os.historico.map((h, i) => (
+              <li key={i}><b>{nome(h.status)}</b>{new Date(h.em).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</li>
+            ))}
+          </ol>
+        </div>
+      )}
       {os.id && cliente?.telefone && (
         <p className="small sx-links">
           {msg[os.status] && (
@@ -280,7 +313,7 @@ function FichaOS({ inicial, onFechar }) {
               troco,
               operador: usuario,
             })
-            banco.salvar('ordens', { id: os.id, status: 'entregue', venda_id: v.id })
+            banco.salvar('ordens', { id: os.id, status: 'entregue', venda_id: v.id, historico: [...(banco.get('ordens', os.id)?.historico || []), { status: 'entregue', em: new Date().toISOString() }] })
             onFechar()
           }}
         />

@@ -61,17 +61,17 @@ export function useDemo(chave, gerarDemo) {
 }
 
 /** Moldura do app: topo, menu lateral (vira barra inferior no celular) e aviso de demo. */
-export function Moldura({ nome, icone, cor, secoes, secao, onSecao, onRestaurar, children, extraTopo }) {
+export function Moldura({ nome, icone, cor, secoes, secao, onSecao, onRestaurar, children, extraTopo, demo = true, aviso }) {
   return (
     <div className="dm" style={{ '--dm-cor': cor }}>
       <header className="dm-topo">
         <a href="/apps" className="dm-voltar" aria-label="Voltar para os apps">←</a>
         <span className="dm-logo" aria-hidden="true">{icone}</span>
         <b className="dm-nome">{nome}</b>
-        <span className="dm-selo" title="Versão de demonstração">DEMO</span>
+        {demo && <span className="dm-selo" title="Versão de demonstração">DEMO</span>}
         <span className="dm-espaco" />
         {extraTopo}
-        <button type="button" className="dm-btn dm-btn-sec dm-esconde-p" onClick={onRestaurar}>↺ Restaurar demo</button>
+        {onRestaurar && <button type="button" className="dm-btn dm-btn-sec dm-esconde-p" onClick={onRestaurar}>{demo ? '↺ Restaurar demo' : '↺ Exemplo'}</button>}
       </header>
       <div className="dm-corpo">
         <nav className="dm-menu" aria-label="Seções">
@@ -83,10 +83,14 @@ export function Moldura({ nome, icone, cor, secoes, secao, onSecao, onRestaurar,
           ))}
         </nav>
         <main className="dm-main">
-          <p className="dm-aviso">
-            <b>Demonstração.</b> Os dados são de exemplo e o que você muda fica só neste navegador (nada vai para servidor).{' '}
-            <button type="button" className="dm-link" onClick={onRestaurar}>Restaurar exemplo</button>
-          </p>
+          {demo ? (
+            <p className="dm-aviso">
+              <b>Demonstração.</b> Os dados são de exemplo e o que você muda fica só neste navegador (nada vai para servidor).{' '}
+              <button type="button" className="dm-link" onClick={onRestaurar}>Restaurar exemplo</button>
+            </p>
+          ) : aviso ? (
+            <p className="dm-aviso dm-aviso-info">{aviso}</p>
+          ) : null}
           {children}
         </main>
       </div>
@@ -320,4 +324,15 @@ export function PlanoPro({ texto }) {
       <button type="button" className="dm-btn dm-btn-sec" onClick={() => alert('Demonstração: o plano pago ainda não existe. Aqui entraria a assinatura.')}>Conhecer</button>
     </div>
   )
+}
+
+/** Abriu outro link com dados (#d=...) na mesma aba: recarrega para ler o link novo. */
+export function useRecarregarComLink() {
+  useEffect(() => {
+    const f = () => {
+      if (window.location.hash.includes('d=')) window.location.reload()
+    }
+    window.addEventListener('hashchange', f)
+    return () => window.removeEventListener('hashchange', f)
+  }, [])
 }

@@ -284,7 +284,7 @@ function montarWin98() {
 const quebrarWin98 = quebrarStorage('win98.__autoteste__')
 
 // Demos de produto (dados de exemplo no localStorage): confere que o navegador salva e relê.
-const DEMOS = ['obra-organizada', 'meu-carro', 'garantia-facil', 'gestao-de-aluguel', 'achei-perdi', 'evento-facil']
+const DEMOS = ['obra-organizada', 'meu-carro', 'garantia-facil', 'gestao-de-aluguel', 'achei-perdi', 'evento-facil', 'checklist-de-limpeza', 'pet-relatorio', 'aprova-foto', 'aprova-projeto']
 const montarDemo = (slug) => () => async () => {
   const k = `demo.${slug}.__autoteste__`
   prepararStorage(k)

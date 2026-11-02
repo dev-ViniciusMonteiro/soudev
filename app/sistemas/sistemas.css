@@ -3768,3 +3768,34 @@ a.sx-status {
   width: auto;
   flex: 0 0 auto;
 }
+
+/* ---------- Ficha do cliente (barbearia) ---------- */
+.sx-fichas { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; }
+.sx-ficha-card { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: var(--radius-lg); border: 1px solid var(--line); background: var(--panel); cursor: pointer; text-align: left; color: var(--text); font: inherit; }
+.sx-ficha-card:hover { border-color: var(--accent); }
+.sx-ficha-ini { width: 42px; height: 42px; border-radius: 999px; display: grid; place-items: center; font-weight: 700; background: color-mix(in srgb, var(--accent) 16%, var(--panel)); color: var(--accent); flex: none; }
+.sx-ficha-txt { flex: 1; min-width: 0; display: grid; }
+.sx-ficha-txt b, .sx-ficha-txt small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sx-ficha-topo { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+.sx-ficha-topo > div { display: grid; }
+.sx-ficha-grade { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 16px; align-items: start; }
+@media (max-width: 760px) { .sx-ficha-grade { grid-template-columns: 1fr; } }
+.sx-ficha-sec { display: grid; gap: 8px; align-content: start; margin-top: 8px; }
+.sx-ficha-sec h3 { margin: 0; font-size: 1rem; }
+.sx-ficha-cab { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.sx-ficha-acoes { display: flex; gap: 6px; flex-wrap: wrap; }
+.sx-ficha-novo { display: grid; gap: 8px; padding: 12px; border-radius: var(--radius-lg); border: 1px dashed var(--accent); background: color-mix(in srgb, var(--accent) 5%, var(--panel)); }
+.sx-ficha-hist { list-style: none; margin: 0; padding: 0 0 0 14px; border-left: 2px solid var(--line); display: grid; gap: 12px; max-height: 420px; overflow: auto; }
+.sx-ficha-hist li { position: relative; padding-right: 30px; }
+.sx-ficha-hist li::before { content: ''; position: absolute; left: -20px; top: 6px; width: 10px; height: 10px; border-radius: 99px; background: var(--accent); }
+.sx-ficha-hist p { margin: 2px 0 0; }
+.sx-ficha-x { position: absolute; right: 0; top: 0; border: 0; background: none; color: var(--muted); cursor: pointer; }
+.sx-fotos { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
+.sx-foto-demo { position: relative; aspect-ratio: 1; border-radius: 12px; overflow: hidden; background: var(--panel-2); }
+.sx-foto-demo svg, .sx-foto-demo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.sx-foto-demo span { position: absolute; left: 6px; right: 6px; bottom: 6px; color: #fff; font-size: .72rem; font-weight: 700; text-shadow: 0 1px 4px #000a; }
+
+/* ---------- OS: fotos e linha do tempo ---------- */
+.sx-os-tempo { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.sx-os-tempo li { font-size: .8rem; padding: 4px 10px; border-radius: 99px; background: var(--panel-2); border: 1px solid var(--line); }
+.sx-os-tempo li b { margin-right: 4px; }

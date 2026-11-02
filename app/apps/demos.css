@@ -195,3 +195,50 @@ body:has(.dm) .cookie-banner { display: none !important; }
 .ev-video { width: 100%; border-radius: 12px; background: #000; aspect-ratio: 4 / 3; object-fit: cover; }
 
 .dm-foto-emoji { position: absolute; inset: 0; display: grid; place-items: center; font-size: clamp(2.4rem, 7vw, 3.6rem); filter: drop-shadow(0 6px 12px rgb(0 0 0 / 25%)); }
+
+.dm-aviso-info { background: #eff6ff; border-color: #bfdbfe; color: #1e3a8a; }
+
+/* ============ Apps de profissões (Limpeza, Pet Relatório, Aprova Foto, Aprova Projeto) ============ */
+.pr-rel { display: grid; gap: 12px; max-width: 760px; }
+.pr-rel-cab { display: flex; align-items: center; gap: 14px; padding: 16px; border-radius: 16px; background: linear-gradient(135deg, color-mix(in srgb, var(--dm-cor) 16%, #fff), #fff); border: 1px solid var(--dm-linha); }
+.pr-rel-cab h2 { font-size: 1.3rem; }
+.pr-rel-cab p { margin: 2px 0 0; color: var(--dm-mudo); }
+.pr-check-ro { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.pr-check-ro li:not([data-feito]) { color: var(--dm-mudo); }
+.pr-ambientes { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.pr-tarefa { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; background: var(--dm-sup2); cursor: pointer; }
+.pr-tarefa input { width: 20px; height: 20px; }
+.pr-tarefa[data-feito] { background: #dcfce7; }
+.pr-tarefa[data-feito] span { text-decoration: line-through; color: #166534; }
+.pr-linha { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.pr-linha input[type='time'] { width: 110px; }
+.pr-linha input[type='number'] { width: 80px; }
+.pr-linha > input:not([type]) { flex: 1; min-width: 120px; }
+.pr-linha select { width: auto; }
+.pr-pet-cab { flex-wrap: wrap; }
+.pr-pet-avatar { width: 58px; height: 58px; border-radius: 99px; display: grid; place-items: center; font-size: 2rem; background: #fff; box-shadow: 0 4px 14px -6px rgb(0 0 0 / 30%); }
+.pr-humor { margin-left: auto; font-size: 1.8rem; display: grid; justify-items: center; }
+.pr-humor small { font-size: .72rem; color: var(--dm-mudo); }
+.pr-pet-edit { display: grid; grid-template-columns: 70px 1fr 1fr 1fr 2fr; gap: 6px; }
+@media (max-width: 860px) { .pr-pet-edit { grid-template-columns: 70px 1fr; } }
+
+.af-grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.af-item { position: relative; border-radius: 10px; overflow: hidden; background: #111; outline: 3px solid transparent; outline-offset: -3px; }
+.af-item[data-sel] { outline-color: #e11d48; }
+.af-abrir { display: block; width: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; }
+.af-foto { display: block; width: 100%; aspect-ratio: 4 / 3; }
+.af-foto-g { width: 100%; height: auto; max-height: 62vh; aspect-ratio: auto; border-radius: 12px; margin-bottom: 10px; }
+.af-coracao { position: absolute; top: 6px; right: 6px; width: 36px; height: 36px; border-radius: 99px; border: 0; background: rgb(0 0 0 / 45%); color: #fff; font-size: 1.2rem; cursor: pointer; }
+.af-item[data-sel] .af-coracao { background: #e11d48; }
+.af-nome { position: absolute; left: 6px; bottom: 6px; color: #fff; font-size: .7rem; font-weight: 700; text-shadow: 0 1px 4px #000; }
+.af-com { position: absolute; left: 0; right: 0; top: 0; padding: 4px 6px; background: rgb(0 0 0 / 60%); color: #fff; font-size: .7rem; }
+.af-barra-fixa { position: sticky; top: -16px; z-index: 5; display: grid; gap: 6px; padding: 10px 12px; border-radius: 12px; background: var(--dm-sup); border: 1px solid var(--dm-linha); box-shadow: 0 8px 20px -14px rgb(0 0 0 / 40%); }
+.af-zoom .dm-filtros { justify-content: space-between; margin-bottom: 8px; }
+
+.pj-previa { width: 100%; height: auto; max-height: 340px; border-radius: 10px; border: 1px solid var(--dm-linha); background: #fff; }
+.pj-versoes { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.pj-hist { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.pj-hist li, .pj-hist-item { padding: 8px 10px; border-radius: 10px; background: var(--dm-sup2); border-left: 4px solid var(--dm-linha); font-size: .9rem; display: block; }
+.pj-hist [data-tipo='aprovado'], .pj-hist-item[data-tipo='aprovado'] { border-left-color: #16a34a; background: #f0fdf4; }
+.pj-hist [data-tipo='alteracao'], .pj-hist-item[data-tipo='alteracao'] { border-left-color: #d97706; background: #fffbeb; }
+.pj-hist b { display: block; font-size: .78rem; color: var(--dm-mudo); }

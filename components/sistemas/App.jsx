@@ -20,6 +20,7 @@ import Mesas from './modulos/Mesas'
 import Cardapio from './modulos/Cardapio'
 import Agenda from './modulos/Agenda'
 import Ordens from './modulos/Ordens'
+import Fichas from './modulos/Fichas'
 import Mensalidades from './modulos/Mensalidades'
 import Checkin from './modulos/Checkin'
 import Funil from './modulos/Funil'
@@ -32,7 +33,7 @@ import Cadastro from './modulos/Cadastro'
 import Config from './modulos/Config'
 import { Inicio, VendaFacil, Gastos, ProdutosFacil, CentralMei } from './mei/MeiFacil'
 
-const telas = { painel: Painel, pdv: Pdv, caixa: Caixa, pedidos: Pedidos, mesas: Mesas, cardapio: Cardapio, agenda: Agenda, ordens: Ordens, mensalidades: Mensalidades, checkin: Checkin, funil: Funil, vacinas: Vacinas, vendas: Vendas, estoque: Estoque, financeiro: Financeiro, relatorios: Relatorios, config: Config, facil: Inicio, 'venda-facil': VendaFacil, gastos: Gastos, 'produtos-facil': ProdutosFacil, mei: CentralMei }
+const telas = { painel: Painel, pdv: Pdv, caixa: Caixa, pedidos: Pedidos, mesas: Mesas, cardapio: Cardapio, agenda: Agenda, fichas: Fichas, ordens: Ordens, mensalidades: Mensalidades, checkin: Checkin, funil: Funil, vacinas: Vacinas, vendas: Vendas, estoque: Estoque, financeiro: Financeiro, relatorios: Relatorios, config: Config, facil: Inicio, 'venda-facil': VendaFacil, gastos: Gastos, 'produtos-facil': ProdutosFacil, mei: CentralMei }
 
 const SO_GESTOR = ['config', 'tabela:usuarios', 'financeiro', 'relatorios']
 

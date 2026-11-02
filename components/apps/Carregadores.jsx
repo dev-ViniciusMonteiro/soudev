@@ -23,6 +23,10 @@ const Garantia = dynamic(() => import('./demos/Garantia'), { ssr: false, loading
 const Aluguel = dynamic(() => import('./demos/Aluguel'), { ssr: false, loading: carregando })
 const AcheiPerdi = dynamic(() => import('./demos/AcheiPerdi'), { ssr: false, loading: carregando })
 const Evento = dynamic(() => import('./demos/Evento'), { ssr: false, loading: carregando })
+const ChecklistLimpeza = dynamic(() => import('./profissoes/ChecklistLimpeza'), { ssr: false, loading: carregando })
+const PetRelatorio = dynamic(() => import('./profissoes/PetRelatorio'), { ssr: false, loading: carregando })
+const AprovaFoto = dynamic(() => import('./profissoes/AprovaFoto'), { ssr: false, loading: carregando })
+const AprovaProjeto = dynamic(() => import('./profissoes/AprovaProjeto'), { ssr: false, loading: carregando })
 
 export function AppCliente({ slug }) {
   if (slug === 'treino') return <Treino />
@@ -38,5 +42,9 @@ export function AppCliente({ slug }) {
   if (slug === 'gestao-de-aluguel') return <Aluguel />
   if (slug === 'achei-perdi') return <AcheiPerdi />
   if (slug === 'evento-facil') return <Evento />
+  if (slug === 'checklist-de-limpeza') return <ChecklistLimpeza />
+  if (slug === 'pet-relatorio') return <PetRelatorio />
+  if (slug === 'aprova-foto') return <AprovaFoto />
+  if (slug === 'aprova-projeto') return <AprovaProjeto />
   return null
 }
