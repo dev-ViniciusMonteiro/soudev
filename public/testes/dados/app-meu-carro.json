@@ -1,0 +1,28 @@
+{
+  "tipo": "app",
+  "slug": "meu-carro",
+  "nome": "Meu Carro",
+  "ok": true,
+  "geradoEm": "2026-11-02T01:15:44.055Z",
+  "passos": [
+    {
+      "titulo": "Demonstração aberta",
+      "detalhe": "O app abriu com os dados de exemplo e o aviso de demonstração.",
+      "img": "/testes/img/app-meu-carro-01.jpg"
+    },
+    {
+      "titulo": "Indicadores",
+      "detalhe": "CUSTO POR KM R$ 0,66 combustível + manutenção (6 meses) · CONSUMO MÉDIO 11,8 km/l preço médio R$ 5,90/l · COMBUSTÍVEL (6 MESES) R$ 3.367,42 6.390 km rodados · MANUTENÇÃO (6 MESES) R$ 857,00 · AVISOS 2 manutenções perto do prazo"
+    },
+    {
+      "titulo": "Lembretes",
+      "detalhe": "Próxima troca calculada pelo km ou pelo tempo, o que vier primeiro.",
+      "img": "/testes/img/app-meu-carro-03.jpg"
+    },
+    {
+      "titulo": "Abastecimento registrado",
+      "detalhe": "Entrou no histórico com preço por litro e consumo.",
+      "img": "/testes/img/app-meu-carro-04.jpg"
+    }
+  ]
+}

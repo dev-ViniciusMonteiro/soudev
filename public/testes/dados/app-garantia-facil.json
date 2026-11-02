@@ -1,0 +1,29 @@
+{
+  "tipo": "app",
+  "slug": "garantia-facil",
+  "nome": "Garantia Fácil",
+  "ok": true,
+  "geradoEm": "2026-11-02T01:15:47.818Z",
+  "passos": [
+    {
+      "titulo": "Demonstração aberta",
+      "detalhe": "O app abriu com os dados de exemplo e o aviso de demonstração.",
+      "img": "/testes/img/app-garantia-facil-01.jpg"
+    },
+    {
+      "titulo": "Lendo a nota",
+      "detalhe": "A leitura da nota é simulada na demonstração.",
+      "img": "/testes/img/app-garantia-facil-02.jpg"
+    },
+    {
+      "titulo": "Produto cadastrado",
+      "detalhe": "O produto entrou na lista com a data de fim da garantia.",
+      "img": "/testes/img/app-garantia-facil-03.jpg"
+    },
+    {
+      "titulo": "Alertas de vencimento",
+      "detalhe": "Garantias vencendo e vencidas em ordem.",
+      "img": "/testes/img/app-garantia-facil-04.jpg"
+    }
+  ]
+}

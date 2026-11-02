@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import DevRenderer from '@/components/dev/DevRenderer'
+import EvidenciasTeste from '@/components/teste/EvidenciasTeste'
 import { devTools, getDevTool } from '@/lib/dev/ferramentas'
 import { SITE_URL, jsonLd, site } from '@/lib/site'
 
@@ -90,6 +91,7 @@ export default async function DevToolPage({ params }) {
             </details>
           ))}
         </section>
+        <EvidenciasTeste tipo="4dev" slug={slug} />
         <section>
           <h2>Outras ferramentas 4dev</h2>
           <div className="dv-mini-cards">

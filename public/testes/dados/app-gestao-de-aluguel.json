@@ -1,0 +1,33 @@
+{
+  "tipo": "app",
+  "slug": "gestao-de-aluguel",
+  "nome": "Gestão de Aluguel",
+  "ok": true,
+  "geradoEm": "2026-11-02T01:15:49.296Z",
+  "passos": [
+    {
+      "titulo": "Demonstração aberta",
+      "detalhe": "O app abriu com os dados de exemplo e o aviso de demonstração.",
+      "img": "/testes/img/app-gestao-de-aluguel-01.jpg"
+    },
+    {
+      "titulo": "Mensagem de cobrança",
+      "detalhe": "Olá, Rafael! Tudo bem? O aluguel de out/2026 (Apto 32 · Edifício Jacarandá) venceu em 10/10/2026. Com 22 dias de atraso, o valor atualizado é R$ 1.926,87 (multa de 2% e juros de 1% ao mês, como no con"
+    },
+    {
+      "titulo": "Painel com atraso",
+      "detalhe": "Mês atrasado com valor atualizado e botão de cobrança.",
+      "img": "/testes/img/app-gestao-de-aluguel-03.jpg"
+    },
+    {
+      "titulo": "Reajuste aplicado",
+      "detalhe": "O novo valor entra no histórico de reajustes e nos próximos meses.",
+      "img": "/testes/img/app-gestao-de-aluguel-04.jpg"
+    },
+    {
+      "titulo": "Histórico de pagamentos",
+      "detalhe": "Pago, pago com atraso, em aberto ou atrasado, mês a mês.",
+      "img": "/testes/img/app-gestao-de-aluguel-05.jpg"
+    }
+  ]
+}

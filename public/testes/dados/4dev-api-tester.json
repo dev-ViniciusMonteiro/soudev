@@ -1,0 +1,24 @@
+{
+  "tipo": "4dev",
+  "slug": "api-tester",
+  "nome": "API Tester",
+  "ok": true,
+  "geradoEm": "2026-11-02T01:16:04.690Z",
+  "passos": [
+    {
+      "titulo": "Resposta do GET",
+      "detalhe": "Status, tempo, tamanho e o JSON colorido.",
+      "img": "/testes/img/4dev-api-tester-01.jpg"
+    },
+    {
+      "titulo": "POST criado (201)",
+      "detalhe": "Body raw JSON e resposta da API.",
+      "img": "/testes/img/4dev-api-tester-02.jpg"
+    },
+    {
+      "titulo": "cURL importado",
+      "detalhe": "Colar um cURL na URL preenche método, params, Bearer e body; a aba Code gera cURL, fetch e Python.",
+      "img": "/testes/img/4dev-api-tester-03.jpg"
+    }
+  ]
+}

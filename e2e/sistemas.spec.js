@@ -23,6 +23,7 @@ for (const [slug, nome] of SISTEMAS) {
       await test.step('1. Abrir a demonstração do sistema', async () => {
         await page.goto(`/sistemas/${slug}/app?beta=1`)
         await expect(page.locator('.sx-app')).toBeVisible({ timeout: 25000 })
+        await page.addStyleTag({ content: '.cookie-banner{display:none!important}' }).catch(() => {})
         await ev.print(page, info, 'Painel inicial carregado', 'O sistema abriu com os dados de exemplo e o menu lateral.')
       })
 
@@ -47,6 +48,43 @@ for (const [slug, nome] of SISTEMAS) {
         }
         ev.nota(`${labels.length} módulos verificados`, labels.join(' · '))
       })
+
+      if (slug === 'barbearia-salao') {
+        await test.step('3b. Ficha do cliente: preferências e histórico', async () => {
+          await page.locator('.sx-menu-item', { hasText: 'Ficha do cliente' }).click()
+          await expect(page.locator('.sx-ficha-card').first()).toBeVisible()
+          await ev.print(page, info, 'Fichas dos clientes', 'Corte preferido, visitas e última visita; filtro de quem sumiu há mais de 35 dias.')
+          await page.locator('button', { hasText: 'Com ficha' }).first().click()
+          await page.locator('.sx-ficha-card').first().click()
+          const antes = await page.locator('.sx-ficha-hist li').count()
+          await page.getByRole('button', { name: '↻ Repetir último' }).click()
+          await page.getByRole('button', { name: 'Salvar atendimento' }).click()
+          await expect(page.locator('.sx-ficha-hist li')).toHaveCount(antes + 1)
+          await ev.print(page, info, 'Ficha do cliente', 'Preferências (máquina, barba, produtos, alergias) e o atendimento repetido entrando no histórico.')
+          await page.locator('.sx-ficha-sec h3', { hasText: 'Fotos do corte' }).scrollIntoViewIfNeeded()
+          await ev.print(page, info, 'Fotos com autorização', 'Fotos só aparecem para clientes que autorizaram (demonstração, nada é salvo).')
+          await page.keyboard.press('Escape')
+          await expect(page.locator('.sx-modal')).toHaveCount(0)
+        })
+      }
+
+      if (slug === 'assistencia-tecnica') {
+        await test.step('3b. OS: senha do aparelho e linha do tempo', async () => {
+          await page.locator('.sx-menu-item', { hasText: 'Ordens de serviço' }).click()
+          const num = (await page.locator('.sx-card-k .sx-card-k-topo strong').first().innerText()).trim()
+          await page.locator('.sx-card-k').first().click()
+          await page.getByPlaceholder('Ex.: 1234 ou desenho em L').fill('2580')
+          await page.locator('label.field', { hasText: 'Situação' }).locator('select').selectOption('execucao')
+          await ev.print(page, info, 'Ficha da OS', 'Senha de desbloqueio, checklist de entrada e fotos do aparelho (não salvas).')
+          await page.getByRole('button', { name: 'Salvar' }).click()
+          await page.locator('.sx-card-k').filter({ has: page.locator('strong', { hasText: new RegExp(`^${num}$`) }) }).first().click()
+          await expect(page.locator('.sx-os-tempo li').first()).toContainText('Em execução')
+          await page.locator('.sx-os-tempo').scrollIntoViewIfNeeded()
+          await ev.print(page, info, 'Linha do tempo da OS', 'Cada mudança de situação fica registrada com data e hora.')
+          await page.keyboard.press('Escape')
+          await expect(page.locator('.sx-modal')).toHaveCount(0)
+        })
+      }
 
       await test.step('4. Abrir Configurações e conferir o Backup', async () => {
         const config = page.locator('.sx-menu-item', { hasText: /config/i }).first()

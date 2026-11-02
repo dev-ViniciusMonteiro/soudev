@@ -1,0 +1,24 @@
+{
+  "tipo": "app",
+  "slug": "achei-perdi",
+  "nome": "Achei / Perdi",
+  "ok": true,
+  "geradoEm": "2026-11-02T01:15:52.739Z",
+  "passos": [
+    {
+      "titulo": "Demonstração aberta",
+      "detalhe": "O app abriu com os dados de exemplo e o aviso de demonstração.",
+      "img": "/testes/img/app-achei-perdi-01.jpg"
+    },
+    {
+      "titulo": "Mural filtrado",
+      "detalhe": "Só os objetos achados, com bairro e data.",
+      "img": "/testes/img/app-achei-perdi-02.jpg"
+    },
+    {
+      "titulo": "Conversa com o achador",
+      "detalhe": "A pergunta de verificação aparece e a outra pessoa (simulada) responde.",
+      "img": "/testes/img/app-achei-perdi-03.jpg"
+    }
+  ]
+}

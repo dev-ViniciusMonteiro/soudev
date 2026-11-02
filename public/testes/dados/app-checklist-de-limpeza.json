@@ -1,0 +1,24 @@
+{
+  "tipo": "app",
+  "slug": "checklist-de-limpeza",
+  "nome": "Checklist de Limpeza",
+  "ok": true,
+  "geradoEm": "2026-11-02T01:16:30.172Z",
+  "passos": [
+    {
+      "titulo": "Checklist por ambiente",
+      "detalhe": "Tarefas marcadas por cômodo, cronômetro e aviso para o cliente.",
+      "img": "/testes/img/app-checklist-de-limpeza-01.jpg"
+    },
+    {
+      "titulo": "Relatório pronto",
+      "detalhe": "Link e resumo para o WhatsApp do cliente.",
+      "img": "/testes/img/app-checklist-de-limpeza-02.jpg"
+    },
+    {
+      "titulo": "Relatório no celular do cliente",
+      "detalhe": "O cliente vê o checklist completo, o tempo e os avisos.",
+      "img": "/testes/img/app-checklist-de-limpeza-03.jpg"
+    }
+  ]
+}

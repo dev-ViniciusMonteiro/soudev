@@ -3,7 +3,7 @@
   "slug": "documentador",
   "nome": "Documentador",
   "ok": true,
-  "geradoEm": "2026-10-30T16:42:01.838Z",
+  "geradoEm": "2026-11-02T01:15:28.914Z",
   "passos": [
     {
       "titulo": "App aberto",
@@ -12,7 +12,7 @@
     },
     {
       "titulo": "Conteúdo renderizado",
-      "detalhe": "A tela mostrou 1758 caracteres de conteúdo."
+      "detalhe": "A tela mostrou 1504 caracteres de conteúdo."
     }
   ]
 }

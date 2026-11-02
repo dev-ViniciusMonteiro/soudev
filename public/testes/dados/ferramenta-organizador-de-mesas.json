@@ -1,0 +1,19 @@
+{
+  "tipo": "ferramenta",
+  "slug": "organizador-de-mesas",
+  "nome": "Organizador de mesas",
+  "ok": true,
+  "geradoEm": "2026-11-02T01:16:14.329Z",
+  "passos": [
+    {
+      "titulo": "Mesas e convidados sem lugar",
+      "detalhe": "Cada mesa com os lugares em volta, coloridos pelo grupo.",
+      "img": "/testes/img/ferramenta-organizador-de-mesas-01.jpg"
+    },
+    {
+      "titulo": "Onde vou sentar?",
+      "detalhe": "Todos com lugar e a busca mostrando a mesa da convidada.",
+      "img": "/testes/img/ferramenta-organizador-de-mesas-02.jpg"
+    }
+  ]
+}

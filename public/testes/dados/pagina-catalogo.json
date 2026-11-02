@@ -1,39 +1,39 @@
 {
-  "tipo": "apps",
+  "tipo": "pagina",
   "slug": "catalogo",
   "nome": "Catálogo digital",
   "ok": true,
-  "geradoEm": "2026-11-01T22:08:12.881Z",
+  "geradoEm": "2026-11-02T01:15:40.454Z",
   "passos": [
     {
       "titulo": "Apresentação",
       "detalhe": "Proposta, benefícios e um celular de exemplo com o botão de pedido no WhatsApp.",
-      "img": "/testes/img/apps-catalogo-01.jpg"
+      "img": "/testes/img/pagina-catalogo-01.jpg"
     },
     {
       "titulo": "Criar catálogo",
       "detalhe": "O link é gerado do nome da loja e o modelo escolhido fica marcado.",
-      "img": "/testes/img/apps-catalogo-02.jpg"
+      "img": "/testes/img/pagina-catalogo-02.jpg"
     },
     {
       "titulo": "Entrar",
       "detalhe": "Login com o link da loja e a senha (sem e-mail).",
-      "img": "/testes/img/apps-catalogo-03.jpg"
+      "img": "/testes/img/pagina-catalogo-03.jpg"
     },
     {
       "titulo": "Editor",
       "detalhe": "Abas Página, Produtos, Visual, Loja e Conta, com a prévia ao vivo no celular.",
-      "img": "/testes/img/apps-catalogo-04.jpg"
+      "img": "/testes/img/pagina-catalogo-04.jpg"
     },
     {
       "titulo": "Bloco arrastado",
       "detalhe": "O segundo bloco foi para o topo arrastando a alça ⠿.",
-      "img": "/testes/img/apps-catalogo-05.jpg"
+      "img": "/testes/img/pagina-catalogo-05.jpg"
     },
     {
       "titulo": "Pedido pelo WhatsApp",
       "detalhe": "O carrinho monta a mensagem com itens e total e abre o WhatsApp da loja.",
-      "img": "/testes/img/apps-catalogo-06.jpg"
+      "img": "/testes/img/pagina-catalogo-06.jpg"
     }
   ]
 }

@@ -1,0 +1,19 @@
+{
+  "tipo": "ferramenta",
+  "slug": "divisao-de-tarefas",
+  "nome": "Divisão de tarefas",
+  "ok": true,
+  "geradoEm": "2026-11-02T01:16:28.227Z",
+  "passos": [
+    {
+      "titulo": "Tarefas da semana",
+      "detalhe": "Diárias, semanais e mensais com responsável e pontos.",
+      "img": "/testes/img/ferramenta-divisao-de-tarefas-01.jpg"
+    },
+    {
+      "titulo": "Placar da semana",
+      "detalhe": "Quem fez mais tarefas aparece com a coroa.",
+      "img": "/testes/img/ferramenta-divisao-de-tarefas-02.jpg"
+    }
+  ]
+}

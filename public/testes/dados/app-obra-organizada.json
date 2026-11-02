@@ -1,0 +1,38 @@
+{
+  "tipo": "app",
+  "slug": "obra-organizada",
+  "nome": "Obra Organizada",
+  "ok": true,
+  "geradoEm": "2026-11-02T01:15:42.264Z",
+  "passos": [
+    {
+      "titulo": "Demonstração aberta",
+      "detalhe": "O app abriu com os dados de exemplo e o aviso de demonstração.",
+      "img": "/testes/img/app-obra-organizada-01.jpg"
+    },
+    {
+      "titulo": "Indicadores",
+      "detalhe": "ORÇAMENTO R$ 164.000,00 74% usado · GASTO ATÉ AGORA R$ 120.700,00 14 lançamentos · SALDO R$ 43.300,00 · A PAGAR R$ 6.700,00 · ANDAMENTO 65% termina em 80 dias"
+    },
+    {
+      "titulo": "Lançando um gasto",
+      "detalhe": "Formulário com descrição, valor, etapa, categoria e fornecedor.",
+      "img": "/testes/img/app-obra-organizada-03.jpg"
+    },
+    {
+      "titulo": "Gasto lançado",
+      "detalhe": "O gasto entrou na lista com a etapa e a situação de pagamento.",
+      "img": "/testes/img/app-obra-organizada-04.jpg"
+    },
+    {
+      "titulo": "Cronograma das etapas",
+      "detalhe": "Linha do tempo com o andamento de cada etapa e o dia de hoje marcado.",
+      "img": "/testes/img/app-obra-organizada-05.jpg"
+    },
+    {
+      "titulo": "Fotos do andamento",
+      "detalhe": "Galeria por etapa (ilustrações de demonstração).",
+      "img": "/testes/img/app-obra-organizada-06.jpg"
+    }
+  ]
+}

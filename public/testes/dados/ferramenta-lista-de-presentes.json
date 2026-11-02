@@ -1,0 +1,24 @@
+{
+  "tipo": "ferramenta",
+  "slug": "lista-de-presentes",
+  "nome": "Lista de presentes",
+  "ok": true,
+  "geradoEm": "2026-11-02T01:16:25.656Z",
+  "passos": [
+    {
+      "titulo": "Lista sugerida",
+      "detalhe": "Presentes sugeridos para a ocasião, com valor, quantidade e link.",
+      "img": "/testes/img/ferramenta-lista-de-presentes-01.jpg"
+    },
+    {
+      "titulo": "Presente reservado",
+      "detalhe": "O convidado escolheu o carrinho e pode desistir se precisar.",
+      "img": "/testes/img/ferramenta-lista-de-presentes-02.jpg"
+    },
+    {
+      "titulo": "Sem presente repetido",
+      "detalhe": "Para os outros convidados o carrinho já aparece como escolhido.",
+      "img": "/testes/img/ferramenta-lista-de-presentes-03.jpg"
+    }
+  ]
+}

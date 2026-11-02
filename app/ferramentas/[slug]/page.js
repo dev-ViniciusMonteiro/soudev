@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import AdSlot from '@/components/AdSlot'
 import CartaoBanner from '@/components/CartaoBanner'
 import ToolRenderer from '@/components/ToolRenderer'
+import EvidenciasTeste from '@/components/teste/EvidenciasTeste'
 import { SITE_URL, jsonLd, site } from '@/lib/site'
 import { categories, getTool, tools } from '@/lib/tools'
 
@@ -151,6 +152,7 @@ export default async function ToolPage({ params }) {
       </section>
 
       <script type="application/ld+json" dangerouslySetInnerHTML={jsonLd(structured)} />
+      <EvidenciasTeste tipo="ferramenta" slug={tool.slug} />
     </main>
   )
 }

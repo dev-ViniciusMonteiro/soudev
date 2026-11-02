@@ -3,7 +3,7 @@
   "slug": "assistencia-tecnica",
   "nome": "Assistência Técnica e Oficina",
   "ok": true,
-  "geradoEm": "2026-10-30T16:42:59.372Z",
+  "geradoEm": "2026-11-02T01:17:19.702Z",
   "passos": [
     {
       "titulo": "Painel inicial carregado",
@@ -79,9 +79,19 @@
       "detalhe": "📊 Painel · 🛒 Vender (PDV) · 💵 Caixa · 🔧 Ordens de serviço · 🧾 Histórico de vendas · 📦 Estoque · 💰 Financeiro · 📈 Relatórios · 👥 Clientes · 🏷️ Peças e serviços · 🚚 Fornecedores · 🔑 Usuários"
     },
     {
+      "titulo": "Ficha da OS",
+      "detalhe": "Senha de desbloqueio, checklist de entrada e fotos do aparelho (não salvas).",
+      "img": "/testes/img/sistema-assistencia-tecnica-16.jpg"
+    },
+    {
+      "titulo": "Linha do tempo da OS",
+      "detalhe": "Cada mudança de situação fica registrada com data e hora.",
+      "img": "/testes/img/sistema-assistencia-tecnica-17.jpg"
+    },
+    {
       "titulo": "Configurações e backup",
       "detalhe": "A tela de Configurações oferece exportar um backup dos dados.",
-      "img": "/testes/img/sistema-assistencia-tecnica-16.jpg"
+      "img": "/testes/img/sistema-assistencia-tecnica-18.jpg"
     }
   ]
 }

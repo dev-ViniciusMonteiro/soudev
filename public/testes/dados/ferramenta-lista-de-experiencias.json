@@ -1,0 +1,19 @@
+{
+  "tipo": "ferramenta",
+  "slug": "lista-de-experiencias",
+  "nome": "Lista de experiências",
+  "ok": true,
+  "geradoEm": "2026-11-02T01:16:16.077Z",
+  "passos": [
+    {
+      "titulo": "Lista de experiências",
+      "detalhe": "Anel de progresso, categorias e ideias prontas.",
+      "img": "/testes/img/ferramenta-lista-de-experiencias-01.jpg"
+    },
+    {
+      "titulo": "Experiência vivida",
+      "detalhe": "Entra com a data e o comentário, e o progresso sobe.",
+      "img": "/testes/img/ferramenta-lista-de-experiencias-02.jpg"
+    }
+  ]
+}

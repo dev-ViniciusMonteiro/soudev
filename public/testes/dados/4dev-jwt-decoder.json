@@ -1,0 +1,19 @@
+{
+  "tipo": "4dev",
+  "slug": "jwt-decoder",
+  "nome": "JWT Decoder",
+  "ok": true,
+  "geradoEm": "2026-11-02T01:15:58.748Z",
+  "passos": [
+    {
+      "titulo": "Assinatura válida",
+      "detalhe": "Header, payload com claims explicadas e verificação HS256.",
+      "img": "/testes/img/4dev-jwt-decoder-01.jpg"
+    },
+    {
+      "titulo": "Token gerado",
+      "detalhe": "Token HS256 gerado a partir do header, payload e segredo.",
+      "img": "/testes/img/4dev-jwt-decoder-02.jpg"
+    }
+  ]
+}

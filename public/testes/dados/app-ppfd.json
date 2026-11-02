@@ -3,7 +3,7 @@
   "slug": "ppfd",
   "nome": "Medidor PPFD",
   "ok": true,
-  "geradoEm": "2026-10-30T16:42:07.927Z",
+  "geradoEm": "2026-11-02T01:15:34.360Z",
   "passos": [
     {
       "titulo": "App aberto",
@@ -12,7 +12,7 @@
     },
     {
       "titulo": "Conteúdo renderizado",
-      "detalhe": "A tela mostrou 1737 caracteres de conteúdo."
+      "detalhe": "A tela mostrou 1483 caracteres de conteúdo."
     }
   ]
 }

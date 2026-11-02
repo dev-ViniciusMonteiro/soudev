@@ -3,7 +3,7 @@
   "slug": "barbearia-salao",
   "nome": "Barbearia e Salão de Beleza",
   "ok": true,
-  "geradoEm": "2026-10-30T16:42:50.595Z",
+  "geradoEm": "2026-11-02T01:17:11.071Z",
   "passos": [
     {
       "titulo": "Painel inicial carregado",
@@ -35,53 +35,68 @@
       "img": "/testes/img/sistema-barbearia-salao-06.jpg"
     },
     {
-      "titulo": "Módulo: 🧾 Histórico de vendas",
+      "titulo": "Módulo: 📋 Ficha do cliente",
       "detalhe": "A tela do módulo abriu e renderizou sem erro.",
       "img": "/testes/img/sistema-barbearia-salao-07.jpg"
     },
     {
-      "titulo": "Módulo: 💰 Financeiro",
+      "titulo": "Módulo: 🧾 Histórico de vendas",
       "detalhe": "A tela do módulo abriu e renderizou sem erro.",
       "img": "/testes/img/sistema-barbearia-salao-08.jpg"
     },
     {
-      "titulo": "Módulo: 📈 Relatórios",
+      "titulo": "Módulo: 💰 Financeiro",
       "detalhe": "A tela do módulo abriu e renderizou sem erro.",
       "img": "/testes/img/sistema-barbearia-salao-09.jpg"
     },
     {
-      "titulo": "Módulo: 👥 Clientes",
+      "titulo": "Módulo: 📈 Relatórios",
       "detalhe": "A tela do módulo abriu e renderizou sem erro.",
       "img": "/testes/img/sistema-barbearia-salao-10.jpg"
     },
     {
-      "titulo": "Módulo: 🏷️ Produtos e serviços",
+      "titulo": "Módulo: 👥 Clientes",
       "detalhe": "A tela do módulo abriu e renderizou sem erro.",
       "img": "/testes/img/sistema-barbearia-salao-11.jpg"
     },
     {
-      "titulo": "Módulo: 🗂️ Categorias",
+      "titulo": "Módulo: 🏷️ Produtos e serviços",
       "detalhe": "A tela do módulo abriu e renderizou sem erro.",
       "img": "/testes/img/sistema-barbearia-salao-12.jpg"
     },
     {
-      "titulo": "Módulo: 💇 Profissionais",
+      "titulo": "Módulo: 🗂️ Categorias",
       "detalhe": "A tela do módulo abriu e renderizou sem erro.",
       "img": "/testes/img/sistema-barbearia-salao-13.jpg"
     },
     {
-      "titulo": "Módulo: 🔑 Usuários",
+      "titulo": "Módulo: 💇 Profissionais",
       "detalhe": "A tela do módulo abriu e renderizou sem erro.",
       "img": "/testes/img/sistema-barbearia-salao-14.jpg"
     },
     {
       "titulo": "12 módulos verificados",
-      "detalhe": "📊 Painel · 🛒 Vender (PDV) · 💵 Caixa · 📅 Agenda · 🧾 Histórico de vendas · 💰 Financeiro · 📈 Relatórios · 👥 Clientes · 🏷️ Produtos e serviços · 🗂️ Categorias · 💇 Profissionais · 🔑 Usuários"
+      "detalhe": "📊 Painel · 🛒 Vender (PDV) · 💵 Caixa · 📅 Agenda · 📋 Ficha do cliente · 🧾 Histórico de vendas · 💰 Financeiro · 📈 Relatórios · 👥 Clientes · 🏷️ Produtos e serviços · 🗂️ Categorias · 💇 Profissionais"
+    },
+    {
+      "titulo": "Fichas dos clientes",
+      "detalhe": "Corte preferido, visitas e última visita; filtro de quem sumiu há mais de 35 dias.",
+      "img": "/testes/img/sistema-barbearia-salao-16.jpg"
+    },
+    {
+      "titulo": "Ficha do cliente",
+      "detalhe": "Preferências (máquina, barba, produtos, alergias) e o atendimento repetido entrando no histórico.",
+      "img": "/testes/img/sistema-barbearia-salao-17.jpg"
+    },
+    {
+      "titulo": "Fotos com autorização",
+      "detalhe": "Fotos só aparecem para clientes que autorizaram (demonstração, nada é salvo).",
+      "img": "/testes/img/sistema-barbearia-salao-18.jpg"
     },
     {
       "titulo": "Configurações e backup",
       "detalhe": "A tela de Configurações oferece exportar um backup dos dados.",
-      "img": "/testes/img/sistema-barbearia-salao-16.jpg"
+      "img": "/testes/img/sistema-barbearia-salao-19.jpg"
     }
   ]
 }

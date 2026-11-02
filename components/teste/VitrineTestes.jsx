@@ -14,8 +14,11 @@ export default function VitrineTestes() {
   const data = new Date(ind.geradoEm).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })
   const sistemas = ind.itens.filter((i) => i.tipo === 'sistema')
   const apps = ind.itens.filter((i) => i.tipo === 'app')
-  const redes = ind.itens.filter((i) => i.tipo === 'rede')
-  const destino = (i) => (i.tipo === 'sistema' ? `/sistemas/${i.slug}/teste` : i.tipo === 'app' ? `/apps/${i.slug}/teste` : `/${i.slug}`)
+  const ferramentas = ind.itens.filter((i) => i.tipo === 'ferramenta')
+  const dev = ind.itens.filter((i) => i.tipo === '4dev')
+  const outros = ind.itens.filter((i) => i.tipo === 'rede' || i.tipo === 'pagina')
+  const destino = (i) =>
+    i.tipo === 'sistema' ? `/sistemas/${i.slug}/teste` : i.tipo === 'app' ? `/apps/${i.slug}/teste` : i.tipo === 'ferramenta' ? `/ferramentas/${i.slug}#evidencias` : i.tipo === '4dev' ? `/4dev/${i.slug}#evidencias` : `/${i.slug}`
 
   const Cartao = (i) => (
     <a key={`${i.tipo}-${i.slug}`} className="vt-card" href={destino(i)}>
@@ -36,10 +39,22 @@ export default function VitrineTestes() {
       <div className="vt-grid">{sistemas.map(Cartao)}</div>
       <h2 className="vt-sec">Apps</h2>
       <div className="vt-grid">{apps.map(Cartao)}</div>
-      {redes.length > 0 && (
+      {ferramentas.length > 0 && (
         <>
-          <h2 className="vt-sec">Rede social</h2>
-          <div className="vt-grid">{redes.map(Cartao)}</div>
+          <h2 className="vt-sec">Ferramentas</h2>
+          <div className="vt-grid">{ferramentas.map(Cartao)}</div>
+        </>
+      )}
+      {dev.length > 0 && (
+        <>
+          <h2 className="vt-sec">4dev</h2>
+          <div className="vt-grid">{dev.map(Cartao)}</div>
+        </>
+      )}
+      {outros.length > 0 && (
+        <>
+          <h2 className="vt-sec">Rede social e catálogo</h2>
+          <div className="vt-grid">{outros.map(Cartao)}</div>
         </>
       )}
       <p className="muted small">Cada projeto é testado num navegador real (Playwright): abre, interage e tira prints. Clique num card para ver os passos e as evidências.</p>

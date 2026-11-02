@@ -17,6 +17,8 @@ export function novaEvidencia(tipo, slug, nome) {
     async print(page, info, titulo, detalhe) {
       const arq = `${tipo}-${slug}-${String(passos.length + 1).padStart(2, '0')}.jpg`
       let buffer
+      // tira do print o selo do modo dev do Next e o aviso de cookies (não fazem parte do produto)
+      await page.addStyleTag({ content: 'nextjs-portal,.cookie-banner{display:none!important}' }).catch(() => {})
       try {
         buffer = await page.screenshot({ type: 'jpeg', quality: 78 })
       } catch {

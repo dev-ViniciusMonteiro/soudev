@@ -1,0 +1,29 @@
+{
+  "tipo": "4dev",
+  "slug": "sql-toolkit",
+  "nome": "SQL Toolkit",
+  "ok": true,
+  "geradoEm": "2026-11-02T01:16:06.291Z",
+  "passos": [
+    {
+      "titulo": "SQL formatado",
+      "detalhe": "Palavras-chave em maiúsculas, uma cláusula por linha e AND/OR alinhados.",
+      "img": "/testes/img/4dev-sql-toolkit-01.jpg"
+    },
+    {
+      "titulo": "Explicação e alertas",
+      "detalhe": "Passo a passo em português e alertas de índice e LIKE com %.",
+      "img": "/testes/img/4dev-sql-toolkit-02.jpg"
+    },
+    {
+      "titulo": "Convertido para SQL Server",
+      "detalhe": "LIMIT virou TOP e as aspas mudaram.",
+      "img": "/testes/img/4dev-sql-toolkit-03.jpg"
+    },
+    {
+      "titulo": "CSV para INSERT",
+      "detalhe": "CREATE TABLE com tipos deduzidos e INSERT com aspas escapadas.",
+      "img": "/testes/img/4dev-sql-toolkit-04.jpg"
+    }
+  ]
+}

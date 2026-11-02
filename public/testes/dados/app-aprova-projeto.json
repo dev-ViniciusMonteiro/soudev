@@ -1,0 +1,24 @@
+{
+  "tipo": "app",
+  "slug": "aprova-projeto",
+  "nome": "Aprova Projeto",
+  "ok": true,
+  "geradoEm": "2026-11-02T01:16:38.749Z",
+  "passos": [
+    {
+      "titulo": "Versões do projeto",
+      "detalhe": "Cada versão com prévia, explicação e retornos do cliente.",
+      "img": "/testes/img/app-aprova-projeto-01.jpg"
+    },
+    {
+      "titulo": "Comparando versões",
+      "detalhe": "Versão 3 ao lado da versão 1.",
+      "img": "/testes/img/app-aprova-projeto-02.jpg"
+    },
+    {
+      "titulo": "Projeto aprovado",
+      "detalhe": "O retorno entrou no histórico e o projeto ficou como aprovado.",
+      "img": "/testes/img/app-aprova-projeto-03.jpg"
+    }
+  ]
+}

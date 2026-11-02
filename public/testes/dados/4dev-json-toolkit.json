@@ -1,0 +1,29 @@
+{
+  "tipo": "4dev",
+  "slug": "json-toolkit",
+  "nome": "JSON Toolkit",
+  "ok": true,
+  "geradoEm": "2026-11-02T01:15:56.339Z",
+  "passos": [
+    {
+      "titulo": "JSON inválido",
+      "detalhe": "Aponta a linha e a coluna do erro e destaca a linha.",
+      "img": "/testes/img/4dev-json-toolkit-01.jpg"
+    },
+    {
+      "titulo": "Árvore navegável",
+      "detalhe": "Clicar na chave mostra o caminho JSONPath.",
+      "img": "/testes/img/4dev-json-toolkit-02.jpg"
+    },
+    {
+      "titulo": "JSON para TypeScript",
+      "detalhe": "Interfaces geradas, com campos opcionais detectados.",
+      "img": "/testes/img/4dev-json-toolkit-03.jpg"
+    },
+    {
+      "titulo": "Diferenças",
+      "detalhe": "Diff estrutural: adicionado, removido e alterado por caminho.",
+      "img": "/testes/img/4dev-json-toolkit-04.jpg"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "tipo": "app",
+  "slug": "pet-relatorio",
+  "nome": "Pet Relatório",
+  "ok": true,
+  "geradoEm": "2026-11-02T01:16:32.354Z",
+  "passos": [
+    {
+      "titulo": "Dia do pet",
+      "detalhe": "Refeições, passeios (xixi e cocô), remédios, humor e recado.",
+      "img": "/testes/img/app-pet-relatorio-01.jpg"
+    },
+    {
+      "titulo": "Mensagem do WhatsApp",
+      "detalhe": "🐾 Dia de Pipoca (01/11/2026) · Humor: 😌 · 🍽️ 08:05 Ração (1 xícara) (Comeu tudo) · 🦮 08:30 passeio de 35 min"
+    },
+    {
+      "titulo": "Relatório no celular do tutor",
+      "detalhe": "Cartão do dia com humor, alimentação, passeios e recado.",
+      "img": "/testes/img/app-pet-relatorio-03.jpg"
+    }
+  ]
+}

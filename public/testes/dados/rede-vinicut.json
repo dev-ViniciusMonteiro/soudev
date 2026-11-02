@@ -3,7 +3,7 @@
   "slug": "vinicut",
   "nome": "Vinicut",
   "ok": true,
-  "geradoEm": "2026-10-30T16:51:40.964Z",
+  "geradoEm": "2026-11-02T01:17:44.485Z",
   "passos": [
     {
       "titulo": "Tela de entrada",
@@ -16,24 +16,8 @@
       "img": "/testes/img/rede-vinicut-02.jpg"
     },
     {
-      "titulo": "Início logado",
-      "detalhe": "Entrou com usuário e senha; aparece o topo com o nome e os atalhos.",
-      "img": "/testes/img/rede-vinicut-03.jpg"
-    },
-    {
-      "titulo": "Meu perfil",
-      "detalhe": "Perfil com contadores (recados, amigos, depoimentos, comunidades) e abas.",
-      "img": "/testes/img/rede-vinicut-04.jpg"
-    },
-    {
-      "titulo": "Recado publicado",
-      "detalhe": "O recado enviado aparece na hora no mural do perfil.",
-      "img": "/testes/img/rede-vinicut-05.jpg"
-    },
-    {
-      "titulo": "Comunidades",
-      "detalhe": "Lista de comunidades e o formulário para criar uma nova.",
-      "img": "/testes/img/rede-vinicut-06.jpg"
+      "titulo": "Fluxo logado não executado",
+      "detalhe": "Rode com VC_USER e VC_SENHA para testar login, perfil, recado e comunidades."
     }
   ]
 }

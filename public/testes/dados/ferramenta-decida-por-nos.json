@@ -1,0 +1,24 @@
+{
+  "tipo": "ferramenta",
+  "slug": "decida-por-nos",
+  "nome": "Decida por Nós",
+  "ok": true,
+  "geradoEm": "2026-11-02T01:16:21.768Z",
+  "passos": [
+    {
+      "titulo": "Criando a votação",
+      "detalhe": "Pergunta, opções e regras (múltipla, anônima, sugestões, prazo).",
+      "img": "/testes/img/ferramenta-decida-por-nos-01.jpg"
+    },
+    {
+      "titulo": "Voto pelo celular",
+      "detalhe": "Sem cadastro: o resultado só aparece depois de votar.",
+      "img": "/testes/img/ferramenta-decida-por-nos-02.jpg"
+    },
+    {
+      "titulo": "Votação encerrada",
+      "detalhe": "Resultado final, quem votou e o link para compartilhar.",
+      "img": "/testes/img/ferramenta-decida-por-nos-03.jpg"
+    }
+  ]
+}

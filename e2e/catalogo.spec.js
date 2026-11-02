@@ -10,7 +10,7 @@ const SENHA = process.env.CT_SENHA || ''
 
 test('App · Catálogo digital', async ({ page }, info) => {
   info.annotations.push({ type: 'O que este teste faz', description: 'Abre o Catálogo digital, confere a apresentação, o formulário de criar com os 6 modelos e o login; com uma loja de teste, entra no editor, arrasta um bloco e abre a página pública com o pedido pelo WhatsApp.' })
-  const ev = novaEvidencia('apps', 'catalogo', 'Catálogo digital')
+  const ev = novaEvidencia('pagina', 'catalogo', 'Catálogo digital')
   let ok = false
   try {
     await test.step('1. Abrir a apresentação', async () => {

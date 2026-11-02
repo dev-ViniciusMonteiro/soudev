@@ -1,0 +1,24 @@
+{
+  "tipo": "app",
+  "slug": "evento-facil",
+  "nome": "Evento Fácil",
+  "ok": true,
+  "geradoEm": "2026-11-02T01:15:54.471Z",
+  "passos": [
+    {
+      "titulo": "Demonstração aberta",
+      "detalhe": "O app abriu com os dados de exemplo e o aviso de demonstração.",
+      "img": "/testes/img/app-evento-facil-01.jpg"
+    },
+    {
+      "titulo": "Presença confirmada",
+      "detalhe": "O convidado recebe o QR Code de entrada (código FEWAJW).",
+      "img": "/testes/img/app-evento-facil-02.jpg"
+    },
+    {
+      "titulo": "Check-in feito",
+      "detalhe": "A chegada entra na lista e o contador de pessoas atualiza.",
+      "img": "/testes/img/app-evento-facil-03.jpg"
+    }
+  ]
+}

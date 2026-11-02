@@ -1,0 +1,19 @@
+{
+  "tipo": "4dev",
+  "slug": "cron-builder",
+  "nome": "Cron Builder",
+  "ok": true,
+  "geradoEm": "2026-11-02T01:16:00.196Z",
+  "passos": [
+    {
+      "titulo": "Expressão explicada",
+      "detalhe": "“Às 09:00, de segunda a sexta” e as próximas 10 execuções.",
+      "img": "/testes/img/4dev-cron-builder-01.jpg"
+    },
+    {
+      "titulo": "Montado pelo editor",
+      "detalhe": "Minuto “a cada 5” escolhido no editor visual.",
+      "img": "/testes/img/4dev-cron-builder-02.jpg"
+    }
+  ]
+}

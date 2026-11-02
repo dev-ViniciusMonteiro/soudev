@@ -1,0 +1,29 @@
+{
+  "tipo": "app",
+  "slug": "aprova-foto",
+  "nome": "Aprova Foto",
+  "ok": true,
+  "geradoEm": "2026-11-02T01:16:35.815Z",
+  "passos": [
+    {
+      "titulo": "Galeria do fotógrafo",
+      "detalhe": "Limite de fotos, prazo e link para a cliente.",
+      "img": "/testes/img/app-aprova-foto-01.jpg"
+    },
+    {
+      "titulo": "Foto ampliada com comentário",
+      "detalhe": "A cliente amplia, escolhe e deixa um pedido para a edição.",
+      "img": "/testes/img/app-aprova-foto-02.jpg"
+    },
+    {
+      "titulo": "Escolha da cliente",
+      "detalhe": "3 de 12 fotos marcadas com ❤.",
+      "img": "/testes/img/app-aprova-foto-03.jpg"
+    },
+    {
+      "titulo": "Escolha recebida",
+      "detalhe": "As fotos escolhidas e o comentário aparecem para o fotógrafo, prontas para o Lightroom.",
+      "img": "/testes/img/app-aprova-foto-04.jpg"
+    }
+  ]
+}

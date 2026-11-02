@@ -1,0 +1,18 @@
+{
+  "tipo": "4dev",
+  "slug": "webhook-inspector",
+  "nome": "Webhook Inspector",
+  "ok": true,
+  "geradoEm": "2026-11-02T01:16:10.716Z",
+  "passos": [
+    {
+      "titulo": "Requisição recebida",
+      "detalhe": "Método, caminho, query, headers e payload JSON formatado.",
+      "img": "/testes/img/4dev-webhook-inspector-01.jpg"
+    },
+    {
+      "titulo": "Resposta configurada",
+      "detalhe": "A URL passou a responder 201."
+    }
+  ]
+}

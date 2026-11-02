@@ -1,0 +1,24 @@
+{
+  "tipo": "ferramenta",
+  "slug": "arvore-genealogica",
+  "nome": "Árvore da família",
+  "ok": true,
+  "geradoEm": "2026-11-02T01:16:12.817Z",
+  "passos": [
+    {
+      "titulo": "Árvore por gerações",
+      "detalhe": "Avós, pais e netos com casais lado a lado e linhas de parentesco.",
+      "img": "/testes/img/ferramenta-arvore-genealogica-01.jpg"
+    },
+    {
+      "titulo": "Filho acrescentado",
+      "detalhe": "A pessoa nova entra na geração certa, ligada à mãe.",
+      "img": "/testes/img/ferramenta-arvore-genealogica-02.jpg"
+    },
+    {
+      "titulo": "Árvore aberta pelo link",
+      "detalhe": "Quem recebe vê a árvore e pode copiar para completar.",
+      "img": "/testes/img/ferramenta-arvore-genealogica-03.jpg"
+    }
+  ]
+}
