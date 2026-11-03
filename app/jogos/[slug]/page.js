@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import AdSlot from '@/components/AdSlot'
 import GamePlayer from '@/components/GamePlayer'
+import EvidenciasTeste from '@/components/teste/EvidenciasTeste'
 import { SITE_URL, jsonLd, site } from '@/lib/site'
 import { games, getGame } from '@/lib/games'
 import { bannerDoJogo } from '@/lib/banners'
@@ -136,6 +137,8 @@ export default async function GamePage({ params }) {
           {game.credits.license ? ` (licença ${game.credits.license}).` : '.'}
         </p>
       </section>
+
+      <EvidenciasTeste tipo="jogo" slug={game.slug} />
 
       <script type="application/ld+json" dangerouslySetInnerHTML={jsonLd(structured)} />
     </main>

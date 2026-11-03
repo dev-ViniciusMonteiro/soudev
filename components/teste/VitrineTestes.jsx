@@ -16,9 +16,10 @@ export default function VitrineTestes() {
   const apps = ind.itens.filter((i) => i.tipo === 'app')
   const ferramentas = ind.itens.filter((i) => i.tipo === 'ferramenta')
   const dev = ind.itens.filter((i) => i.tipo === '4dev')
+  const jogos = ind.itens.filter((i) => i.tipo === 'jogo')
   const outros = ind.itens.filter((i) => i.tipo === 'rede' || i.tipo === 'pagina')
   const destino = (i) =>
-    i.tipo === 'sistema' ? `/sistemas/${i.slug}/teste` : i.tipo === 'app' ? `/apps/${i.slug}/teste` : i.tipo === 'ferramenta' ? `/ferramentas/${i.slug}#evidencias` : i.tipo === '4dev' ? `/4dev/${i.slug}#evidencias` : `/${i.slug}`
+    i.tipo === 'sistema' ? `/sistemas/${i.slug}/teste` : i.tipo === 'app' ? `/apps/${i.slug}/teste` : i.tipo === 'ferramenta' ? `/ferramentas/${i.slug}#evidencias` : i.tipo === '4dev' ? `/4dev/${i.slug}#evidencias` : i.tipo === 'jogo' ? `/jogos/${i.slug}#evidencias` : `/${i.slug}`
 
   const Cartao = (i) => (
     <a key={`${i.tipo}-${i.slug}`} className="vt-card" href={destino(i)}>
@@ -49,6 +50,12 @@ export default function VitrineTestes() {
         <>
           <h2 className="vt-sec">4dev</h2>
           <div className="vt-grid">{dev.map(Cartao)}</div>
+        </>
+      )}
+      {jogos.length > 0 && (
+        <>
+          <h2 className="vt-sec">Jogos</h2>
+          <div className="vt-grid">{jogos.map(Cartao)}</div>
         </>
       )}
       {outros.length > 0 && (

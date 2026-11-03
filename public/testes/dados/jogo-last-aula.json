@@ -1,0 +1,69 @@
+{
+  "tipo": "jogo",
+  "slug": "last-aula",
+  "nome": "The Last Aula",
+  "ok": true,
+  "geradoEm": "2026-11-03T14:28:20.109Z",
+  "passos": [
+    {
+      "titulo": "Menu do jogo",
+      "detalhe": "História, controles e os botões Jogar e Tutorial.",
+      "img": "/testes/img/jogo-last-aula-01.jpg"
+    },
+    {
+      "titulo": "Tutorial",
+      "detalhe": "Placa com A e D (setas corrigidas), o primeiro cristal e o robô NEMO-MK2.",
+      "img": "/testes/img/jogo-last-aula-02.jpg"
+    },
+    {
+      "titulo": "Andando e pegando cristais",
+      "detalhe": "O contador mostra os cristais pegos.",
+      "img": "/testes/img/jogo-last-aula-03.jpg"
+    },
+    {
+      "titulo": "Tutorial completo",
+      "detalhe": "Com os 3 cristais o dragão entra na saída e o tutorial termina.",
+      "img": "/testes/img/jogo-last-aula-04.jpg"
+    },
+    {
+      "titulo": "Fase 1: Floresta de Zurard",
+      "detalhe": "Fase convertida das cenas originais do Unity.",
+      "img": "/testes/img/jogo-last-aula-05.jpg"
+    },
+    {
+      "titulo": "Robô à frente",
+      "detalhe": "Um NEMO-MK2 patrulhando: encostar nele é fatal.",
+      "img": "/testes/img/jogo-last-aula-06.jpg"
+    },
+    {
+      "titulo": "Ataque do dragão",
+      "detalhe": "Novidade desta versão: o dragão ataca com a animação de golpe do sprite original e o robô explode.",
+      "img": "/testes/img/jogo-last-aula-07.jpg"
+    },
+    {
+      "titulo": "Robô derrotado",
+      "detalhe": "Inimigos vivos: 6 → 5.",
+      "img": "/testes/img/jogo-last-aula-08.jpg"
+    },
+    {
+      "titulo": "Saída fechada sem 3 cristais",
+      "detalhe": "No fim da fase, sem os cristais, aparece quantos faltam.",
+      "img": "/testes/img/jogo-last-aula-09.jpg"
+    },
+    {
+      "titulo": "Uma vida só",
+      "detalhe": "Encostou no espinho: a jornada recomeça da Fase 1, como no original.",
+      "img": "/testes/img/jogo-last-aula-10.jpg"
+    },
+    {
+      "titulo": "Fase 2: Caverna dos Cristais",
+      "detalhe": "Plataformas móveis sobre os espinhos, convertidas do MovementPhase.cs.",
+      "img": "/testes/img/jogo-last-aula-11.jpg"
+    },
+    {
+      "titulo": "Fim do jogo",
+      "detalhe": "Com os cristais o dragão volta a voar.",
+      "img": "/testes/img/jogo-last-aula-12.jpg"
+    }
+  ]
+}

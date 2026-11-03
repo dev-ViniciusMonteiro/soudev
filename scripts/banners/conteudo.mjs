@@ -193,6 +193,8 @@ export const banners = [
       ${em('🎵', 90, 760, 120)}${em('🎶', 80, 120, 140)}`,
   },
 
+  { tipo: 'jogos', slug: 'last-aula', tag: 'JOGO DE PLATAFORMA 2D', titulo: 'The Last Aula', chamada: ['Um dragão atrás', '*dos cristais mágicos!*'], cores: ['#f59e0b', '#a855f7'], selos: [['🐉', 'Pule e ataque'], ['💎', '3 cristais por fase'], ['🤖', 'Robôs e espinhos'], ['❤️', 'Uma vida só']], tela: 'jogo-last-aula', endereco: '/jogar/last-aula/index.html?fase=Tutorial' },
+
   /* ---------- Apps ---------- */
   { tipo: 'apps', slug: 'treino', tag: 'APP GRÁTIS', titulo: 'Treino', chamada: ['Seu diário de academia', '*com progressão automática*'], cores: ['#4ade80', '#22d3ee'], selos: [['🏋️', 'Rotinas e planos'], ['⏱️', 'Descanso com alarme'], ['📈', 'Progressão automática'], ['📴', 'Funciona offline']], tela: 'app-treino' },
   { tipo: 'apps', slug: 'editor-de-video', tag: 'APP GRÁTIS', titulo: 'Editor de Vídeo', chamada: ['Edite vídeos', '*direto no navegador*'], cores: ['#f43f5e', '#a78bfa'], selos: [['🎬', 'Várias trilhas'], ['✂️', 'Cortes e textos'], ['🎭', 'Máscaras e keyframes'], ['💾', 'Exporta em MP4']], tela: 'app-editor-de-video' },

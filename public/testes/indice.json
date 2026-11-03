@@ -1,7 +1,7 @@
 {
-  "geradoEm": "2026-11-02T01:18:11.443Z",
-  "total": 39,
-  "ok": 39,
+  "geradoEm": "2026-11-03T14:28:36.735Z",
+  "total": 40,
+  "ok": 40,
   "itens": [
     {
       "tipo": "4dev",
@@ -263,6 +263,15 @@
       "geradoEm": "2026-11-02T01:16:14.329Z",
       "prints": 2,
       "capa": "/testes/img/ferramenta-organizador-de-mesas-01.jpg"
+    },
+    {
+      "tipo": "jogo",
+      "slug": "last-aula",
+      "nome": "The Last Aula",
+      "ok": true,
+      "geradoEm": "2026-11-03T14:28:20.109Z",
+      "prints": 12,
+      "capa": "/testes/img/jogo-last-aula-01.jpg"
     },
     {
       "tipo": "pagina",
