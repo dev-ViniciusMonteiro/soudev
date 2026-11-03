@@ -88,8 +88,45 @@ cena.nodes.forEach((n, i) => {
   objetos.push({ modelo, pos, rot: quaternio(m), esc: escala(m).map(r4) })
 })
 const ponto = (nome) => posicao(matrizMundo(indice(nome)))
+
+// Caixas sólidas (muros, obstáculos e os modelos que bloqueiam), usadas pelo jogo e pelo servidor do online
+// (backend-soudev/src/etp-mapa.ts) para colisão e linha de tiro. Os limites dos modelos vêm do min/max do POSITION.
+const SOLIDO = { rpgpp_lt_building_01: 1, rpgpp_lt_building_03: 1, rpgpp_lt_building_04: 1, rpgpp_lt_building_05: 1, rpgpp_lt_rock_03: 1, rpgpp_lt_log_wood_01: 1, rpgpp_lt_tree_02: 0.22 }
+function limitesModelo(nome) {
+  const g = lerGlb(path.join(ORIGEM, 'Mesh', `${nome}.glb`))
+  const min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity]
+  g.nodes.forEach((n, i) => {
+    if (n.mesh === undefined) return
+    const pais = new Map(); g.nodes.forEach((p, k) => (p.children || []).forEach((c) => pais.set(c, k)))
+    let m = trs(n); for (let k = pais.get(i); k !== undefined; k = pais.get(k)) m = mult(trs(g.nodes[k]), m)
+    for (const prim of g.meshes[n.mesh].primitives) {
+      const a = g.accessors[prim.attributes.POSITION]
+      for (const cx of [a.min[0], a.max[0]]) for (const cy of [a.min[1], a.max[1]]) for (const cz of [a.min[2], a.max[2]]) {
+        const p = [0, 1, 2].map((k) => m[k] * cx + m[4 + k] * cy + m[8 + k] * cz + m[12 + k])
+        p.forEach((v, k) => { min[k] = Math.min(min[k], v); max[k] = Math.max(max[k], v) })
+      }
+    }
+  })
+  return [min, max]
+}
+const solidos = caixas.filter((c) => c.tipo !== 'chao').map((c) => [...c.centro.map((v, k) => r2(v - c.tamanho[k] / 2)), ...c.centro.map((v, k) => r2(v + c.tamanho[k] / 2))])
+for (const o of objetos) {
+  const fator = SOLIDO[o.modelo]
+  if (!fator) continue
+  const [lmin, lmax] = limitesModelo(o.modelo)
+  const [qx, qy, qz, qw] = o.rot
+  const m = trs({ translation: o.pos, rotation: [qx, qy, qz, qw], scale: o.esc })
+  const min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity]
+  for (const cx of [lmin[0], lmax[0]]) for (const cy of [lmin[1], lmax[1]]) for (const cz of [lmin[2], lmax[2]]) {
+    const p = [0, 1, 2].map((k) => m[k] * cx + m[4 + k] * cy + m[8 + k] * cz + m[12 + k])
+    p.forEach((v, k) => { min[k] = Math.min(min[k], v); max[k] = Math.max(max[k], v) })
+  }
+  if (fator < 1) for (const k of [0, 2]) { const c = (min[k] + max[k]) / 2, t = ((max[k] - min[k]) * fator) / 2; min[k] = c - t; max[k] = c + t } // árvore: só o tronco
+  solidos.push([...min.map(r2), ...max.map(r2)])
+}
+
 const mapa = {
-  caixas, objetos,
+  caixas, objetos, solidos,
   jogador: ponto('PlayerSpawner'),
   policia: ponto('EnemySpawner'),
 }

@@ -120,12 +120,12 @@ test('Jogo · Escape The Police', async ({ page }, info) => {
   try {
     await test.step('1. Abrir o jogo', async () => {
       await page.goto('/jogar/escape-the-police/index.html')
-      await expect(page.getByRole('button', { name: 'Jogar' })).toBeVisible({ timeout: 60000 })
-      await ev.print(page, info, 'Menu', 'Objetivo, controles e o botão Jogar.')
+      await expect(page.getByRole('button', { name: 'Contra a polícia' })).toBeVisible({ timeout: 60000 })
+      await ev.print(page, info, 'Menu', 'Objetivo, controles e os modos: contra a polícia, online 1x1 e online 2x2.')
     })
 
     await test.step('2. Começar e andar', async () => {
-      await page.getByRole('button', { name: 'Jogar' }).click()
+      await page.getByRole('button', { name: 'Contra a polícia' }).click()
       await expect.poll(() => E(() => window.__etp.estado())).toBe('jogando')
       await E(() => window.__etp.invencivel())
       await page.keyboard.down('KeyW'); await page.waitForTimeout(1500); await page.keyboard.up('KeyW')
@@ -186,6 +186,102 @@ test('Jogo · Escape The Police', async ({ page }, info) => {
       expect(fps).toBeGreaterThan(20)
     })
 
+    expect(erros, erros.join('\n')).toEqual([])
+    ok = true
+  } finally {
+    ev.salvar(ok)
+  }
+})
+
+// Escape The Police online (2x2): precisa do backend-soudev rodando (npm run dev lá, com a origem do teste
+// liberada) e do jogo compilado com VITE_BACKEND_URL apontando para ele. Só roda com E2E_COMPARTILHADO=1.
+test('Jogo · Escape The Police online', async ({ browser, page }, info) => {
+  test.setTimeout(300000)
+  info.annotations.push({ type: 'O que este teste faz', description: 'Quatro navegadores: um cria a sala privada 2x2, três entram pelo link de convite, os times jogam rodadas com tiros e granada até a vitória.' })
+  const ev = novaEvidencia('jogo', 'escape-the-police-online', 'Escape The Police online')
+  const erros = []
+  let ok = false
+  const O = (p, f, a) => p.evaluate(f, a)
+  try {
+    await test.step('1. Menu online', async () => {
+      await page.goto('/jogar/escape-the-police/index.html')
+      await page.getByRole('button', { name: 'Online 2x2' }).click()
+      await expect(page.getByRole('button', { name: 'Criar sala privada' })).toBeVisible({ timeout: 60000 })
+      await ev.print(page, info, 'Online 2x2', 'Apelido, partida rápida, sala privada ou entrar com o código.')
+    })
+    if (process.env.E2E_COMPARTILHADO !== '1') {
+      ev.nota('Partida online', 'Os passos com o servidor só rodam com E2E_COMPARTILHADO=1 e o backend-soudev local.')
+      ok = true
+      return
+    }
+
+    const jogadores = [page]
+    const nomes = ['Ana', 'Bia', 'Caio', 'Duda']
+    await test.step('2. Criar a sala privada e convidar', async () => {
+      await page.getByPlaceholder('Seu apelido').fill(nomes[0])
+      await page.getByRole('button', { name: 'Criar sala privada' }).click()
+      await expect(page.getByRole('heading', { name: /^Sala / })).toBeVisible({ timeout: 20000 })
+      const codigo = await O(page, () => window.__etp.online.sala())
+      for (const nome of nomes.slice(1)) {
+        const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } })
+        const p = await ctx.newPage()
+        p.on('pageerror', (e) => erros.push(`${nome}: ${e}`))
+        // link de convite: abre direto na tela da sala
+        await p.goto(`/jogar/escape-the-police/index.html?sala=${codigo}`)
+        await p.getByPlaceholder('Seu apelido').fill(nome)
+        await p.getByRole('button', { name: 'Entrar com código' }).click()
+        jogadores.push(p)
+        if (nome === 'Caio') {
+          await expect(page.getByText('esperando jogadores: 3 de 4')).toBeVisible({ timeout: 15000 })
+          await ev.print(page, info, 'Sala de espera', `Sala ${codigo}: os times aparecem enquanto os amigos entram pelo link.`)
+        }
+      }
+      for (const p of jogadores) await expect.poll(() => O(p, () => window.__etp.online.fase()), { timeout: 20000 }).toBe('rodada')
+    })
+
+    const times = await Promise.all(jogadores.map((p) => O(p, () => window.__etp.online.time())))
+    const azul = jogadores.filter((_, i) => times[i] === 'A'), vermelho = jogadores.filter((_, i) => times[i] === 'B')
+    expect(azul.length).toBe(2)
+    expect(vermelho.length).toBe(2)
+
+    // cada azul vai até um vermelho num campo aberto e atira até derrubar
+    let printouTiro = false
+    async function rodadaAzul(granada = false) {
+      for (const p of jogadores) await expect.poll(() => O(p, () => window.__etp.online.fase()), { timeout: 20000 }).toBe('rodada')
+      const pares = [[azul[0], vermelho[0], 0], [azul[1], vermelho[1], 30]]
+      for (const [a, v, x] of pares) { await O(v, (x) => window.__etp.irPara(x, -86), x); await O(a, (x) => window.__etp.irPara(x, -99), x) }
+      await page.waitForTimeout(700)
+      if (granada) {
+        await O(azul[0], () => window.__etp.olharPara(0, -6.5, -86))
+        await O(azul[0], () => window.__etp.granada())
+        await page.waitForTimeout(2600)
+        await ev.print(azul[0], info, 'Granada', 'A explosão é sincronizada e o servidor aplica o dano em quem estava perto.')
+      }
+      for (const [a, v, x] of pares) {
+        for (let i = 0; i < 12 && (await O(v, () => window.__etp.online.vivo())); i++) {
+          await O(a, (x) => { window.__etp.olharPara(x, -5 + 1.15, -86); window.__etp.atirar() }, x)
+          await page.waitForTimeout(240)
+          if (i === 1 && x === 0 && !printouTiro && (printouTiro = true)) await ev.print(a, info, 'Tiro no adversário', 'Nome e farda do time em cada jogador; o servidor confere a mira antes de aplicar o dano.')
+        }
+      }
+    }
+
+    await test.step('3. Rodada 1', async () => {
+      await rodadaAzul()
+      await expect.poll(() => O(page, () => window.__etp.online.placar()?.A), { timeout: 8000 }).toBe(1)
+      await ev.print(vermelho[0], info, 'Abatido', 'Quem é abatido vê a tela em cinza e espera a próxima rodada.')
+    })
+    await test.step('4. Rodadas 2 a 4 (com granada)', async () => {
+      await rodadaAzul(true)
+      await rodadaAzul()
+      await rodadaAzul()
+      for (const p of jogadores) await expect.poll(() => O(p, () => window.__etp.online.fase()), { timeout: 10000 }).toBe('fim')
+      await expect(azul[0].getByRole('heading', { name: 'Vitória!' })).toBeVisible()
+      await expect(vermelho[0].getByRole('heading', { name: 'Derrota' })).toBeVisible()
+      await ev.print(azul[0], info, 'Vitória', 'Placar final 4 × 0 e os abates de cada um.')
+      await ev.print(vermelho[0], info, 'Derrota', 'O outro time vê a derrota; a revanche começa sozinha se todos ficarem.')
+    })
+    for (const p of jogadores.slice(1)) await p.context().close()
     expect(erros, erros.join('\n')).toEqual([])
     ok = true
   } finally {

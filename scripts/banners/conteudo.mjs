@@ -195,7 +195,7 @@ export const banners = [
 
   { tipo: 'jogos', slug: 'last-aula', tag: 'JOGO DE PLATAFORMA 2D', titulo: 'The Last Aula', chamada: ['Um dragão atrás', '*dos cristais mágicos!*'], cores: ['#f59e0b', '#a855f7'], selos: [['🐉', 'Pule e ataque'], ['💎', '3 cristais por fase'], ['🤖', 'Robôs e espinhos'], ['❤️', 'Uma vida só']], tela: 'jogo-last-aula', endereco: '/jogar/last-aula/index.html?fase=Tutorial' },
 
-  { tipo: 'jogos', slug: 'escape-the-police', tag: 'JOGO DE TIRO 3D · FPS', titulo: 'Escape The Police', chamada: ['Fuja da polícia', '*em 3 ondas!*'], cores: ['#3b82f6', '#ef4444'], selos: [['🔫', 'Pistola e granadas'], ['🚓', 'Policiais que caçam'], ['📡', 'Radar'], ['⚡', '60 fps no navegador']], tela: 'jogo-escape-the-police', endereco: '/jogar/escape-the-police/index.html?vitrine=1' },
+  { tipo: 'jogos', slug: 'escape-the-police', tag: 'JOGO DE TIRO 3D · FPS', titulo: 'Escape The Police', chamada: ['Fuja da polícia', '*ou jogue online 1x1 e 2x2!*'], cores: ['#3b82f6', '#ef4444'], selos: [['🚓', '3 ondas de policiais'], ['🌐', 'Online 1x1 e 2x2'], ['💣', 'Pistola e granadas'], ['⚡', '60 fps no navegador']], tela: 'jogo-escape-the-police', endereco: '/jogar/escape-the-police/index.html?vitrine=1' },
 
   /* ---------- Apps ---------- */
   { tipo: 'apps', slug: 'treino', tag: 'APP GRÁTIS', titulo: 'Treino', chamada: ['Seu diário de academia', '*com progressão automática*'], cores: ['#4ade80', '#22d3ee'], selos: [['🏋️', 'Rotinas e planos'], ['⏱️', 'Descanso com alarme'], ['📈', 'Progressão automática'], ['📴', 'Funciona offline']], tela: 'app-treino' },

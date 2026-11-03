@@ -5,7 +5,7 @@
 
 import { useEffect, useState } from 'react'
 
-export default function EvidenciasTeste({ tipo, slug }) {
+export default function EvidenciasTeste({ tipo, slug, ancora = 'evidencias' }) {
   const [dados, setDados] = useState(undefined)
 
   useEffect(() => {
@@ -21,7 +21,7 @@ export default function EvidenciasTeste({ tipo, slug }) {
   const prints = dados.passos.filter((p) => p.img)
 
   return (
-    <section className="ev" id="evidencias">
+    <section className="ev" id={ancora}>
       <div className="ev-cabecalho">
         <h2>Evidências dos testes {dados.ok ? <span className="ev-selo">✓ passou</span> : <span className="ev-selo ruim">✗ falhou</span>}</h2>
         <p className="muted">Testado automaticamente num navegador real (Playwright) em {data}. Cada imagem é um print capturado durante o teste.</p>

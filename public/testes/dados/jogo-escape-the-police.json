@@ -3,11 +3,11 @@
   "slug": "escape-the-police",
   "nome": "Escape The Police",
   "ok": true,
-  "geradoEm": "2026-11-03T20:58:11.059Z",
+  "geradoEm": "2026-11-03T21:25:53.216Z",
   "passos": [
     {
       "titulo": "Menu",
-      "detalhe": "Objetivo, controles e o botão Jogar.",
+      "detalhe": "Objetivo, controles e os modos: contra a polícia, online 1x1 e online 2x2.",
       "img": "/testes/img/jogo-escape-the-police-01.jpg"
     },
     {

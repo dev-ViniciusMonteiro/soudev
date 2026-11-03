@@ -19,7 +19,7 @@ export default function VitrineTestes() {
   const jogos = ind.itens.filter((i) => i.tipo === 'jogo')
   const outros = ind.itens.filter((i) => i.tipo === 'rede' || i.tipo === 'pagina')
   const destino = (i) =>
-    i.tipo === 'sistema' ? `/sistemas/${i.slug}/teste` : i.tipo === 'app' ? `/apps/${i.slug}/teste` : i.tipo === 'ferramenta' ? `/ferramentas/${i.slug}#evidencias` : i.tipo === '4dev' ? `/4dev/${i.slug}#evidencias` : i.tipo === 'jogo' ? `/jogos/${i.slug}#evidencias` : `/${i.slug}`
+    i.tipo === 'sistema' ? `/sistemas/${i.slug}/teste` : i.tipo === 'app' ? `/apps/${i.slug}/teste` : i.tipo === 'ferramenta' ? `/ferramentas/${i.slug}#evidencias` : i.tipo === '4dev' ? `/4dev/${i.slug}#evidencias` : i.tipo === 'jogo' ? (i.slug.endsWith('-online') ? `/jogos/${i.slug.replace(/-online$/, '')}#evidencias-online` : `/jogos/${i.slug}#evidencias`) : `/${i.slug}`
 
   const Cartao = (i) => (
     <a key={`${i.tipo}-${i.slug}`} className="vt-card" href={destino(i)}>

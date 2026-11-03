@@ -139,6 +139,7 @@ export default async function GamePage({ params }) {
       </section>
 
       <EvidenciasTeste tipo="jogo" slug={game.slug} />
+      <EvidenciasTeste tipo="jogo" slug={`${game.slug}-online`} ancora="evidencias-online" />
 
       <script type="application/ld+json" dangerouslySetInnerHTML={jsonLd(structured)} />
     </main>

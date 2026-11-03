@@ -15,6 +15,7 @@ export const caixas: Caixa[] = []
 type Mapa = {
   caixas: { nome: string; tipo: string; centro: number[]; tamanho: number[] }[]
   objetos: { modelo: string; pos: number[]; rot: number[]; esc: number[] }[]
+  solidos: number[][] // [minX, minY, minZ, maxX, maxY, maxZ]: as mesmas caixas que o servidor do online usa
   jogador: number[]; policia: number[]
 }
 const M = mapa as Mapa
@@ -31,9 +32,6 @@ function textura(arq: string, rx = 1, ry = 1, pixel = false) {
   t.anisotropy = 4
   return t
 }
-
-// O que bloqueia o caminho: prédios, rochas, tronco e o tronco das árvores. Plantas e arbustos não.
-const SOLIDO: Record<string, number> = { rpgpp_lt_building_01: 1, rpgpp_lt_building_03: 1, rpgpp_lt_building_04: 1, rpgpp_lt_building_05: 1, rpgpp_lt_rock_03: 1, rpgpp_lt_log_wood_01: 1, rpgpp_lt_tree_02: 0.22 }
 
 export async function montarMundo(cena: THREE.Scene, sombras: boolean, aoProgresso: (p: number) => void) {
   // céu (skybox original)
@@ -61,8 +59,8 @@ export async function montarMundo(cena: THREE.Scene, sombras: boolean, aoProgres
     m.castShadow = sombras; m.receiveShadow = sombras
     m.matrixAutoUpdate = false; m.updateMatrix()
     cena.add(m)
-    caixas.push({ min: new THREE.Vector3(cx - sx / 2, cy - sy / 2, cz - sz / 2), max: new THREE.Vector3(cx + sx / 2, cy + sy / 2, cz + sz / 2) })
   }
+  for (const b of M.solidos) caixas.push({ min: new THREE.Vector3(b[0], b[1], b[2]), max: new THREE.Vector3(b[3], b[4], b[5]) })
 
   // modelos (cada um baixado uma vez e repetido)
   const paleta = textura('texturas/rpgpp.png', 1, 1, true)
@@ -90,16 +88,6 @@ export async function montarMundo(cena: THREE.Scene, sombras: boolean, aoProgres
     m.castShadow = sombras; m.receiveShadow = sombras
     m.matrixAutoUpdate = false; m.updateMatrix()
     cena.add(m)
-    const fator = SOLIDO[o.modelo]
-    if (fator) {
-      const b = new THREE.Box3().setFromObject(m)
-      if (fator < 1) { // árvore: só o tronco segura
-        const c = b.getCenter(new THREE.Vector3()), t = b.getSize(new THREE.Vector3())
-        b.min.x = c.x - (t.x * fator) / 2; b.max.x = c.x + (t.x * fator) / 2
-        b.min.z = c.z - (t.z * fator) / 2; b.max.z = c.z + (t.z * fator) / 2
-      }
-      caixas.push({ min: b.min.clone(), max: b.max.clone() })
-    }
   }
   montarGrade()
 }

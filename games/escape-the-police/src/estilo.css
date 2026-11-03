@@ -80,3 +80,9 @@ canvas { display: block; }
   .municao { font-size: 24px; }
   .tq.granada { bottom: 160px; }
 }
+
+/* online: apelido e código da sala */
+.campo { padding: 12px 14px; min-width: 240px; font: inherit; font-size: 17px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, .3); background: rgba(0, 0, 0, .45); color: #fff; text-align: center; }
+.campo:focus { outline: 2px solid #3b82f6; }
+.campo.erro { border-color: #f87171; }
+.campo.codigo { min-width: 0; width: 130px; text-transform: uppercase; letter-spacing: 3px; font-weight: 800; }
