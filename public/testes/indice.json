@@ -1,7 +1,7 @@
 {
-  "geradoEm": "2026-11-03T14:28:36.735Z",
-  "total": 40,
-  "ok": 40,
+  "geradoEm": "2026-11-03T20:58:56.759Z",
+  "total": 41,
+  "ok": 41,
   "itens": [
     {
       "tipo": "4dev",
@@ -263,6 +263,15 @@
       "geradoEm": "2026-11-02T01:16:14.329Z",
       "prints": 2,
       "capa": "/testes/img/ferramenta-organizador-de-mesas-01.jpg"
+    },
+    {
+      "tipo": "jogo",
+      "slug": "escape-the-police",
+      "nome": "Escape The Police",
+      "ok": true,
+      "geradoEm": "2026-11-03T20:58:11.059Z",
+      "prints": 6,
+      "capa": "/testes/img/jogo-escape-the-police-01.jpg"
     },
     {
       "tipo": "jogo",

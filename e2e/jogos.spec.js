@@ -106,3 +106,89 @@ test('Jogo · The Last Aula', async ({ page }, info) => {
     ev.salvar(ok)
   }
 })
+
+// Escape The Police: FPS 3D em three.js (/jogar/escape-the-police). O teste anda pelo mapa, atira de verdade
+// (mirando pelos ganchos window.__etp), joga uma granada e derruba as 3 ondas de policiais até a vitória.
+test('Jogo · Escape The Police', async ({ page }, info) => {
+  test.setTimeout(240000)
+  info.annotations.push({ type: 'O que este teste faz', description: 'Abre o FPS 3D, anda, atira nos policiais, joga granada, confere vida, munição e recarga e vence as 3 ondas.' })
+  const ev = novaEvidencia('jogo', 'escape-the-police', 'Escape The Police')
+  const erros = []
+  page.on('pageerror', (e) => erros.push(String(e)))
+  const E = (f, a) => page.evaluate(f, a)
+  let ok = false
+  try {
+    await test.step('1. Abrir o jogo', async () => {
+      await page.goto('/jogar/escape-the-police/index.html')
+      await expect(page.getByRole('button', { name: 'Jogar' })).toBeVisible({ timeout: 60000 })
+      await ev.print(page, info, 'Menu', 'Objetivo, controles e o botão Jogar.')
+    })
+
+    await test.step('2. Começar e andar', async () => {
+      await page.getByRole('button', { name: 'Jogar' }).click()
+      await expect.poll(() => E(() => window.__etp.estado())).toBe('jogando')
+      await E(() => window.__etp.invencivel())
+      await page.keyboard.down('KeyW'); await page.waitForTimeout(1500); await page.keyboard.up('KeyW')
+      const j = await E(() => window.__etp.jogador())
+      expect(j.z).toBeGreaterThan(-99)
+      await ev.print(page, info, 'Primeira pessoa', 'Pistola do Low Poly FPS Pack, vida, munição, granadas e o radar com os policiais.')
+    })
+
+    // derruba todos os policiais vivos chegando perto e atirando (com recarga quando o pente acaba)
+    async function limparOnda(rotulo) {
+      const onda = await E(() => window.__etp.onda())
+      for (let volta = 0; volta < 120; volta++) {
+        if ((await E(() => window.__etp.estado())) !== 'jogando' || (await E(() => window.__etp.onda())) !== onda) return
+        const vivos = await E(() => window.__etp.policiais())
+        if (!vivos.length) { await page.waitForTimeout(500); continue }
+        const p = vivos[0]
+        await E(([x, z]) => window.__etp.irPara(x - 7, z - 7), [p.x, p.z])
+        await page.waitForTimeout(120)
+        const q = (await E(() => window.__etp.policiais()))[0]
+        if (!q) continue
+        await E(([x, z]) => { window.__etp.olharPara(x, -5 + 1.15, z); window.__etp.atirar() }, [q.x, q.z])
+        const j = await E(() => window.__etp.jogador())
+        if (j.municao === 0) { await page.keyboard.press('KeyR'); await page.waitForTimeout(1700) } else await page.waitForTimeout(230)
+        if (volta === 2 && rotulo) await ev.print(page, info, rotulo, 'Mira no policial e tiro: a barra de vida dele aparece e diminui.')
+      }
+    }
+
+    await test.step('3. Onda 1: os 2 policiais da cena original', async () => {
+      await page.waitForTimeout(3500) // os policiais nascem aos poucos
+      await limparOnda('Tiro no policial')
+      await expect.poll(() => E(() => window.__etp.onda()), { timeout: 20000 }).toBe(1)
+      await ev.print(page, info, 'Onda 2', 'Ao fim de cada onda o jogador recupera vida e ganha uma granada.')
+    })
+
+    await test.step('4. Granada', async () => {
+      await page.waitForTimeout(3000)
+      const p = (await E(() => window.__etp.policiais()))[0]
+      if (p) {
+        await E(([x, z]) => { window.__etp.irPara(x - 9, z - 9); window.__etp.olharPara(x, -3.5, z) }, [p.x, p.z])
+        const antes = (await E(() => window.__etp.jogador())).granadas
+        await E(() => window.__etp.granada())
+        await page.waitForTimeout(2400)
+        await ev.print(page, info, 'Granada', 'Explode depois de 2 segundos e fere os policiais em volta.')
+        expect((await E(() => window.__etp.jogador())).granadas).toBe(antes - 1)
+      }
+    })
+
+    await test.step('5. Ondas 2 e 3 até a vitória', async () => {
+      for (let i = 0; i < 4 && (await E(() => window.__etp.estado())) === 'jogando'; i++) { await limparOnda(); await page.waitForTimeout(3500) }
+      await expect(page.getByRole('heading', { name: 'Você escapou da polícia!' })).toBeVisible({ timeout: 30000 })
+      expect(await E(() => window.__etp.abatidos())).toBe(12)
+      await ev.print(page, info, 'Vitória', '12 policiais abatidos nas 3 ondas, com o tempo da partida.')
+    })
+
+    await test.step('6. Taxa de quadros', async () => {
+      const fps = await E(() => window.__etp.fps())
+      ev.nota('Taxa de quadros', `${Math.round(fps)} fps medidos no navegador do teste.`)
+      expect(fps).toBeGreaterThan(20)
+    })
+
+    expect(erros, erros.join('\n')).toEqual([])
+    ok = true
+  } finally {
+    ev.salvar(ok)
+  }
+})

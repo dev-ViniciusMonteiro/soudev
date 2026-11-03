@@ -1,0 +1,43 @@
+{
+  "tipo": "jogo",
+  "slug": "escape-the-police",
+  "nome": "Escape The Police",
+  "ok": true,
+  "geradoEm": "2026-11-03T20:58:11.059Z",
+  "passos": [
+    {
+      "titulo": "Menu",
+      "detalhe": "Objetivo, controles e o botão Jogar.",
+      "img": "/testes/img/jogo-escape-the-police-01.jpg"
+    },
+    {
+      "titulo": "Primeira pessoa",
+      "detalhe": "Pistola do Low Poly FPS Pack, vida, munição, granadas e o radar com os policiais.",
+      "img": "/testes/img/jogo-escape-the-police-02.jpg"
+    },
+    {
+      "titulo": "Tiro no policial",
+      "detalhe": "Mira no policial e tiro: a barra de vida dele aparece e diminui.",
+      "img": "/testes/img/jogo-escape-the-police-03.jpg"
+    },
+    {
+      "titulo": "Onda 2",
+      "detalhe": "Ao fim de cada onda o jogador recupera vida e ganha uma granada.",
+      "img": "/testes/img/jogo-escape-the-police-04.jpg"
+    },
+    {
+      "titulo": "Granada",
+      "detalhe": "Explode depois de 2 segundos e fere os policiais em volta.",
+      "img": "/testes/img/jogo-escape-the-police-05.jpg"
+    },
+    {
+      "titulo": "Vitória",
+      "detalhe": "12 policiais abatidos nas 3 ondas, com o tempo da partida.",
+      "img": "/testes/img/jogo-escape-the-police-06.jpg"
+    },
+    {
+      "titulo": "Taxa de quadros",
+      "detalhe": "60 fps medidos no navegador do teste."
+    }
+  ]
+}
