@@ -7,6 +7,7 @@ import './imoveis.css'
 import './ppfd.css'
 import './win98.css'
 import './demos.css'
+import './lentes.css'
 
 export default function AppsLayout({ children }) {
   return children

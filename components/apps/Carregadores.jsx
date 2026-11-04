@@ -27,6 +27,7 @@ const ChecklistLimpeza = dynamic(() => import('./profissoes/ChecklistLimpeza'), 
 const PetRelatorio = dynamic(() => import('./profissoes/PetRelatorio'), { ssr: false, loading: carregando })
 const AprovaFoto = dynamic(() => import('./profissoes/AprovaFoto'), { ssr: false, loading: carregando })
 const AprovaProjeto = dynamic(() => import('./profissoes/AprovaProjeto'), { ssr: false, loading: carregando })
+const Lentes = dynamic(() => import('./lentes/Lentes'), { ssr: false, loading: carregando })
 
 export function AppCliente({ slug }) {
   if (slug === 'treino') return <Treino />
@@ -46,5 +47,6 @@ export function AppCliente({ slug }) {
   if (slug === 'pet-relatorio') return <PetRelatorio />
   if (slug === 'aprova-foto') return <AprovaFoto />
   if (slug === 'aprova-projeto') return <AprovaProjeto />
+  if (slug === 'lente-certa') return <Lentes />
   return null
 }

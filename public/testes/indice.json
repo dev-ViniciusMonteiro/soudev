@@ -1,7 +1,7 @@
 {
-  "geradoEm": "2026-11-03T21:25:54.905Z",
-  "total": 42,
-  "ok": 42,
+  "geradoEm": "2026-11-04T12:28:46.561Z",
+  "total": 43,
+  "ok": 43,
   "itens": [
     {
       "tipo": "4dev",
@@ -98,7 +98,7 @@
       "slug": "documentador",
       "nome": "Documentador",
       "ok": true,
-      "geradoEm": "2026-11-02T01:15:28.914Z",
+      "geradoEm": "2026-11-04T12:27:45.104Z",
       "prints": 1,
       "capa": "/testes/img/app-documentador-01.jpg"
     },
@@ -107,7 +107,7 @@
       "slug": "editor-de-video",
       "nome": "Editor de vídeo",
       "ok": true,
-      "geradoEm": "2026-11-02T01:15:37.013Z",
+      "geradoEm": "2026-11-04T12:27:54.421Z",
       "prints": 1,
       "capa": "/testes/img/app-editor-de-video-01.jpg"
     },
@@ -143,16 +143,25 @@
       "slug": "globo",
       "nome": "Globo ao vivo",
       "ok": true,
-      "geradoEm": "2026-11-02T01:15:26.093Z",
+      "geradoEm": "2026-11-04T12:27:37.553Z",
       "prints": 2,
       "capa": "/testes/img/app-globo-01.jpg"
+    },
+    {
+      "tipo": "app",
+      "slug": "lente-certa",
+      "nome": "Lente Certa",
+      "ok": true,
+      "geradoEm": "2026-11-04T12:28:40.287Z",
+      "prints": 6,
+      "capa": "/testes/img/app-lente-certa-01.jpg"
     },
     {
       "tipo": "app",
       "slug": "ppfd",
       "nome": "Medidor PPFD",
       "ok": true,
-      "geradoEm": "2026-11-02T01:15:34.360Z",
+      "geradoEm": "2026-11-04T12:27:51.361Z",
       "prints": 1,
       "capa": "/testes/img/app-ppfd-01.jpg"
     },
@@ -188,7 +197,7 @@
       "slug": "imoveis",
       "nome": "Radar de Imóveis",
       "ok": true,
-      "geradoEm": "2026-11-02T01:15:31.632Z",
+      "geradoEm": "2026-11-04T12:27:48.107Z",
       "prints": 1,
       "capa": "/testes/img/app-imoveis-01.jpg"
     },
@@ -197,7 +206,7 @@
       "slug": "treino",
       "nome": "Treino",
       "ok": true,
-      "geradoEm": "2026-11-02T01:15:13.008Z",
+      "geradoEm": "2026-11-04T12:27:19.004Z",
       "prints": 3,
       "capa": "/testes/img/app-treino-01.jpg"
     },

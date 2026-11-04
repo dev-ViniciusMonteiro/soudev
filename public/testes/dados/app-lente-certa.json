@@ -1,0 +1,39 @@
+{
+  "tipo": "app",
+  "slug": "lente-certa",
+  "nome": "Lente Certa",
+  "ok": true,
+  "geradoEm": "2026-11-04T12:28:40.287Z",
+  "passos": [
+    {
+      "titulo": "Receita digitada: o app explica miopia, astigmatismo e vista cansada",
+      "detalhe": "",
+      "img": "/testes/img/app-lente-certa-01.jpg"
+    },
+    {
+      "titulo": "Seis materiais com borda, centro e peso; a 1.60 é sugerida para este grau",
+      "detalhe": "",
+      "img": "/testes/img/app-lente-certa-02.jpg"
+    },
+    {
+      "titulo": "Monofocal para longe: rua nítida, monitor e celular embaçados aos 48 anos",
+      "detalhe": "",
+      "img": "/testes/img/app-lente-certa-03.jpg"
+    },
+    {
+      "titulo": "Multifocal básica: corredor nítido e laterais distorcidas",
+      "detalhe": "",
+      "img": "/testes/img/app-lente-certa-04.jpg"
+    },
+    {
+      "titulo": "Antes e depois de cada tratamento; fotossensível marcado",
+      "detalhe": "",
+      "img": "/testes/img/app-lente-certa-05.jpg"
+    },
+    {
+      "titulo": "Resumo pronto para levar à ótica",
+      "detalhe": "",
+      "img": "/testes/img/app-lente-certa-06.jpg"
+    }
+  ]
+}
