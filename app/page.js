@@ -85,7 +85,9 @@ export default function Home() {
         <Link href={bannerPessoal.href} className="banner-pessoal">
           <Image src={bannerPessoal.imagem} alt={bannerPessoal.alt} width={bannerPessoal.largura} height={bannerPessoal.altura} priority sizes="(max-width: 1192px) 100vw, 1160px" />
         </Link>
-        <h1>Oi, eu sou o Vinicius. Faço ferramentas que resolvem as partes chatas do dia a dia, de graça.</h1>
+        <h1>
+          Oi, eu sou o Vinicius. Faço ferramentas que resolvem as partes chatas do dia a dia, <span className="marca-texto">de graça</span>.
+        </h1>
         <p className="intro-acoes">
           <Link href="#destaques" className="btn btn-primary">
             Ver os projetos

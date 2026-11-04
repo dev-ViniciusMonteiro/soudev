@@ -8,8 +8,8 @@ export default function manifest() {
     lang: 'pt-BR',
     start_url: '/',
     display: 'standalone',
-    background_color: '#f7f5f0',
-    theme_color: '#f7f5f0',
+    background_color: '#ffffff',
+    theme_color: '#0e359d',
     icons: [
       { src: '/icon.svg', sizes: 'any', type: 'image/svg+xml' },
       { src: '/apple-icon', sizes: '180x180', type: 'image/png' },

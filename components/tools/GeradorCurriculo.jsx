@@ -518,7 +518,7 @@ const CSS = `
 .cv-bandbody{padding:12mm 16mm 16mm}
 
 /* variações por modelo */
-.cv-serif,.cv-serif h1,.cv-serif h2{font-family:var(--font-serif)}
+.cv-serif,.cv-serif h1,.cv-serif h2{font-family:var(--font-newsreader),Georgia,'Times New Roman',serif}
 .cv-tpl-minimalista h2{border-bottom:none;color:#1f2430;border-left:3px solid var(--cv-accent);padding-left:8px}
 .cv-tpl-criativo h1{letter-spacing:-.5px}
 .cv-tpl-compacto{font-size:10.4pt}

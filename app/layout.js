@@ -1,4 +1,4 @@
-import { IBM_Plex_Mono, IBM_Plex_Sans, Newsreader } from 'next/font/google'
+import { IBM_Plex_Mono, IBM_Plex_Sans, Newsreader, Plus_Jakarta_Sans } from 'next/font/google'
 import Link from 'next/link'
 import Script from 'next/script'
 import Analytics from '@/components/Analytics'
@@ -10,8 +10,11 @@ import { montarIndice } from '@/lib/busca-indice'
 import { GA_ID, gaInitScript } from '@/lib/analytics'
 import { SITE_URL, site } from '@/lib/site'
 import './globals.css'
+import './tema.css'
 
 // Títulos em serifa (Newsreader) e texto em IBM Plex: fogem do Inter que todo site gerado por IA usa.
+// Títulos em Plus Jakarta Sans (encorpada e moderna); a Newsreader fica para os projetos com o tema clássico.
+const display = Plus_Jakarta_Sans({ subsets: ['latin'], weight: ['500', '600', '700', '800'], variable: '--font-display', display: 'swap' })
 const serif = Newsreader({ subsets: ['latin'], weight: ['400', '500'], style: ['normal', 'italic'], variable: '--font-newsreader', display: 'swap' })
 const sans = IBM_Plex_Sans({ subsets: ['latin'], weight: ['400', '500', '600', '700'], variable: '--font-plex', display: 'swap' })
 const mono = IBM_Plex_Mono({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-plex-mono', display: 'swap' })
@@ -44,7 +47,7 @@ export const metadata = {
 }
 
 export const viewport = {
-  themeColor: '#f7f5f0',
+  themeColor: '#0e359d',
   width: 'device-width',
   initialScale: 1,
 }
@@ -64,7 +67,7 @@ const menu = [
 export default function RootLayout({ children }) {
   const year = new Date().getFullYear()
   return (
-    <html lang="pt-BR" className={`${serif.variable} ${sans.variable} ${mono.variable}`}>
+    <html lang="pt-BR" className={`${display.variable} ${serif.variable} ${sans.variable} ${mono.variable}`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: gaInitScript }} />
       </head>
