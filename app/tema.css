@@ -281,6 +281,31 @@ textarea:focus:not(.dv-palco *):not(.dm *) {
   background: linear-gradient(transparent 68%, rgba(255, 96, 106, 0.38) 68%, rgba(255, 96, 106, 0.38) 92%, transparent 92%);
 }
 
+/* frase autoral logo abaixo do título da home */
+.frase-autoral {
+  margin: 18px 0 0;
+  padding: 4px 0 4px 18px;
+  border-left: 4px solid var(--coral);
+  max-width: 62ch;
+}
+.frase-autoral p {
+  margin: 0;
+  font-size: clamp(1.02rem, 1.6vw, 1.2rem);
+  line-height: 1.5;
+  font-style: italic;
+  color: var(--azul);
+}
+.frase-autoral cite {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.85rem;
+  font-style: normal;
+  font-weight: 700;
+  color: var(--coral);
+  letter-spacing: 0.02em;
+}
+.frase-autoral cite::before { content: '— '; }
+
 .intro-acoes a:not(.btn) {
   color: var(--azul);
   font-weight: 700;
