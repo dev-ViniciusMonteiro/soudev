@@ -8,6 +8,7 @@ import './ppfd.css'
 import './win98.css'
 import './demos.css'
 import './lentes.css'
+import './karaoke.css'
 
 export default function AppsLayout({ children }) {
   return children
