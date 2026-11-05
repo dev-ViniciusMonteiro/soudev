@@ -307,13 +307,15 @@ function tela(titulo: string, textos: string[], ...botoes: [string, () => void, 
 const CONTROLES = ehToque ? 'Analógico anda · arraste à direita para mirar · ATIRAR, R recarrega, 💣 granada, 🏃 correr' : 'WASD anda · mouse mira · clique atira · Shift corre · Espaço pula · R recarrega · G granada · Esc pausa'
 let recorde = 0
 try { recorde = Number(localStorage.getItem('etp-recorde') || 0) } catch { /* ignora */ }
+// O online (1x1 e 2x2) está desligado até ser consertado; o código continua aqui para religar.
+const ONLINE_ATIVO = false
 function menu() {
   estado = 'menu'; hud.hidden = true; toqueEl.hidden = true
   tela('Escape The Police', [
-    'A polícia cercou a cidade murada. Sobreviva a 3 ondas de policiais: eles patrulham o mapa, enxergam você de longe e atiram. Use os muros e os prédios para se proteger, recarregue a pistola e jogue granadas. Ou chame os amigos para o online: 1x1 ou 2x2.',
+    'A polícia cercou a cidade murada. Sobreviva a 3 ondas de policiais: eles patrulham o mapa, enxergam você de longe e atiram. Use os muros e os prédios para se proteger, recarregue a pistola e jogue granadas.',
     CONTROLES,
     recorde ? `Seu melhor tempo: ${formatar(recorde)}` : 'Jogo original em Unity (2021), refeito para o navegador.',
-  ], ['Contra a polícia', iniciar], ['Online 1x1', () => void telaOnline('1x1')], ['Online 2x2', () => void telaOnline('2x2')])
+  ], ['Contra a polícia', iniciar], ...(ONLINE_ATIVO ? [['Online 1x1', () => void telaOnline('1x1')], ['Online 2x2', () => void telaOnline('2x2')]] as [string, () => void][] : []))
 }
 const formatar = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`
 
@@ -1096,7 +1098,7 @@ const carregar = async () => {
   if (q.get('jogar') === '1' || q.get('vitrine') === '1') iniciar()
   // vitrine (banner): começa olhando para onde a polícia chega
   if (q.get('vitrine') === '1') { invencivel = true; jog.pos.set(nascerPolicia.x - 14, CHAO, nascerPolicia.z - 16); jog.yaw = Math.atan2(-14, -16); jog.pitch = -0.04; proximoNascer = 0 }
-  else if (/^[A-Z0-9]{6}$/i.test(q.get('sala') ?? '')) void telaOnline(null, (q.get('sala') as string).toUpperCase()) // link de convite
+  else if (ONLINE_ATIVO && /^[A-Z0-9]{6}$/i.test(q.get('sala') ?? '')) void telaOnline(null, (q.get('sala') as string).toUpperCase()) // link de convite
   else if (q.get('jogar') !== '1') menu()
 }
 carregar().catch((e) => { tela('Escape The Police', ['Não consegui carregar o jogo. Recarregue a página.', String(e)]) })

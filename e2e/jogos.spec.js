@@ -195,7 +195,8 @@ test('Jogo · Escape The Police', async ({ page }, info) => {
 
 // Escape The Police online (2x2): precisa do backend-soudev rodando (npm run dev lá, com a origem do teste
 // liberada) e do jogo compilado com VITE_BACKEND_URL apontando para ele. Só roda com E2E_COMPARTILHADO=1.
-test('Jogo · Escape The Police online', async ({ browser, page }, info) => {
+// Desligado: o online do jogo está fora do ar (ONLINE_ATIVO = false em games/escape-the-police/src/main.ts).
+test.skip('Jogo · Escape The Police online', async ({ browser, page }, info) => {
   test.setTimeout(300000)
   info.annotations.push({ type: 'O que este teste faz', description: 'Quatro navegadores: um cria a sala privada 2x2, três entram pelo link de convite, os times jogam rodadas com tiros e granada até a vitória.' })
   const ev = novaEvidencia('jogo', 'escape-the-police-online', 'Escape The Police online')

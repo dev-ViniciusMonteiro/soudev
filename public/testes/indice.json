@@ -1,7 +1,7 @@
 {
-  "geradoEm": "2026-11-04T12:28:46.561Z",
-  "total": 43,
-  "ok": 43,
+  "geradoEm": "2026-11-05T19:36:36.573Z",
+  "total": 42,
+  "ok": 42,
   "itens": [
     {
       "tipo": "4dev",
@@ -98,7 +98,7 @@
       "slug": "documentador",
       "nome": "Documentador",
       "ok": true,
-      "geradoEm": "2026-11-04T12:27:45.104Z",
+      "geradoEm": "2026-11-02T01:15:28.914Z",
       "prints": 1,
       "capa": "/testes/img/app-documentador-01.jpg"
     },
@@ -107,7 +107,7 @@
       "slug": "editor-de-video",
       "nome": "Editor de vídeo",
       "ok": true,
-      "geradoEm": "2026-11-04T12:27:54.421Z",
+      "geradoEm": "2026-11-02T01:15:37.013Z",
       "prints": 1,
       "capa": "/testes/img/app-editor-de-video-01.jpg"
     },
@@ -143,7 +143,7 @@
       "slug": "globo",
       "nome": "Globo ao vivo",
       "ok": true,
-      "geradoEm": "2026-11-04T12:27:37.553Z",
+      "geradoEm": "2026-11-02T01:15:26.093Z",
       "prints": 2,
       "capa": "/testes/img/app-globo-01.jpg"
     },
@@ -161,7 +161,7 @@
       "slug": "ppfd",
       "nome": "Medidor PPFD",
       "ok": true,
-      "geradoEm": "2026-11-04T12:27:51.361Z",
+      "geradoEm": "2026-11-02T01:15:34.360Z",
       "prints": 1,
       "capa": "/testes/img/app-ppfd-01.jpg"
     },
@@ -197,7 +197,7 @@
       "slug": "imoveis",
       "nome": "Radar de Imóveis",
       "ok": true,
-      "geradoEm": "2026-11-04T12:27:48.107Z",
+      "geradoEm": "2026-11-02T01:15:31.632Z",
       "prints": 1,
       "capa": "/testes/img/app-imoveis-01.jpg"
     },
@@ -206,7 +206,7 @@
       "slug": "treino",
       "nome": "Treino",
       "ok": true,
-      "geradoEm": "2026-11-04T12:27:19.004Z",
+      "geradoEm": "2026-11-02T01:15:13.008Z",
       "prints": 3,
       "capa": "/testes/img/app-treino-01.jpg"
     },
@@ -281,15 +281,6 @@
       "geradoEm": "2026-11-03T21:25:53.216Z",
       "prints": 6,
       "capa": "/testes/img/jogo-escape-the-police-01.jpg"
-    },
-    {
-      "tipo": "jogo",
-      "slug": "escape-the-police-online",
-      "nome": "Escape The Police online",
-      "ok": true,
-      "geradoEm": "2026-11-03T21:22:28.559Z",
-      "prints": 7,
-      "capa": "/testes/img/jogo-escape-the-police-online-01.jpg"
     },
     {
       "tipo": "jogo",
