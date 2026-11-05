@@ -93,7 +93,6 @@ export default function Home() {
             Ver os projetos
           </Link>
           <Link href="/curriculo">Meu currículo</Link>
-          <a href={site.instagram} target="_blank" rel="noopener noreferrer">Fale comigo</a>
         </p>
       </section>
 
