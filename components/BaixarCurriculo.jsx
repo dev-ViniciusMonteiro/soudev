@@ -13,7 +13,7 @@ async function gerarDocx() {
   const titulo = (texto) => new Paragraph({ text: texto, heading: HeadingLevel.HEADING_2, spacing: { before: 240, after: 80 } })
   const item = (texto) => new Paragraph({ text: texto, bullet: { level: 0 } })
   const linha = (forte, data) =>
-    new Paragraph({ spacing: { before: 120 }, children: [new TextRun({ text: forte, bold: true }), new TextRun({ text: `  |  ${data}` })] })
+    new Paragraph({ spacing: { before: 120 }, children: [new TextRun({ text: forte, bold: true }), ...(data ? [new TextRun({ text: `  |  ${data}` })] : [])] })
 
   const doc = new Document({
     styles: { default: { document: { run: { font: 'Calibri', size: 21 } } } },
@@ -28,7 +28,7 @@ async function gerarDocx() {
           ...cv.destaques.map(item),
           titulo('Experiência'),
           linha(`${cv.empresa.nome}: ${cv.empresa.cargo}`, periodo(cv.empresa)),
-          new Paragraph({ text: 'Consultoria de tecnologia (CLT). Alocações em clientes:' }),
+          new Paragraph({ text: 'Consultoria de tecnologia (CLT). Principais projetos em clientes de grande porte (nomes omitidos por confidencialidade):' }),
           ...cv.alocacoes.flatMap((a) => [
             linha(`${a.cliente}: ${a.papel}`, periodo(a)),
             ...a.itens.map(item),

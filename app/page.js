@@ -169,8 +169,8 @@ export default function Home() {
         <div>
           <h2>Quem faz</h2>
           <p>
-            Sou <strong>{site.name}</strong>, Tech Lead e desenvolvedor full stack. Atuo na área desde 2018 e, desde 2021, na Compass UOL,
-            em projetos para Natura, Qualicorp, UOL EdTech e hoje no Cidade Center Norte.
+            Sou <strong>{site.name}</strong>, Tech Lead e desenvolvedor full stack, com mais de 8 anos na área. Na Compass UOL, atuo em
+            projetos de e-commerce, integrações e cloud para empresas de grande porte, liderando squads multidisciplinares.
           </p>
           <p>
             Criei este site para deixar de graça as ferramentas que mais facilitam o dia a dia. Elas são rápidas, simples e não guardam os seus

@@ -92,16 +92,16 @@ export default function Curriculo() {
             <h3>
               {cv.empresa.nome}: {cv.empresa.cargo}
             </h3>
-            <span className="cv-data">{periodo(cv.empresa)}</span>
+            {periodo(cv.empresa) && <span className="cv-data">{periodo(cv.empresa)}</span>}
           </div>
-          <p className="cv-nota">Consultoria de tecnologia (CLT). Alocações em clientes:</p>
+          <p className="cv-nota">Consultoria de tecnologia (CLT). Principais projetos em clientes de grande porte (nomes omitidos por confidencialidade):</p>
           {cv.alocacoes.map((a) => (
             <div key={a.cliente} className="cv-alocacao">
               <div className="cv-empresa">
                 <h4>
                   {a.cliente}: {a.papel}
                 </h4>
-                <span className="cv-data">{periodo(a)}</span>
+                {periodo(a) && <span className="cv-data">{periodo(a)}</span>}
               </div>
               <ul>
                 {a.itens.map((i) => (
@@ -121,7 +121,7 @@ export default function Curriculo() {
                 <h3>
                   {a.empresa}: {a.papel}
                 </h3>
-                <span className="cv-data">{periodo(a)}</span>
+                {periodo(a) && <span className="cv-data">{periodo(a)}</span>}
               </div>
               <ul>
                 {a.itens.map((i) => (

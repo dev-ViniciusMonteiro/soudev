@@ -4,8 +4,8 @@ import { SITE_URL } from '@/lib/site'
 
 export const dynamic = 'force-static'
 
-// "04/2021" vira "2021-04"; "atual" fica sem data de fim.
-const iso = (d) => (d === 'atual' ? undefined : d.split('/').reverse().join('-'))
+// "04/2021" vira "2021-04"; sem data (confidencialidade) ou "atual" ficam de fora.
+const iso = (d) => (!d || d === 'atual' ? undefined : d.split('/').reverse().join('-'))
 
 export function GET() {
   const dados = {
@@ -20,13 +20,13 @@ export function GET() {
       profiles: cv.links.map(([network, url]) => ({ network, url })),
     },
     work: cv.alocacoes.map((a) => ({
-      name: `${cv.empresa.nome} (cliente: ${a.cliente})`,
+      name: `${cv.empresa.nome} (projeto em cliente: ${a.cliente})`,
       position: a.papel,
       startDate: iso(a.inicio),
       endDate: iso(a.fim),
       highlights: a.itens,
       keywords: a.stack,
-    })).concat(cv.anteriores.map((a) => ({ name: a.empresa, position: a.papel, startDate: a.inicio, endDate: a.fim, highlights: a.itens }))),
+    })).concat(cv.anteriores.map((a) => ({ name: a.empresa, position: a.papel, highlights: a.itens }))),
     languages: cv.idiomas.map(([language, fluency]) => ({ language, fluency })),
     education: cv.formacao.map(([curso, escola, ano]) => ({ institution: escola, studyType: 'Bacharelado', area: curso.replace('Bacharelado em ', ''), endDate: ano })),
     certificates: cv.certificacoes.map((name) => ({ name })),
