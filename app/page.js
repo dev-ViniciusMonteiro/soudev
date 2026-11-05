@@ -85,13 +85,15 @@ export default function Home() {
         <Link href={bannerPessoal.href} className="banner-pessoal">
           <Image src={bannerPessoal.imagem} alt={bannerPessoal.alt} width={bannerPessoal.largura} height={bannerPessoal.altura} priority sizes="(max-width: 1192px) 100vw, 1160px" />
         </Link>
-        <h1>
-          Oi, eu sou o Vinicius. Faço ferramentas que resolvem <span className="marca-texto">problemas do dia a dia</span>.
-        </h1>
-        <blockquote className="frase-autoral">
-          <p>“Se o amanhã já pode fazer o que hoje parece impossível, será que estamos limitados pela tecnologia ou pela nossa capacidade de imaginar?”</p>
-          <cite>Vinicius Monteiro</cite>
-        </blockquote>
+        <div className="intro-texto">
+          <h1>
+            Oi, eu sou o Vinicius. Faço ferramentas que resolvem <span className="marca-texto">problemas do dia a dia</span>.
+          </h1>
+          <blockquote className="frase-autoral">
+            <p>“Se o amanhã já pode fazer o que hoje parece impossível, será que estamos limitados pela tecnologia ou pela nossa capacidade de imaginar?”</p>
+            <cite>Vinicius Monteiro</cite>
+          </blockquote>
+        </div>
         <p className="intro-acoes">
           <Link href="#destaques" className="btn btn-primary">
             Ver os projetos

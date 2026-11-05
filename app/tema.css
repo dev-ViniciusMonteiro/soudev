@@ -281,12 +281,23 @@ textarea:focus:not(.dv-palco *):not(.dm *) {
   background: linear-gradient(transparent 68%, rgba(255, 96, 106, 0.38) 68%, rgba(255, 96, 106, 0.38) 92%, transparent 92%);
 }
 
-/* frase autoral logo abaixo do título da home */
+/* título e frase autoral da home: lado a lado no computador, um em cima do outro no celular */
+.intro-texto {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: clamp(24px, 4vw, 56px);
+  align-items: center;
+  margin-top: 40px;
+}
+.intro-texto h1 { margin: 0; max-width: none; }
 .frase-autoral {
-  margin: 18px 0 0;
-  padding: 4px 0 4px 18px;
+  margin: 0;
+  padding: 6px 0 6px 20px;
   border-left: 4px solid var(--coral);
   max-width: 62ch;
+}
+@media (max-width: 860px) {
+  .intro-texto { grid-template-columns: minmax(0, 1fr); gap: 18px; margin-top: 28px; }
 }
 .frase-autoral p {
   margin: 0;
