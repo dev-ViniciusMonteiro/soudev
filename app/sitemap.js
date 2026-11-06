@@ -24,6 +24,7 @@ export default function sitemap() {
     { url: `${SITE_URL}/4dev`, lastModified, changeFrequency: 'monthly', priority: 0.8 },
     ...devTools.map((t) => ({ url: `${SITE_URL}/4dev/${t.slug}`, lastModified, changeFrequency: 'monthly', priority: 0.7 })),
     { url: `${SITE_URL}/catalogo`, lastModified, changeFrequency: 'monthly', priority: 0.8 },
+    { url: `${SITE_URL}/jornal`, lastModified, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${SITE_URL}/jogos`, lastModified, changeFrequency: 'weekly', priority: 0.8 },
     ...games.map((game) => ({
       url: `${SITE_URL}/jogos/${game.slug}`,

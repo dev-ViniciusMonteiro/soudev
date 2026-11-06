@@ -12,7 +12,7 @@ const TIPOS_IMG = ['image/webp', 'image/jpeg', 'image/png']
 const RESERVADOS = new Set(['admin', 'api', 'login', 'entrar', 'cadastro', 'novo', 'nova', 'editor', 'painel', 'soudev', 'catalogo', 'loja', 'www', 'teste'])
 
 /* ------------------------------ utils ------------------------------ */
-function b64url(bytes) {
+export function b64url(bytes) {
   let s = ''
   for (const b of bytes) s += String.fromCharCode(b)
   return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
@@ -30,13 +30,13 @@ function iguais(a, b) {
   return d === 0
 }
 const ITER = 100000
-async function hashSenha(senha) {
+export async function hashSenha(senha) {
   const salt = crypto.getRandomValues(new Uint8Array(16))
   const key = await crypto.subtle.importKey('raw', enc.encode(senha), 'PBKDF2', false, ['deriveBits'])
   const bits = new Uint8Array(await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt, iterations: ITER }, key, 256))
   return `pbkdf2$${ITER}$${b64url(salt)}$${b64url(bits)}`
 }
-async function verificaSenha(senha, guardado) {
+export async function verificaSenha(senha, guardado) {
   const p = String(guardado || '').split('$')
   if (p.length !== 4 || p[0] !== 'pbkdf2') return false
   const salt = deB64(p[2])
@@ -45,22 +45,22 @@ async function verificaSenha(senha, guardado) {
   const bits = new Uint8Array(await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt, iterations: parseInt(p[1], 10) }, key, esperado.length * 8))
   return iguais(bits, esperado)
 }
-async function hashIp(ip, salt) {
+export async function hashIp(ip, salt) {
   const buf = await crypto.subtle.digest('SHA-256', enc.encode(`ct|${ip}|${salt}`))
   return b64url(new Uint8Array(buf)).slice(0, 22)
 }
 
-const CORS = {
+export const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PATCH, PUT, DELETE, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   'Access-Control-Max-Age': '86400',
 }
-const json = (dados, status = 200) =>
+export const json = (dados, status = 200) =>
   new Response(JSON.stringify(dados), { status, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', ...CORS } })
-const erro = (status, msg) => json({ erro: msg }, status)
+export const erro = (status, msg) => json({ erro: msg }, status)
 
-const txt = (v, max) => String(v ?? '').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '').trim().slice(0, max)
+export const txt = (v, max) => String(v ?? '').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '').trim().slice(0, max)
 const agora = () => Date.now()
 const centavos = (v) => {
   const n = Math.round(Number(v) || 0)

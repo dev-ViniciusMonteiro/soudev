@@ -15,6 +15,7 @@ import { rotasVinicut } from './vinicut.js'
 import { rotasCatalogo } from './catalogo.js'
 import { rotasWebhook } from './webhook.js'
 import { rotasGrupos } from './grupos.js'
+import { rotasJornal } from './jornal.js'
 
 const enc = new TextEncoder()
 
@@ -141,6 +142,10 @@ export default {
       // Catálogo digital: rotas /ct/* (lojas, produtos, imagens).
       const ct = await rotasCatalogo(request, env, ctx)
       if (ct) return ct
+
+      // Meu Jornal: rotas /jn/* (jornais, matérias, fotos).
+      const jn = await rotasJornal(request, env, ctx)
+      if (jn) return jn
 
       // Webhook Inspector (4dev): rotas /wh/*.
       const wh = await rotasWebhook(request, env, ctx)
