@@ -1,0 +1,29 @@
+{
+  "tipo": "app",
+  "slug": "racha-conta",
+  "nome": "Racha Conta",
+  "ok": true,
+  "geradoEm": "2026-11-06T11:17:51.017Z",
+  "passos": [
+    {
+      "titulo": "R$ 250 para 4 com 10%: R$ 68,75 cada; Duda sem os 10% paga R$ 62,50",
+      "detalhe": "",
+      "img": "/testes/img/app-racha-conta-01.jpg"
+    },
+    {
+      "titulo": "Cópia do cenário dividida 40/30/20/10%",
+      "detalhe": "",
+      "img": "/testes/img/app-racha-conta-02.jpg"
+    },
+    {
+      "titulo": "Pizza para todos, cerveja só para Ana e Bruno; Ana pagou e o app mostra quem deve quanto",
+      "detalhe": "",
+      "img": "/testes/img/app-racha-conta-03.jpg"
+    },
+    {
+      "titulo": "Os três cenários lado a lado",
+      "detalhe": "",
+      "img": "/testes/img/app-racha-conta-04.jpg"
+    }
+  ]
+}

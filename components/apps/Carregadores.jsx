@@ -29,6 +29,7 @@ const AprovaFoto = dynamic(() => import('./profissoes/AprovaFoto'), { ssr: false
 const AprovaProjeto = dynamic(() => import('./profissoes/AprovaProjeto'), { ssr: false, loading: carregando })
 const Lentes = dynamic(() => import('./lentes/Lentes'), { ssr: false, loading: carregando })
 const Karaoke = dynamic(() => import('./karaoke/Karaoke'), { ssr: false, loading: carregando })
+const RachaConta = dynamic(() => import('./racha/RachaConta'), { ssr: false, loading: carregando })
 
 export function AppCliente({ slug }) {
   if (slug === 'treino') return <Treino />
@@ -50,5 +51,6 @@ export function AppCliente({ slug }) {
   if (slug === 'aprova-projeto') return <AprovaProjeto />
   if (slug === 'lente-certa') return <Lentes />
   if (slug === 'karaoke') return <Karaoke />
+  if (slug === 'racha-conta') return <RachaConta />
   return null
 }
