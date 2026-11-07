@@ -10,6 +10,7 @@ import './demos.css'
 import './lentes.css'
 import './karaoke.css'
 import './racha.css'
+import './visualizador.css'
 
 export default function AppsLayout({ children }) {
   return children

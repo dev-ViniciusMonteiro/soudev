@@ -1,0 +1,26 @@
+/* Visualizador: tela preta inteira com a animação, controles somem quando o mouse para. */
+body:has(.vz) .site-header,
+body:has(.vz) .site-footer { display: none !important; }
+body:has(.vz) { background: #000; overflow: hidden; }
+.vz { position: fixed; inset: 0; background: #000; color: #fff; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; overflow: hidden; z-index: 50; }
+.vz-tela { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.vz-topo, .vz-controles, .vz-pontos { position: absolute; transition: opacity .6s ease; }
+.vz.ocioso .vz-topo, .vz.ocioso .vz-controles, .vz.ocioso .vz-pontos { opacity: 0; pointer-events: none; }
+.vz.ocioso { cursor: none; }
+.vz-topo { top: 14px; left: 14px; display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,.45); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.12); border-radius: 14px; padding: 8px 14px 8px 8px; max-width: calc(100% - 28px); }
+.vz-topo strong { display: block; font-size: 1rem; }
+.vz-topo span { display: block; font-size: .8rem; color: rgba(255,255,255,.65); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60vw; }
+.vz-voltar { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 10px; background: rgba(255,255,255,.1); color: #fff !important; text-decoration: none !important; }
+.vz-controles { left: 50%; bottom: 18px; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 8px; width: max-content; max-width: calc(100% - 20px); }
+.vz-grupo { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; background: rgba(0,0,0,.45); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.12); border-radius: 14px; padding: 6px; }
+.vz-grupo button { border: 0; background: rgba(255,255,255,.08); color: #fff; border-radius: 10px; padding: 9px 13px; font: inherit; font-weight: 600; font-size: .9rem; cursor: pointer; white-space: nowrap; }
+.vz-grupo button:hover { background: rgba(255,255,255,.18); }
+.vz-grupo button.ativo { background: linear-gradient(135deg, #a855f7, #ec4899); }
+.vz-erro { margin: 0; background: rgba(220,38,38,.85); border-radius: 10px; padding: 7px 12px; font-size: .88rem; }
+.vz-pontos { top: 50%; right: 14px; transform: translateY(-50%); display: flex; flex-direction: column; gap: 10px; }
+.vz-pontos button { width: 11px; height: 11px; border-radius: 50%; border: 1px solid rgba(255,255,255,.6); background: transparent; padding: 0; cursor: pointer; }
+.vz-pontos button.ativo { background: #fff; transform: scale(1.3); }
+@media (max-width: 600px) {
+  .vz-pontos { top: auto; bottom: auto; right: auto; left: 50%; top: 74px; transform: translateX(-50%); flex-direction: row; }
+  .vz-grupo button { padding: 8px 10px; font-size: .82rem; }
+}
