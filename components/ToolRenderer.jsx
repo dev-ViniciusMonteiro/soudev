@@ -68,6 +68,7 @@ const components = {
   'controle-de-caixa-mercado': dynamic(() => import('./tools/CaixaMercado'), { loading }),
   'como-funcionam-os-golpes': dynamic(() => import('./tools/GolpesDemo'), { loading }),
   'buscar-eventos': dynamic(() => import('./tools/BuscadorEventos'), { loading }),
+  'quem-esta-no-meu-wifi': dynamic(() => import('./tools/central-wifi/CentralWifi'), { loading }),
 }
 
 export default function ToolRenderer({ slug }) {

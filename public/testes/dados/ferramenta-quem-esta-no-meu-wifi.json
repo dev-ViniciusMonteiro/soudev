@@ -1,0 +1,29 @@
+{
+  "tipo": "ferramenta",
+  "slug": "quem-esta-no-meu-wifi",
+  "nome": "Central do Wi-Fi",
+  "ok": true,
+  "geradoEm": "2026-11-08T12:41:57.358Z",
+  "passos": [
+    {
+      "titulo": "Sete aparelhos: fabricante pelo MAC e tipo provável (celular, TV, computador, lâmpada, Alexa)",
+      "detalhe": "",
+      "img": "/testes/img/ferramenta-quem-esta-no-meu-wifi-01.jpg"
+    },
+    {
+      "titulo": "Na segunda leitura, o notebook que chegou aparece como NOVO; apelidos e marcações ficaram guardados",
+      "detalhe": "",
+      "img": "/testes/img/ferramenta-quem-esta-no-meu-wifi-02.jpg"
+    },
+    {
+      "titulo": "Guia: como achar o endereço do roteador e onde ver e bloquear no modem da Vivo",
+      "detalhe": "",
+      "img": "/testes/img/ferramenta-quem-esta-no-meu-wifi-03.jpg"
+    },
+    {
+      "titulo": "Nota do Wi-Fi, o que arrumar e a força da senha (fica só no aparelho)",
+      "detalhe": "",
+      "img": "/testes/img/ferramenta-quem-esta-no-meu-wifi-04.jpg"
+    }
+  ]
+}

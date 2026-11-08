@@ -108,6 +108,7 @@ export const ferramentas = [
 
   /* Texto e segurança */
   f('texto', 'contador-caracteres', 'Contador', ['Caracteres e palavras', '*contados na hora*'], [['🔤', 'Caracteres'], ['📝', 'Palavras'], ['📏', 'Linhas'], ['🔁', 'Transforma o texto']]),
+  { ...f('texto', 'quem-esta-no-meu-wifi', 'Central do Wi-Fi', ['Quem está no seu Wi-Fi?', '*descubra cada aparelho*'], [['📶', 'Aparelhos conectados'], ['🏷️', 'Fabricante pelo MAC'], ['🆕', 'Avisa os novos'], ['🛡️', 'Check-up de segurança']]), endereco: '/ferramentas/quem-esta-no-meu-wifi?exemplo=1' },
   f('texto', 'gerador-senha', 'Senha Forte', ['Senhas seguras', '*que ninguém adivinha*'], [['🔐', 'Aleatórias'], ['📏', 'Do tamanho certo'], ['💪', 'Força da senha'], ['🔒', 'No navegador']]),
 
   /* Geradores e documentos */
