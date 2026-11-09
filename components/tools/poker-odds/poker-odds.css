@@ -1,0 +1,87 @@
+/* Calculadora de odds de poker: feltro verde para as cartas, painéis com as cores do tema do site. */
+.po { display: flex; flex-direction: column; gap: 16px; --po-verm: #c62828; --po-preto: #1a1a1a; --po-feltro: #1d6b45; --po-feltro2: #155536; }
+
+/* mesa (feltro) */
+.po-mesa { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 18px 28px; padding: 18px; border-radius: 16px; background: radial-gradient(ellipse at center, var(--po-feltro), var(--po-feltro2)); box-shadow: inset 0 0 0 6px #5a3a1e, inset 0 0 30px rgba(0,0,0,.35); }
+.po-grupo h3 { margin: 0 0 8px; color: #e9f5ee; font-size: .9rem; letter-spacing: .04em; }
+.po-grupo h3 small { color: #bfe3cd; font-weight: 400; }
+.po-slots { display: flex; gap: 8px; flex-wrap: wrap; }
+.po-nova { margin-left: auto; }
+
+/* carta */
+.po-carta { width: 64px; height: 90px; border-radius: 8px; border: 1px solid #c9c9c9; background: #fff; color: var(--po-preto); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; cursor: pointer; box-shadow: 0 3px 8px rgba(0,0,0,.3); font-family: Georgia, 'Times New Roman', serif; padding: 0; }
+.po-carta b { font-size: 1.6rem; line-height: 1; }
+.po-carta i { font-style: normal; font-size: 1.7rem; line-height: 1.05; }
+.po-carta.vermelha { color: var(--po-verm); }
+.po-carta.vazia { background: rgba(255,255,255,.08); border: 2px dashed rgba(255,255,255,.45); box-shadow: none; color: #d6eedf; }
+.po-carta.vazia span { font-family: var(--font-sans); font-size: .7rem; text-align: center; padding: 0 4px; }
+.po-carta.ativa { outline: 3px solid #ffd54f; outline-offset: 2px; }
+
+/* baralho para escolher */
+.po-baralho { display: flex; flex-direction: column; gap: 6px; }
+.po-baralho > p { margin: 0 0 4px; }
+.po-linha { display: grid; grid-template-columns: repeat(13, minmax(0, 1fr)); gap: 4px; }
+.po-mini { aspect-ratio: 5 / 7; min-width: 0; border-radius: 6px; border: 1px solid var(--line-strong); background: #fff; color: var(--po-preto); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; padding: 0; font-family: Georgia, 'Times New Roman', serif; line-height: 1; }
+.po-mini b { font-size: clamp(.72rem, 2.2vw, 1.05rem); }
+.po-mini i { font-style: normal; font-size: clamp(.8rem, 2.4vw, 1.15rem); }
+.po-mini.vermelha { color: var(--po-verm); }
+.po-mini:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,.15); }
+.po-mini.usada { opacity: .22; transform: none; box-shadow: none; }
+.po-mini.out { box-shadow: 0 0 0 3px #22c55e; }
+
+/* painéis */
+.po-duas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.po-cartao { border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--panel); padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+.po-cartao h3 { margin: 0; font-size: 1rem; }
+.po-cartao p { margin: 0; }
+.po-linha-campo { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-weight: 600; font-size: .92rem; flex-wrap: wrap; }
+.po-linha-campo select { padding: 7px 10px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--bg); color: var(--text); font: inherit; }
+.po-stepper { display: inline-flex; align-items: center; gap: 10px; }
+.po-stepper button { width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--bg); color: var(--text); font-size: 1.2rem; cursor: pointer; }
+.po-stepper b { min-width: 22px; text-align: center; font-size: 1.15rem; }
+.po-assentos { display: flex; flex-wrap: wrap; gap: 6px; }
+.po-assento { border: 1px solid var(--line-strong); background: var(--bg); color: var(--text); border-radius: 999px; padding: 6px 12px; font: inherit; font-size: .85rem; font-weight: 600; cursor: pointer; }
+.po-assento.eu { background: var(--accent); border-color: var(--accent); color: var(--on-accent); cursor: default; }
+.po-assento.correu { opacity: .5; text-decoration: line-through; }
+.po-ativos { font-size: .95rem; }
+.po-dois-campos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.po-dois-campos label { display: flex; flex-direction: column; gap: 4px; font-weight: 600; font-size: .9rem; }
+.po-dois-campos input { padding: 9px 10px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--bg); color: var(--text); font: inherit; min-width: 0; }
+
+/* resultado */
+.po-resultado { border: 2px solid var(--line-strong); border-radius: 16px; padding: 16px; background: var(--panel); display: flex; flex-direction: column; gap: 14px; }
+.po-dica { margin: 0; text-align: center; color: var(--muted); padding: 14px; }
+.po-topo { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 14px; align-items: stretch; }
+.po-equidade { display: flex; flex-direction: column; justify-content: center; }
+.po-equidade strong { font-size: clamp(2.6rem, 7vw, 3.6rem); line-height: 1; font-variant-numeric: tabular-nums; }
+.po-equidade span { font-weight: 600; }
+.po-equidade small { color: var(--muted); margin-top: 4px; }
+.po-rec { border-radius: 12px; padding: 12px 14px; border-left: 6px solid var(--muted); background: var(--panel-2); }
+.po-rec span { font-size: .75rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.po-rec strong { display: block; font-size: 1.6rem; margin: 2px 0 4px; }
+.po-rec p { margin: 0; font-size: .92rem; line-height: 1.45; }
+.po-rec.forte { border-left-color: var(--blue); }
+.po-rec.forte strong { color: var(--blue); }
+.po-rec.bom { border-left-color: var(--green); }
+.po-rec.bom strong { color: var(--green); }
+.po-rec.ruim { border-left-color: var(--red); }
+.po-rec.ruim strong { color: var(--red); }
+.po-info { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+.po-info h4, .po-dist h4 { margin: 0 0 4px; font-size: .95rem; }
+.po-info p { margin: 0 0 4px; }
+.po-outs { display: flex; flex-direction: column; gap: 2px; font-size: .88rem; }
+.po-dist { display: flex; flex-direction: column; gap: 4px; }
+.po-barra { display: grid; grid-template-columns: 110px minmax(0, 1fr) 52px; align-items: center; gap: 8px; font-size: .85rem; }
+.po-barra i { display: block; height: 10px; border-radius: 5px; background: var(--accent); }
+.po-barra b { text-align: right; font-variant-numeric: tabular-nums; }
+.po-aviso { margin: 0; }
+
+@media (max-width: 720px) {
+  .po-duas, .po-topo { grid-template-columns: minmax(0, 1fr); }
+  .po-carta { width: 52px; height: 74px; }
+  .po-carta b { font-size: 1.3rem; }
+  .po-carta i { font-size: 1.35rem; }
+  .po-mesa { padding: 14px; gap: 12px 18px; }
+  .po-nova { margin-left: 0; }
+  .po-linha { gap: 3px; }
+}

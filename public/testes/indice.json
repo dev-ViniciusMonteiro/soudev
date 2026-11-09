@@ -1,7 +1,7 @@
 {
-  "geradoEm": "2026-11-08T12:41:58.052Z",
-  "total": 44,
-  "ok": 44,
+  "geradoEm": "2026-11-09T17:37:55.024Z",
+  "total": 45,
+  "ok": 45,
   "itens": [
     {
       "tipo": "4dev",
@@ -236,6 +236,15 @@
       "geradoEm": "2026-11-02T01:16:12.817Z",
       "prints": 3,
       "capa": "/testes/img/ferramenta-arvore-genealogica-01.jpg"
+    },
+    {
+      "tipo": "ferramenta",
+      "slug": "calculadora-de-odds-poker",
+      "nome": "Calculadora de odds de poker",
+      "ok": true,
+      "geradoEm": "2026-11-09T17:37:54.305Z",
+      "prints": 3,
+      "capa": "/testes/img/ferramenta-calculadora-de-odds-poker-01.jpg"
     },
     {
       "tipo": "ferramenta",

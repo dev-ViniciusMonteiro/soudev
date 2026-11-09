@@ -1,0 +1,24 @@
+{
+  "tipo": "ferramenta",
+  "slug": "calculadora-de-odds-poker",
+  "nome": "Calculadora de odds de poker",
+  "ok": true,
+  "geradoEm": "2026-11-09T17:37:54.305Z",
+  "passos": [
+    {
+      "titulo": "Par de ases contra uma mão qualquer: 85.4% (a tabela clássica diz 85%)",
+      "detalhe": "",
+      "img": "/testes/img/ferramenta-calculadora-de-odds-poker-01.jpg"
+    },
+    {
+      "titulo": "Ás-Rei de copas com 2 copas no flop: 15 outs em verde e a sugestão de continuar",
+      "detalhe": "",
+      "img": "/testes/img/ferramenta-calculadora-de-odds-poker-02.jpg"
+    },
+    {
+      "titulo": "No river sem acertar, pagar 150 num pote de 100 não compensa: a sugestão é correr",
+      "detalhe": "",
+      "img": "/testes/img/ferramenta-calculadora-de-odds-poker-03.jpg"
+    }
+  ]
+}

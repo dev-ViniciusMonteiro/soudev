@@ -95,6 +95,7 @@ export const ferramentas = [
   f('dia', 'medir-objeto-na-foto', 'Medir na Foto', ['Saiba o tamanho', '*com uma moeda de referência*'], [['📏', 'Sem régua'], ['🪙', 'Moeda'], ['💳', 'Cartão'], ['📄', 'Folha A4']]),
   f('comer', 'restaurantes-perto-de-mim', 'Onde Comer Perto', ['Ache restaurantes', '*e comida por perto*'], [['🍽️', 'Restaurantes'], ['🍔', 'Lanches'], ['☕', 'Cafés'], ['📍', 'Perto de você']]),
   f('eventos', 'buscar-eventos', 'Buscar Eventos', ['Shows, festas e jogos', '*com link do ingresso*'], [['🎵', 'Shows'], ['🎭', 'Teatro'], ['⚽', 'Esportes'], ['🎫', 'Comprar ingresso']]),
+  { ...f('geradores', 'calculadora-de-odds-poker', 'Odds de Poker', ['Chance de vencer', '*em cada mão*'], [['🃏', 'Clique nas cartas'], ['🎯', 'Outs na hora'], ['💰', 'Pot odds'], ['🧠', 'Pagar ou correr?']]), endereco: '/ferramentas/calculadora-de-odds-poker?exemplo=1' },
   f('geradores', 'cronometro-de-poker', 'Cronômetro de Poker', ['Relógio de torneio', '*e cash, pra rodar offline*'], [['♠️', 'Torneio'], ['💵', 'Cash'], ['🎨', 'Temas e logo'], ['⬇️', 'Baixa o HTML']]),
   f('dia', 'tarefas-do-dia', 'Tarefas do Dia', ['Organize sua rotina', '*e o que fazer hoje*'], [['✅', 'Tarefas do dia'], ['🔁', 'Rotina'], ['🔥', 'Sequência'], ['📊', 'Progresso']]),
   f('grupos', 'arvore-genealogica', 'Árvore da Família', ['A história da família', '*num link só*'], [['🌳', 'Gerações'], ['📖', 'Histórias'], ['🔗', 'Link'], ['👪', 'Parentes']]),
