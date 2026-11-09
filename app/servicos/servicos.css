@@ -1,0 +1,99 @@
+/* Serviços: página de propaganda + catálogo com "carrinho" de orçamento. Usa as cores do tema. */
+.sv { --sv-cor: var(--accent); padding-top: 28px; padding-bottom: 90px; display: flex; flex-direction: column; gap: 48px; }
+.sv h2 { font-family: var(--font-serif); font-size: clamp(1.5rem, 3vw, 2rem); margin: 0 0 10px; }
+.sv-trilha { font-size: .85rem; color: var(--muted); margin-bottom: -30px; }
+.sv-trilha a { color: var(--muted); }
+
+/* topo */
+.sv-hero { max-width: 860px; }
+.sv-sobre { margin: 0 0 8px; font-family: var(--font-mono); font-size: .8rem; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+.sv-hero h1 { font-family: var(--font-serif); font-size: clamp(2rem, 5vw, 3.3rem); line-height: 1.08; margin: 0 0 16px; }
+.sv-lead { font-size: 1.15rem; color: var(--text); line-height: 1.55; margin: 0 0 12px; }
+.sv-hero > p:not(.sv-lead):not(.sv-sobre) { color: var(--muted); line-height: 1.6; }
+.sv-hero-icone { font-size: 3rem; display: block; margin-bottom: 6px; }
+.sv-cta { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+.sv-provas { list-style: none; margin: 22px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.sv-provas li { border: 1px solid var(--line-strong); border-radius: 999px; padding: 6px 14px; font-size: .9rem; background: var(--panel); }
+
+/* cartões dos 4 serviços */
+.sv-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
+.sv-card { display: flex; flex-direction: column; gap: 8px; padding: 20px; border: 1px solid var(--line); border-top: 4px solid var(--sv-cor); border-radius: var(--radius-lg); background: var(--panel); color: var(--text) !important; text-decoration: none !important; transition: transform .15s ease, box-shadow .15s ease; }
+.sv-card:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(0,0,0,.08); }
+.sv-card-icone { font-size: 2rem; }
+.sv-card h2, .sv-card h3 { font-family: var(--font-serif); font-size: 1.3rem; margin: 0; }
+.sv-card p { margin: 0; color: var(--muted); line-height: 1.5; flex: 1; }
+.sv-card-mais { font-weight: 600; color: var(--sv-cor); }
+
+/* catálogo */
+.sv-catalogo { scroll-margin-top: 80px; }
+.sv-grupo { margin-top: 26px; }
+.sv-grupo h3 { font-family: var(--font-serif); font-size: 1.3rem; margin: 0 0 10px; padding-left: 10px; border-left: 4px solid var(--sv-cor); }
+.sv-grupo h3 a { color: var(--text); }
+.sv-produtos { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.sv-produto { display: flex; flex-direction: column; justify-content: space-between; gap: 12px; padding: 16px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--panel); }
+.sv-produto h3, .sv-produto h4 { margin: 0 0 4px; font-size: 1.02rem; font-family: var(--font-sans); }
+.sv-produto p { margin: 0; color: var(--muted); font-size: .92rem; line-height: 1.45; }
+.sv-produto-pe { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.sv-preco { font-size: .85rem; font-weight: 600; color: var(--muted); }
+.sv-add { border: 1px solid var(--sv-cor); background: transparent; color: var(--sv-cor); border-radius: 8px; padding: 8px 12px; font: inherit; font-weight: 600; font-size: .88rem; cursor: pointer; }
+.sv-add:hover { background: color-mix(in srgb, var(--sv-cor) 10%, transparent); }
+.sv-add.tem { background: var(--sv-cor); color: #fff; }
+
+/* benefícios */
+.sv-beneficios { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+.sv-beneficios div { padding: 16px; border-radius: var(--radius-lg); background: var(--panel-2); }
+.sv-beneficios h2 { font-family: var(--font-sans); font-size: 1.05rem; margin: 0 0 6px; }
+.sv-beneficios p { margin: 0; color: var(--muted); line-height: 1.5; }
+
+/* como funciona */
+.sv-passos ol { list-style: none; counter-reset: passo; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.sv-passos li { counter-increment: passo; display: flex; flex-direction: column; gap: 4px; padding: 16px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--panel); }
+.sv-passos li::before { content: counter(passo); display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--accent); color: var(--on-accent); font-weight: 700; margin-bottom: 6px; }
+.sv-passos span { color: var(--muted); font-size: .92rem; }
+
+/* exemplos */
+.sv-exemplos ul { list-style: none; margin: 0 0 10px; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+.sv-exemplos a { display: flex; flex-direction: column; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--panel); color: var(--text) !important; text-decoration: none !important; }
+.sv-exemplos a:hover { border-color: var(--accent); }
+.sv-exemplos span { color: var(--muted); font-size: .88rem; }
+
+/* faq e chamada final */
+.sv-faq details { border-bottom: 1px solid var(--line); padding: 12px 0; }
+.sv-faq summary { font-weight: 600; cursor: pointer; }
+.sv-faq p { color: var(--muted); margin: 8px 0 0; line-height: 1.55; }
+.sv-final { text-align: center; padding: 34px 20px; border-radius: var(--radius-lg); background: var(--panel-2); display: flex; flex-direction: column; align-items: center; gap: 10px; }
+
+/* botão flutuante e gaveta */
+.sv-flutuante { position: fixed; right: 18px; bottom: 18px; z-index: 40; display: inline-flex; align-items: center; gap: 8px; border: 0; border-radius: 999px; padding: 12px 18px; background: var(--text); color: var(--bg); font: inherit; font-weight: 700; cursor: pointer; box-shadow: 0 10px 28px rgba(0,0,0,.25); }
+.sv-flutuante b { background: var(--accent-2); color: #fff; border-radius: 999px; min-width: 22px; height: 22px; display: grid; place-items: center; font-size: .8rem; }
+.sv-flutuante.cheio { background: var(--accent); color: var(--on-accent); }
+.sv-fundo { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,.45); display: flex; justify-content: flex-end; }
+.sv-gaveta { width: min(480px, 100%); height: 100%; overflow-y: auto; background: var(--bg); color: var(--text); box-shadow: -10px 0 40px rgba(0,0,0,.25); display: flex; flex-direction: column; }
+.sv-gaveta header { position: sticky; top: 0; display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: var(--bg); border-bottom: 1px solid var(--line); z-index: 1; }
+.sv-gaveta h2 { font-size: 1.3rem; margin: 0; }
+.sv-fechar { border: 0; background: none; color: var(--muted); font-size: 1.2rem; cursor: pointer; padding: 6px; }
+.sv-form { display: flex; flex-direction: column; gap: 12px; padding: 16px 20px 28px; }
+.sv-form label { display: flex; flex-direction: column; gap: 4px; font-weight: 600; font-size: .9rem; }
+.sv-form label small { font-weight: 400; color: var(--muted); }
+.sv-form input, .sv-form select, .sv-form textarea { font: inherit; font-weight: 400; padding: 10px 12px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--panel); color: var(--text); width: 100%; box-sizing: border-box; min-width: 0; }
+.sv-tres { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.sv-itens { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.sv-itens li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+.sv-itens li > span { font-size: 1.3rem; }
+.sv-itens b { display: block; font-size: .95rem; }
+.sv-itens small { color: var(--muted); }
+.sv-itens button { border: 0; background: none; color: var(--muted); cursor: pointer; padding: 4px 6px; }
+.sv-vazio { margin: 0; padding: 12px; border-radius: 10px; background: var(--panel-2); color: var(--muted); font-size: .92rem; }
+.sv-mel { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+.sv-erro { margin: 0; padding: 10px 12px; border-radius: 8px; background: color-mix(in srgb, var(--red) 12%, transparent); color: var(--red); font-size: .9rem; }
+.sv-nota { margin: 0; color: var(--muted); font-size: .8rem; }
+.sv-ok { padding: 40px 24px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.sv-ok-icone { font-size: 3rem; margin: 0; }
+.sv-ok h3 { font-family: var(--font-serif); font-size: 1.5rem; margin: 0; }
+.sv-ok p { color: var(--muted); margin: 0 0 10px; }
+
+@media (max-width: 600px) {
+  .sv { gap: 36px; }
+  .sv-tres { grid-template-columns: minmax(0, 1fr); }
+  .sv-flutuante { right: 12px; bottom: 12px; }
+}

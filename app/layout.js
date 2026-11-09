@@ -61,7 +61,8 @@ const menu = [
   ['/4dev', '4dev'],
   ['/jogos', 'Jogos'],
   ['/curriculo', 'Currículo'],
-  [site.instagram, 'Contato'],
+  ['/servicos', 'Serviços e orçamento'],
+  [site.instagram, 'Instagram'],
 ]
 
 export default function RootLayout({ children }) {
@@ -84,7 +85,7 @@ export default function RootLayout({ children }) {
               <Link href="/4dev">4dev</Link>
               <Link href="/jogos">Jogos</Link>
               <Link href="/curriculo">Currículo</Link>
-              <a href={site.instagram} target="_blank" rel="noopener noreferrer" className="nav-cta">Contato</a>
+              <Link href="/servicos" className="nav-cta">Serviços</Link>
               <Busca indice={indiceBusca} />
             </nav>
             <MenuMobile links={menu} indiceBusca={indiceBusca} />
@@ -113,6 +114,7 @@ export default function RootLayout({ children }) {
             <nav className="footer-col" aria-label="Sobre mim">
               <p className="rotulo">Sobre mim</p>
               <Link href="/curriculo">Currículo</Link>
+              <Link href="/servicos">Serviços e orçamento</Link>
               <a href={site.instagram} target="_blank" rel="noopener noreferrer">Fale comigo</a>
               <a href={site.instagram} target="_blank" rel="noopener noreferrer">
                 Instagram {site.instagramHandle}
