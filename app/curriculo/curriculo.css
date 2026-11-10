@@ -1,4 +1,4 @@
-/* Currículo: folha clara na tela e A4 limpo na impressão (o "Baixar PDF" usa a impressão do navegador). */
+/* Currículo: folha clara na tela e A4 limpo na impressão (Ctrl+P). O botão "Baixar PDF" gera o arquivo à parte, em lib/curriculo-pdf.js. */
 .cv-page {
   padding-top: 24px;
   padding-bottom: 64px;

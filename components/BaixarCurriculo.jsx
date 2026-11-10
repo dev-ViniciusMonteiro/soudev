@@ -52,34 +52,43 @@ async function gerarDocx() {
 }
 
 export function BaixarCurriculo() {
-  const [gerando, setGerando] = useState(false)
+  const [gerando, setGerando] = useState(null)
 
   const word = async () => {
-    setGerando(true)
+    setGerando('docx')
     try {
       downloadBlob(await gerarDocx(), `${ARQUIVO}.docx`)
       track('curriculo_download', { formato: 'docx' })
     } finally {
-      setGerando(false)
+      setGerando(null)
     }
   }
 
-  const pdf = () => {
-    track('curriculo_download', { formato: 'pdf' })
-    // O nome sugerido pelo navegador ao salvar em PDF vem do título da aba.
-    const antes = document.title
-    document.title = ARQUIVO
-    window.print()
-    document.title = antes
+  // PDF montado no navegador (pdf-lib): download direto, A4 igual em todo aparelho, sem passar pela impressão.
+  const pdf = async () => {
+    setGerando('pdf')
+    try {
+      const { gerarCurriculoPdf } = await import('@/lib/curriculo-pdf')
+      downloadBlob(new Blob([await gerarCurriculoPdf()], { type: 'application/pdf' }), `${ARQUIVO}.pdf`)
+      track('curriculo_download', { formato: 'pdf' })
+    } catch {
+      // Se algo falhar, ainda dá para salvar pela impressão do navegador (o CSS de impressão continua pronto).
+      const antes = document.title
+      document.title = ARQUIVO
+      window.print()
+      document.title = antes
+    } finally {
+      setGerando(null)
+    }
   }
 
   return (
     <div className="cv-acoes cv-sem-impressao">
-      <button type="button" className="btn btn-primary" onClick={pdf}>
-        Baixar PDF
+      <button type="button" className="btn btn-primary" onClick={pdf} disabled={!!gerando}>
+        {gerando === 'pdf' ? 'Gerando PDF…' : 'Baixar PDF'}
       </button>
-      <button type="button" className="btn btn-ghost" onClick={word} disabled={gerando}>
-        {gerando ? 'Gerando…' : 'Baixar Word (.docx)'}
+      <button type="button" className="btn btn-ghost" onClick={word} disabled={!!gerando}>
+        {gerando === 'docx' ? 'Gerando…' : 'Baixar Word (.docx)'}
       </button>
       <a className="btn btn-ghost" href="/resume.json" target="_blank" rel="noopener">
         JSON Resume
