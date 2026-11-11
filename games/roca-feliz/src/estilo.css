@@ -1,0 +1,158 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  background: #6fbf4a;
+  color: #3b2410;
+  font-family: "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+#app { position: fixed; inset: 0; }
+.rf-tela { position: absolute; inset: 0; display: block; touch-action: none; }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:disabled { cursor: not-allowed; }
+[hidden] { display: none !important; }
+
+/* ---------- barra de cima ---------- */
+.rf-topo { position: absolute; left: 0; right: 0; top: 0; display: flex; align-items: center; gap: 10px; padding: 8px 10px;
+  padding-top: max(8px, env(safe-area-inset-top)); pointer-events: none; }
+.rf-topo > * { pointer-events: auto; }
+.rf-perfil { display: flex; align-items: center; gap: 8px; padding: 5px 12px 5px 5px; border: 3px solid #b45309; border-radius: 16px;
+  background: linear-gradient(#fffbeb, #fde68a); box-shadow: 0 3px 0 #92400e, 0 6px 14px #0003; text-align: left; }
+.rf-avatar { width: 44px; height: 44px; border-radius: 12px; background: #bae6fd; border: 2px solid #0369a1; display: grid; place-items: center; font-size: 28px; }
+.rf-info { display: flex; flex-direction: column; gap: 1px; }
+.rf-nome { font-size: 14px; color: #7c2d12; }
+.rf-nivel { font-size: 12px; color: #92400e; }
+.rf-xp { position: relative; width: 120px; height: 14px; border-radius: 8px; background: #fff; border: 2px solid #b45309; overflow: hidden; }
+.rf-xp i { position: absolute; inset: 0 auto 0 0; background: linear-gradient(#7dd3fc, #0284c7); transition: width .4s; }
+.rf-xp small { position: relative; display: block; text-align: center; font-size: 9px; line-height: 10px; font-weight: 700; color: #0c4a6e; }
+.rf-moedas { padding: 8px 14px; border: 3px solid #b45309; border-radius: 999px; background: linear-gradient(#fef9c3, #fde047);
+  box-shadow: 0 3px 0 #92400e, 0 6px 14px #0003; font-size: 18px; white-space: nowrap; }
+.rf-moedas b { color: #7c2d12; }
+.rf-menu { margin-left: auto; display: flex; gap: 6px; }
+.rf-menu button { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 62px; height: 58px;
+  border: 3px solid #b45309; border-radius: 14px; background: linear-gradient(#fffbeb, #fcd34d); box-shadow: 0 3px 0 #92400e, 0 6px 14px #0003; }
+.rf-menu button span { font-size: 24px; line-height: 1; }
+.rf-menu button small { font-size: 11px; font-weight: 700; color: #7c2d12; margin-top: 2px; }
+.rf-menu button:active, .rf-perfil:active { transform: translateY(2px); box-shadow: 0 1px 0 #92400e; }
+.rf-badge { position: absolute; top: -8px; right: -8px; min-width: 22px; height: 22px; padding: 0 5px; border-radius: 11px; background: #e11d48;
+  color: #fff; font: 700 12px/18px "Trebuchet MS", sans-serif; font-style: normal; border: 2px solid #fff; }
+
+/* ---------- faixa de visita ---------- */
+.rf-visita { position: absolute; left: 50%; top: 82px; transform: translateX(-50%); display: flex; align-items: center; gap: 12px;
+  padding: 6px 8px 6px 16px; border-radius: 14px; background: #fdf2f8; border: 3px solid #be185d; box-shadow: 0 3px 0 #831843, 0 6px 14px #0003;
+  max-width: calc(100vw - 20px); }
+.rf-visita span { display: flex; flex-direction: column; }
+.rf-visita b { color: #831843; }
+.rf-visita small { color: #9d174d; font-size: 12px; }
+
+/* ---------- ferramentas ---------- */
+.rf-ferr { position: absolute; left: 50%; bottom: max(10px, env(safe-area-inset-bottom)); transform: translateX(-50%); display: flex; gap: 6px; padding: 8px;
+  border-radius: 20px; background: linear-gradient(#a16207, #78350f); border: 3px solid #451a03; box-shadow: 0 8px 20px #0005, inset 0 2px 0 #fbbf2466; }
+.rf-f { position: relative; width: 66px; height: 66px; border-radius: 14px; border: 3px solid #451a03; background: linear-gradient(#fffbeb, #fde68a);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 3px 0 #451a03; }
+.rf-f-ic { font-size: 28px; line-height: 1; }
+.rf-f small { font-size: 10px; font-weight: 700; color: #7c2d12; margin-top: 3px; white-space: nowrap; }
+.rf-f kbd { position: absolute; top: 2px; left: 5px; font: 700 10px "Trebuchet MS", sans-serif; color: #a16207; }
+.rf-f-extra { position: absolute; top: -9px; right: -9px; font: 700 11px/1 "Trebuchet MS", sans-serif; font-style: normal; color: #fff; background: #15803d;
+  border: 2px solid #fff; border-radius: 10px; padding: 3px 5px; }
+.rf-f-extra:empty { display: none; }
+.rf-f.on { background: linear-gradient(#bbf7d0, #4ade80); border-color: #14532d; transform: translateY(-4px); box-shadow: 0 7px 0 #14532d; }
+.rf-f:disabled { opacity: .35; filter: grayscale(1); }
+.rf-colher-tudo { position: absolute; right: 14px; bottom: 106px; padding: 10px 16px; border-radius: 14px; border: 3px solid #14532d;
+  background: linear-gradient(#bbf7d0, #22c55e); color: #052e16; font-weight: 700; font-size: 16px; box-shadow: 0 4px 0 #14532d, 0 8px 16px #0004;
+  animation: pulsar 1.6s ease-in-out infinite; }
+@keyframes pulsar { 50% { box-shadow: 0 4px 0 #14532d, 0 0 0 6px #bbf7d099, 0 8px 22px #22c55e; filter: brightness(1.08); } }
+
+/* ---------- dica e aviso ---------- */
+.rf-dica { position: fixed; z-index: 5; max-width: 260px; padding: 8px 12px; border-radius: 10px; background: #fffbebf2; border: 2px solid #b45309;
+  font-size: 13px; line-height: 1.45; white-space: pre-line; box-shadow: 0 6px 16px #0004; pointer-events: none; }
+.rf-aviso { position: fixed; z-index: 30; left: 50%; bottom: 112px; transform: translate(-50%, 20px); max-width: min(560px, calc(100vw - 24px)); padding: 10px 18px;
+  border-radius: 14px; background: #1f2937ee; color: #fff; font-size: 15px; text-align: center; opacity: 0; pointer-events: none; transition: .25s; }
+.rf-aviso.on { opacity: 1; transform: translate(-50%, 0); }
+
+/* ---------- janelas ---------- */
+.rf-fundo { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; padding: 14px; background: #0006; }
+.rf-janela { width: min(460px, 100%); max-height: calc(100dvh - 28px); display: flex; flex-direction: column; border-radius: 22px; border: 4px solid #92400e;
+  background: #fffbeb; box-shadow: 0 6px 0 #78350f, 0 20px 50px #0006; overflow: hidden; animation: entrar .2s ease-out; }
+.rf-janela.larga { width: min(820px, 100%); }
+@keyframes entrar { from { transform: scale(.92); opacity: 0; } }
+.rf-janela > header { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px 10px 18px; background: linear-gradient(#f59e0b, #b45309); }
+.rf-janela h2 { font-size: 21px; color: #fff; text-shadow: 0 2px 0 #78350f; }
+.rf-fechar { width: 36px; height: 36px; border-radius: 50%; border: 3px solid #7f1d1d; background: #ef4444; color: #fff; font-weight: 700; box-shadow: 0 2px 0 #7f1d1d; }
+.rf-corpo { padding: 16px; overflow: auto; }
+.rf-sub { margin-bottom: 12px; color: #78350f; line-height: 1.4; }
+.rf-vazio { padding: 18px 8px; text-align: center; color: #92400e; }
+.rf-rodape { margin-top: 12px; font-size: 13px; color: #a16207; text-align: center; }
+.rf-centro { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.rf-grande-em { font-size: 62px; text-align: center; line-height: 1.1; }
+.rf-passos { text-align: left; display: flex; flex-direction: column; gap: 8px; padding-left: 22px; line-height: 1.4; margin-bottom: 6px; }
+
+.rf-bt { padding: 9px 14px; border-radius: 12px; border: 3px solid #14532d; background: linear-gradient(#86efac, #22c55e); color: #052e16;
+  font-weight: 700; box-shadow: 0 3px 0 #14532d; white-space: nowrap; }
+.rf-bt:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 #14532d; }
+.rf-bt.sec { border-color: #92400e; background: linear-gradient(#fef3c7, #fcd34d); color: #78350f; box-shadow: 0 3px 0 #92400e; }
+.rf-bt.perigo { margin-top: 12px; width: 100%; border-color: #7f1d1d; background: linear-gradient(#fecaca, #f87171); color: #450a0a; box-shadow: 0 3px 0 #7f1d1d; }
+.rf-bt.grande { display: block; width: 100%; margin-top: 12px; padding: 12px; font-size: 17px; }
+.rf-bt:disabled { opacity: .45; filter: grayscale(.6); }
+
+.rf-abas { display: flex; gap: 8px; margin-bottom: 12px; }
+.rf-aba { flex: 1; padding: 9px; border-radius: 12px; border: 3px solid #b45309; background: #fef3c7; font-weight: 700; color: #92400e; }
+.rf-aba.on { background: #f59e0b; color: #fff; text-shadow: 0 1px 0 #78350f; }
+.rf-grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+.rf-grade.peq { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); margin-bottom: 12px; }
+.rf-card { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 10px 8px; border-radius: 16px; border: 3px solid #fcd34d;
+  background: #fff; text-align: center; }
+.rf-card b { color: #7c2d12; }
+.rf-card small { font-size: 11.5px; color: #92400e; }
+.rf-card.trava { opacity: .6; filter: grayscale(.7); }
+.rf-card.sel { cursor: pointer; }
+.rf-card.sel:hover, .rf-card.sel.on { border-color: #22c55e; background: #f0fdf4; }
+.rf-card-em { font-size: 38px; line-height: 1.1; }
+.rf-preco { font-weight: 700; color: #b45309; margin-top: 3px; }
+.rf-tem { min-height: 14px; }
+.rf-card-bts { display: flex; gap: 6px; margin-top: 4px; }
+.rf-card-bts .rf-bt { padding: 6px 10px; font-size: 13px; }
+
+.rf-lista { display: flex; flex-direction: column; gap: 8px; }
+.rf-linha, .rf-recado { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 14px; background: #fff; border: 2px solid #fde68a; }
+.rf-linha-em { font-size: 30px; width: 40px; text-align: center; flex: none; }
+.rf-linha-txt { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.rf-linha-txt small { color: #a16207; font-size: 12px; }
+.rf-linha .rf-bt { padding: 7px 12px; font-size: 13px; }
+.rf-recados { display: flex; flex-direction: column; gap: 8px; }
+.rf-recado { align-items: flex-start; background: #fff7fb; border-color: #fbcfe8; }
+.rf-recado .rf-linha-txt span { line-height: 1.35; }
+.rf-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.rf-stats div { padding: 10px; border-radius: 14px; background: #fff; border: 2px solid #fde68a; text-align: center; display: flex; flex-direction: column; }
+.rf-stats b { font-size: 20px; color: #7c2d12; }
+.rf-stats small { color: #a16207; }
+
+/* ---------- telas pequenas ---------- */
+@media (max-width: 760px) {
+  .rf-menu button { width: 44px; height: 44px; border-radius: 12px; }
+  .rf-menu button small { display: none; }
+  .rf-menu button span { font-size: 21px; }
+  .rf-menu { gap: 4px; }
+  .rf-xp { width: 84px; }
+  .rf-nome { display: none; }
+  .rf-avatar { width: 36px; height: 36px; font-size: 22px; }
+  .rf-moedas { padding: 6px 10px; font-size: 15px; }
+  .rf-topo { flex-wrap: wrap; gap: 6px; }
+  .rf-menu { margin-left: 0; width: 100%; justify-content: flex-end; }
+}
+@media (max-width: 520px) {
+  .rf-menu { justify-content: space-between; }
+  .rf-menu button { flex: 1; max-width: 56px; }
+  .rf-f { width: 46px; height: 52px; border-radius: 12px; }
+  .rf-f-ic { font-size: 22px; }
+  .rf-f small { font-size: 8px; }
+  .rf-ferr { gap: 3px; padding: 5px; border-radius: 16px; }
+  .rf-colher-tudo { bottom: 82px; right: 10px; font-size: 14px; }
+  .rf-aviso { bottom: 136px; font-size: 14px; }
+  .rf-visita { top: 118px; font-size: 13px; }
+  .rf-visita small { display: none; }
+}
+@media (pointer: coarse) { .rf-f kbd { display: none; } }

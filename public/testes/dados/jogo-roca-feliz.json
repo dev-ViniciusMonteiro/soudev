@@ -1,0 +1,59 @@
+{
+  "tipo": "jogo",
+  "slug": "roca-feliz",
+  "nome": "Roça Feliz",
+  "ok": true,
+  "geradoEm": "2026-11-11T18:07:20.341Z",
+  "passos": [
+    {
+      "titulo": "Boas-vindas",
+      "detalhe": "Roça nova com 6 canteiros arados, sementes de cenoura e milho na mochila e o passo a passo.",
+      "img": "/testes/img/jogo-roca-feliz-01.jpg"
+    },
+    {
+      "titulo": "Plantado",
+      "detalhe": "As cenouras brotando. Cada planta passa por 6 estágios até ficar pronta.",
+      "img": "/testes/img/jogo-roca-feliz-02.jpg"
+    },
+    {
+      "titulo": "Pronto para colher",
+      "detalhe": "O relógio do jogo foi adiantado: as cenouras amadureceram e aparece o botão Colher tudo.",
+      "img": "/testes/img/jogo-roca-feliz-03.jpg"
+    },
+    {
+      "titulo": "Colheita",
+      "detalhe": "A colheita voa para o celeiro e as plantas murcham.",
+      "img": "/testes/img/jogo-roca-feliz-04.jpg"
+    },
+    {
+      "titulo": "Celeiro",
+      "detalhe": "A colheita guardada, com o preço de cada uma.",
+      "img": "/testes/img/jogo-roca-feliz-05.jpg"
+    },
+    {
+      "titulo": "Loja",
+      "detalhe": "Sementes liberadas pelo nível; as outras aparecem com cadeado.",
+      "img": "/testes/img/jogo-roca-feliz-06.jpg"
+    },
+    {
+      "titulo": "Subiu de nível",
+      "detalhe": "Ganha moedas e libera sementes novas na loja.",
+      "img": "/testes/img/jogo-roca-feliz-07.jpg"
+    },
+    {
+      "titulo": "Problemas",
+      "detalhe": "Terra seca (cresce na metade da velocidade), mato e lagarta: cada um tira 10% da colheita.",
+      "img": "/testes/img/jogo-roca-feliz-08.jpg"
+    },
+    {
+      "titulo": "Roça do vizinho",
+      "detalhe": "Cada vizinho tem uma roça que cresce sozinha no relógio, com problemas para você ajudar.",
+      "img": "/testes/img/jogo-roca-feliz-09.jpg"
+    },
+    {
+      "titulo": "Pegou uma fruta",
+      "detalhe": "Sem cachorro na roça do Zé, deu para pegar um pouco da colheita pronta.",
+      "img": "/testes/img/jogo-roca-feliz-10.jpg"
+    }
+  ]
+}

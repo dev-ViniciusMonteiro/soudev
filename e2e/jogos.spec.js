@@ -289,3 +289,133 @@ test.skip('Jogo · Escape The Police online', async ({ browser, page }, info) =>
     ev.salvar(ok)
   }
 })
+
+// Roça Feliz: o jogo roda em /jogar/roca-feliz. Os ganchos de teste (window.__roca) adiantam o relógio do
+// jogo, dão a posição de cada canteiro na tela e põem problemas num canteiro para testar as ferramentas.
+test('Jogo · Roça Feliz', async ({ page }, info) => {
+  test.setTimeout(150000)
+  info.annotations.push({ type: 'O que este teste faz', description: 'Começa uma roça nova, planta, adianta o relógio, colhe, limpa com a enxada, vende no celeiro, compra na loja, cuida da seca, do mato e dos bichos e visita um vizinho para ajudar e pegar uma fruta.' })
+  const ev = novaEvidencia('jogo', 'roca-feliz', 'Roça Feliz')
+  const erros = []
+  page.on('pageerror', (e) => erros.push(String(e)))
+  const E = (f, a) => page.evaluate(f, a)
+  const estado = () => E(() => window.__roca.estado())
+  let printouNivel = false
+  const clicar = async (i) => {
+    const p = await E((k) => window.__roca.canteiro(k), i)
+    await page.mouse.click(p.x, p.y)
+    await page.waitForTimeout(120)
+    // ao subir de nível abre uma janela de parabéns
+    const oba = page.getByRole('button', { name: 'Oba!' })
+    if (await oba.isVisible()) {
+      if (!printouNivel && (printouNivel = true)) await ev.print(page, info, 'Subiu de nível', 'Ganha moedas e libera sementes novas na loja.')
+      await oba.click()
+    }
+  }
+  const ferramenta = (nome) => page.getByRole('toolbar').getByRole('button', { name: nome, exact: true }).click()
+  let ok = false
+  try {
+    await test.step('1. Abrir o jogo', async () => {
+      await page.goto('/jogar/roca-feliz/index.html')
+      await expect(page.getByRole('heading', { name: 'Bem-vindo à Roça Feliz!' })).toBeVisible({ timeout: 30000 })
+      await ev.print(page, info, 'Boas-vindas', 'Roça nova com 6 canteiros arados, sementes de cenoura e milho na mochila e o passo a passo.')
+      await page.getByRole('button', { name: 'Começar' }).click()
+    })
+
+    await test.step('2. Plantar cenoura nos 6 canteiros', async () => {
+      await ferramenta('Plantar')
+      for (let i = 0; i < 6; i++) await clicar(i)
+      const s = await estado()
+      expect(s.canteiros.slice(0, 6).every((c) => c.solo === 'plantado' && c.cultura === 'cenoura')).toBe(true)
+      await E(() => window.__roca.adiantar(0.4))
+      await ev.print(page, info, 'Plantado', 'As cenouras brotando. Cada planta passa por 6 estágios até ficar pronta.')
+    })
+
+    await test.step('3. Esperar e colher tudo', async () => {
+      await E(() => window.__roca.adiantar(3))
+      await expect(page.getByRole('button', { name: '🧺 Colher tudo' })).toBeVisible()
+      await ev.print(page, info, 'Pronto para colher', 'O relógio do jogo foi adiantado: as cenouras amadureceram e aparece o botão Colher tudo.')
+      await page.getByRole('button', { name: '🧺 Colher tudo' }).click()
+      const s = await estado()
+      expect(s.celeiro.cenoura).toBeGreaterThan(0)
+      expect(s.canteiros.slice(0, 6).every((c) => c.solo === 'murcho')).toBe(true)
+      await page.waitForTimeout(300)
+      await ev.print(page, info, 'Colheita', 'A colheita voa para o celeiro e as plantas murcham.')
+    })
+
+    await test.step('4. Limpar com a enxada', async () => {
+      await ferramenta('Enxada')
+      for (let i = 0; i < 6; i++) await clicar(i)
+      expect((await estado()).canteiros.slice(0, 6).every((c) => c.solo === 'arado')).toBe(true)
+    })
+
+    await test.step('5. Vender no celeiro', async () => {
+      const antes = (await estado()).moedas
+      await page.locator('[data-acao=celeiro]').click()
+      await expect(page.getByRole('heading', { name: 'Celeiro' })).toBeVisible()
+      await ev.print(page, info, 'Celeiro', 'A colheita guardada, com o preço de cada uma.')
+      await page.getByRole('button', { name: /Vender tudo/ }).click()
+      expect((await estado()).moedas).toBeGreaterThan(antes)
+      await page.getByRole('button', { name: 'Fechar' }).click()
+    })
+
+    await test.step('6. Comprar sementes na loja', async () => {
+      await page.locator('[data-acao=loja]').click()
+      await expect(page.getByRole('heading', { name: 'Loja' })).toBeVisible()
+      await page.getByRole('button', { name: 'Comprar semente de Milho' }).click()
+      expect((await estado()).sementes.milho).toBe(3)
+      await ev.print(page, info, 'Loja', 'Sementes liberadas pelo nível; as outras aparecem com cadeado.')
+      await page.getByRole('button', { name: 'Fechar' }).click()
+    })
+
+    await test.step('7. Cuidar da seca, do mato e dos bichos', async () => {
+      await page.locator('[data-acao=mochila]').click()
+      await page.getByRole('button', { name: 'Plantar Milho' }).click()
+      await clicar(0)
+      await E(() => window.__roca.forcar(0, { seca: true, mato: 2, bicho: 1 }))
+      await E(() => window.__roca.adiantar(1))
+      await ev.print(page, info, 'Problemas', 'Terra seca (cresce na metade da velocidade), mato e lagarta: cada um tira 10% da colheita.')
+      await ferramenta('Regar')
+      await clicar(0)
+      await ferramenta('Tirar mato')
+      await clicar(0)
+      await clicar(0) // com o mouse parado, o segundo clique tira o segundo mato
+      await ferramenta('Matar bicho')
+      await clicar(0)
+      const c = (await estado()).canteiros[0]
+      expect([c.seca, c.mato, c.bicho]).toEqual([false, 0, 0])
+    })
+
+    await test.step('8. Visitar o Zé do Milho', async () => {
+      await page.locator('[data-acao=vizinhos]').click()
+      await page.getByRole('button', { name: 'Visitar Zé do Milho' }).click()
+      await expect(page.getByRole('button', { name: '🏠 Voltar pra minha roça' })).toBeVisible()
+      // espera algum canteiro do vizinho ficar pronto
+      let fazenda = await E(() => window.__roca.fazendaVizinho('ze'))
+      for (let k = 0; k < 20 && !fazenda.some((c) => c.maduro && !(c.feito & 1)); k++) {
+        await E(() => window.__roca.adiantar(2))
+        fazenda = await E(() => window.__roca.fazendaVizinho('ze'))
+      }
+      await ev.print(page, info, 'Roça do vizinho', 'Cada vizinho tem uma roça que cresce sozinha no relógio, com problemas para você ajudar.')
+      const antes = Object.values((await estado()).celeiro).reduce((s, n) => s + n, 0)
+      await ferramenta('Colher')
+      await clicar(fazenda.findIndex((c) => c.maduro && !(c.feito & 1)))
+      const depois = Object.values((await estado()).celeiro).reduce((s, n) => s + n, 0)
+      expect(depois).toBeGreaterThan(antes)
+      const comMato = fazenda.findIndex((c) => c.mato)
+      if (comMato >= 0) {
+        await ferramenta('Tirar mato')
+        await clicar(comMato)
+        expect((await E(() => window.__roca.fazendaVizinho('ze')))[comMato].mato).toBe(false)
+      }
+      await ev.print(page, info, 'Pegou uma fruta', 'Sem cachorro na roça do Zé, deu para pegar um pouco da colheita pronta.')
+      await page.getByRole('button', { name: '🏠 Voltar pra minha roça' }).click()
+      expect(await E(() => window.__roca.visitando())).toBe(null)
+    })
+
+    expect(erros, erros.join('\n')).toEqual([])
+    ok = true
+  } finally {
+    ev.salvar(ok)
+  }
+})

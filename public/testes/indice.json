@@ -1,7 +1,7 @@
 {
-  "geradoEm": "2026-11-09T17:37:55.024Z",
-  "total": 45,
-  "ok": 45,
+  "geradoEm": "2026-11-11T22:41:26.432Z",
+  "total": 46,
+  "ok": 46,
   "itens": [
     {
       "tipo": "4dev",
@@ -308,6 +308,15 @@
       "geradoEm": "2026-11-03T21:25:53.216Z",
       "prints": 6,
       "capa": "/testes/img/jogo-escape-the-police-01.jpg"
+    },
+    {
+      "tipo": "jogo",
+      "slug": "roca-feliz",
+      "nome": "Roça Feliz",
+      "ok": true,
+      "geradoEm": "2026-11-11T18:07:20.341Z",
+      "prints": 10,
+      "capa": "/testes/img/jogo-roca-feliz-01.jpg"
     },
     {
       "tipo": "jogo",
